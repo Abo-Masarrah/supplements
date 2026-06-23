@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ahmed — Supplement Command Center</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+:root {
+  --bg:#0a0e1a;--surface:#111827;--surface2:#1a2236;--surface3:#1e2d44;
+  --border:#1e3a5f;--accent:#00d4ff;--accent2:#0099cc;
+  --green:#22c55e;--orange:#f59e0b;--red:#ef4444;--purple:#a78bfa;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+/* NAV TABS */
+.nav{background:#0d1320;border-bottom:1px solid var(--border);display:flex;justify-content:center;gap:0;position:sticky;top:0;z-index:100;}
+.nav-tab{padding:16px 24px;font-size:13px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;}
+.nav-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.nav-tab:hover{color:var(--text2);}
+
+.page{display:none;max-width:900px;margin:0 auto;padding:24px 16px 60px;}
+.page.active{display:block;}
+
+/* HEADER */
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.logo-text{font-size:16px;font-weight:700;}
+.logo-sub{font-size:11px;color:var(--text3);}
+.date-badge{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--text2);}
+
+/* DAY SELECTOR */
+.section-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
+.day-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.day-btn{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:16px 10px;cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.day-btn:hover{transform:translateY(-2px);border-color:var(--accent);}
+.day-btn.active-gym{border-color:#00d4ff;background:rgba(0,212,255,0.08);}
+.day-btn.active-football{border-color:#22c55e;background:rgba(34,197,94,0.08);}
+.day-btn.active-both{border-color:#a78bfa;background:rgba(167,139,250,0.08);}
+.day-btn.active-rest{border-color:#f59e0b;background:rgba(245,158,11,0.08);}
+.day-icon{font-size:26px;}
+.day-name{font-size:13px;font-weight:600;color:var(--text);}
+.day-desc{font-size:11px;color:var(--text3);}
+.day-btn.active-gym .day-name{color:#00d4ff;}
+.day-btn.active-football .day-name{color:#22c55e;}
+.day-btn.active-both .day-name{color:#a78bfa;}
+.day-btn.active-rest .day-name{color:#f59e0b;}
+
+/* PROGRESS */
+.progress-area{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 24px;margin-bottom:16px;}
+.progress-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.progress-label{font-size:14px;font-weight:600;}
+.progress-pct{font-size:24px;font-weight:700;color:var(--accent);}
+.progress-bar-bg{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .4s ease;width:0%;}
+
+/* PLAN */
+.plan-header{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:18px 22px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+.plan-title{font-size:18px;font-weight:700;}
+.plan-count{background:var(--surface3);border-radius:20px;padding:5px 14px;font-size:13px;color:var(--text2);}
+.special-notice{background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:12px;padding:14px 18px;margin-bottom:16px;font-size:13px;color:#a78bfa;line-height:1.6;}
+.time-block{margin-bottom:14px;background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+.time-header{background:var(--surface2);padding:12px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.time-name{font-size:13px;font-weight:600;color:var(--text2);}
+.supplement-row{display:flex;align-items:center;padding:13px 20px;border-bottom:1px solid rgba(30,58,95,0.5);gap:14px;transition:background .15s;}
+.supplement-row:last-child{border-bottom:none;}
+.supplement-row:hover{background:rgba(0,212,255,0.03);}
+.check-wrap{position:relative;flex-shrink:0;}
+.check-wrap input[type=checkbox]{width:22px;height:22px;cursor:pointer;opacity:0;position:absolute;z-index:2;}
+.check-custom{width:22px;height:22px;border:2px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .2s;background:var(--surface);}
+.check-wrap input:checked~.check-custom{background:var(--green);border-color:var(--green);}
+.check-custom::after{content:'✓';color:white;font-size:13px;font-weight:700;opacity:0;transition:opacity .2s;}
+.check-wrap input:checked~.check-custom::after{opacity:1;}
+.supp-info{flex:1;}
+.supp-name{font-size:14px;font-weight:600;}
+.supp-dose{font-size:12px;color:var(--text3);margin-top:2px;}
+.supp-note{font-size:11px;color:var(--orange);margin-top:3px;}
+.supp-badge{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600;flex-shrink:0;}
+.badge-must{background:rgba(34,197,94,0.15);color:var(--green);}
+.badge-opt{background:rgba(245,158,11,0.15);color:var(--orange);}
+
+/* SAVE BTN */
+.save-bar{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.save-btn{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:12px;padding:10px 22px;color:#0a0e1a;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:opacity .2s;}
+.save-btn:hover{opacity:.9;}
+.save-msg{font-size:13px;color:var(--text3);}
+
+/* AI */
+.ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px 24px;margin-bottom:16px;}
+.ai-panel-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ai-icon{width:32px;height:32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.ai-title{font-size:15px;font-weight:700;}
+.ai-subtitle{font-size:12px;color:var(--text3);}
+.ai-input-row{display:flex;gap:10px;}
+.ai-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:11px 16px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s;}
+.ai-input:focus{border-color:var(--accent);}
+.ai-input::placeholder{color:var(--text3);}
+.ai-send-btn{background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:12px;padding:11px 18px;color:white;cursor:pointer;font-size:16px;transition:opacity .2s;flex-shrink:0;}
+.ai-send-btn:hover{opacity:.9;}
+.ai-send-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ai-response{margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:none;}
+.ai-response.visible{display:block;}
+.ai-response p{font-size:14px;line-height:1.7;}
+.quick-questions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.quick-q{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--text2);cursor:pointer;transition:all .2s;font-family:inherit;}
+.quick-q:hover{border-color:var(--purple);color:var(--purple);}
+.typing{display:flex;gap:5px;align-items:center;padding:4px 0;}
+.typing span{width:7px;height:7px;background:var(--purple);border-radius:50%;animation:bounce 1.2s infinite;}
+.typing span:nth-child(2){animation-delay:.2s;}
+.typing span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-6px);}}
+
+/* ── HISTORY PAGE ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:18px;text-align:center;}
+.stat-val{font-size:28px;font-weight:700;margin-bottom:4px;}
+.stat-lbl{font-size:12px;color:var(--text3);}
+
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.month-nav-btn{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 16px;color:var(--text2);cursor:pointer;font-family:inherit;font-size:14px;transition:all .2s;}
+.month-nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+.month-title{font-size:16px;font-weight:700;}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:24px;}
+.cal-day-name{text-align:center;font-size:11px;color:var(--text3);padding:6px 0;font-weight:600;}
+.cal-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:600;border:1px solid transparent;cursor:default;position:relative;}
+.cal-cell.empty{background:transparent;border-color:transparent;}
+.cal-cell.no-data{background:var(--surface2);color:var(--text3);border-color:var(--border);}
+.cal-cell.day-gym{background:rgba(0,212,255,0.15);border-color:rgba(0,212,255,0.4);color:#00d4ff;}
+.cal-cell.day-football{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:#22c55e;}
+.cal-cell.day-both{background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.4);color:#a78bfa;}
+.cal-cell.day-rest{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);color:#f59e0b;}
+.cal-cell.today-cell{outline:2px solid var(--accent);outline-offset:1px;}
+.cal-pct{font-size:10px;opacity:.75;margin-top:1px;}
+
+.history-list{background:var(--surface);border:1px solid var(--border);border-radius:18px;overflow:hidden;}
+.history-row{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid rgba(30,58,95,0.4);gap:14px;}
+.history-row:last-child{border-bottom:none;}
+.h-date{font-size:13px;color:var(--text2);min-width:90px;}
+.h-type{font-size:12px;padding:3px 10px;border-radius:10px;font-weight:600;min-width:80px;text-align:center;}
+.h-type.gym{background:rgba(0,212,255,0.15);color:#00d4ff;}
+.h-type.football{background:rgba(34,197,94,0.15);color:#22c55e;}
+.h-type.both{background:rgba(167,139,250,0.15);color:#a78bfa;}
+.h-type.rest{background:rgba(245,158,11,0.15);color:#f59e0b;}
+.h-pct{font-size:14px;font-weight:700;min-width:48px;text-align:center;}
+.h-bar-wrap{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.h-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent2),var(--accent));}
+.h-perfect{font-size:16px;}
+
+.empty-history{text-align:center;padding:50px 20px;color:var(--text3);}
+.empty-history .empty-icon{font-size:48px;margin-bottom:12px;}
+
+/* STREAK BANNER */
+.streak-banner{background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(245,158,11,0.08));border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:16px 22px;margin-bottom:20px;display:flex;align-items:center;gap:16px;}
+.streak-fire{font-size:32px;}
+.streak-num{font-size:28px;font-weight:700;color:#f59e0b;}
+.streak-lbl{font-size:13px;color:var(--text2);}
+
+@media(max-width:600px){
+  .day-grid{grid-template-columns:repeat(2,1fr);}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .plan-header{flex-direction:column;gap:8px;align-items:flex-start;}
+  .nav-tab{padding:14px 14px;font-size:12px;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <button class="nav-tab active" onclick="showPage('today')">📋 اليوم</button>
+  <button class="nav-tab" onclick="showPage('history')">📊 البروقرس</button>
+  <button class="nav-tab" onclick="showPage('ai')">🤖 المساعد</button>
+</nav>
+
+<!-- ══ TODAY PAGE ══ -->
+<div class="page active" id="page-today">
+  <div class="top-bar">
+    <div class="logo">
+      <div class="logo-icon">💊</div>
+      <div>
+        <div class="logo-text">Supplement Command Center</div>
+        <div class="logo-sub">Ahmed Al-Haddad</div>
+      </div>
+    </div>
+    <div class="date-badge" id="today-date"></div>
+  </div>
+
+  <div class="section-label">اختر نوع يومك</div>
+  <div class="day-grid">
+    <button class="day-btn" onclick="selectDay('gym')" id="btn-gym"><div class="day-icon">🏋️</div><div class="day-name">حديد</div><div class="day-desc">يوم النادي</div></button>
+    <button class="day-btn" onclick="selectDay('football')" id="btn-football"><div class="day-icon">⚽</div><div class="day-name">كورة</div><div class="day-desc">يوم الملعب</div></button>
+    <button class="day-btn" onclick="selectDay('both')" id="btn-both"><div class="day-icon">🔥</div><div class="day-name">حديد+كورة</div><div class="day-desc">يوم مزدوج</div></button>
+    <button class="day-btn" onclick="selectDay('rest')" id="btn-rest"><div class="day-icon">😴</div><div class="day-name">راحة</div><div class="day-desc">يوم استرجاع</div></button>
+  </div>
+
+  <div id="plan-area" style="display:none">
+    <div class="progress-area">
+      <div class="progress-top">
+        <div class="progress-label">تقدم اليوم</div>
+        <div class="progress-pct" id="pct-display">0%</div>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="save-bar">
+      <div class="save-msg" id="save-msg">✏️ ضع تشيك على كل مكمل أخذته ثم احفظ اليوم</div>
+      <button class="save-btn" onclick="saveDay()">💾 حفظ اليوم</button>
+    </div>
+
+    <div class="plan-header">
+      <div class="plan-title" id="plan-title"></div>
+      <div class="plan-count" id="taken-count">0 / 0</div>
+    </div>
+    <div id="special-notice" style="display:none" class="special-notice"></div>
+    <div id="plan-content"></div>
+  </div>
+</div>
+
+<!-- ══ HISTORY PAGE ══ -->
+<div class="page" id="page-history">
+  <div class="top-bar">
+    <div style="font-size:18px;font-weight:700;">📊 البروقرس الشهري</div>
+    <button onclick="clearHistory()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:6px 14px;color:var(--text3);cursor:pointer;font-family:inherit;font-size:12px;">مسح الكل</button>
+  </div>
+
+  <div id="streak-area"></div>
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="month-nav">
+    <button class="month-nav-btn" onclick="changeMonth(-1)">◀ السابق</button>
+    <div class="month-title" id="month-title"></div>
+    <button class="month-nav-btn" onclick="changeMonth(1)">التالي ▶</button>
+  </div>
+
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="history-list" id="history-list"></div>
+</div>
+
+<!-- ══ AI PAGE ══ -->
+<div class="page" id="page-ai">
+  <div class="top-bar">
+    <div style="font-size:18px;font-weight:700;">🤖 مساعد المكملات</div>
+  </div>
+  <div class="ai-panel" style="margin-bottom:0">
+    <div class="ai-panel-header">
+      <div class="ai-icon">🤖</div>
+      <div>
+        <div class="ai-title">اسأل عن مكملاتك</div>
+        <div class="ai-subtitle">Claude يعرف كل تفاصيل برنامجك</div>
+      </div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="ai-input" placeholder="اسأل أي سؤال..." />
+      <button class="ai-send-btn" id="ai-btn" onclick="askAI()">↵</button>
+    </div>
+    <div class="quick-questions">
+      <button class="quick-q" onclick="setQ('ما أهم مكمل عندي؟')">ما أهم مكمل؟</button>
+      <button class="quick-q" onclick="setQ('الكرياتين في يوم الراحة صح؟')">الكرياتين يوم الراحة؟</button>
+      <button class="quick-q" onclick="setQ('ليش يوقف Prelox في الكورة؟')">ليش يوقف Prelox؟</button>
+      <button class="quick-q" onclick="setQ('متى أطلب CoQ10؟')">متى أطلب CoQ10؟</button>
+      <button class="quick-q" onclick="setQ('نصيحة ليوم الحديد+الكورة')">نصيحة للمزدوج</button>
+      <button class="quick-q" onclick="setQ('كم أسبوع آخذ الأشواغاندا قبل أوقفها؟')">دورة الأشواغاندا</button>
+    </div>
+    <div class="ai-response" id="ai-response"></div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ══
+const PLANS = {
+  gym:{label:'يوم الحديد 🏋️',color:'#00d4ff',blocks:[
+    {icon:'🌅',time:'الصباح — معدة فارغة',items:[
+      {name:'NAC',dose:'حبة واحدة',note:'دعم الكبد والتنفس',req:true},
+      {name:'Methyl B12',dose:'حبة واحدة',note:'تركيز وطاقة',req:true}]},
+    {icon:'🍳',time:'مع الفطور أو الغداء',items:[
+      {name:"Men's Health Multivitamin",dose:'حبة واحدة',req:true},
+      {name:'Omega-3 Fish Oil',dose:'حبتين',note:'قلب ومفاصل',req:true},
+      {name:'CoQ10 200mg',dose:'حبة واحدة',note:'طاقة الخلايا',req:true}]},
+    {icon:'⚡',time:'قبل التمرين 30–60 دقيقة',items:[
+      {name:'Prelox Enhanced Sex',dose:'حبة واحدة',note:'ضخ دم قوي',req:true},
+      {name:'Pure Creatine',dose:'5 جرام (سكوب)',note:'طاقة وتعبئة العضلات',req:true},
+      {name:'L-Arginine 500mg',dose:'اختياري — تمارين شاقة فقط',note:'⚠️ لا تجمعه مع Prelox',req:false}]},
+    {icon:'🌙',time:'قبل النوم',items:[
+      {name:'Magnesium Bisglycinate',dose:'حبتين',note:'فك العضلات ونوم عميق',req:true},
+      {name:'Ashwagandha KSM-66',dose:'حبة واحدة',note:'راحة كل 6–8 أسابيع',req:true}]}
+  ]},
+  football:{label:'يوم الكورة ⚽',color:'#22c55e',blocks:[
+    {icon:'🌅',time:'الصباح — معدة فارغة',items:[
+      {name:'NAC',dose:'حبة واحدة',req:true},
+      {name:'Methyl B12',dose:'حبة واحدة',req:true}]},
+    {icon:'🍳',time:'مع الفطور أو الغداء',items:[
+      {name:"Men's Health Multivitamin",dose:'حبة واحدة',req:true},
+      {name:'Omega-3 Fish Oil',dose:'حبتين',note:'مهم للمفاصل في الكورة',req:true},
+      {name:'CoQ10 200mg',dose:'حبة واحدة',req:true}]},
+    {icon:'⚽',time:'قبل الكورة 30–60 دقيقة',items:[
+      {name:'Pure Creatine',dose:'5 جرام',note:'للتفجيرات والسرعة',req:true},
+      {name:'Prelox',dose:'⛔ موقوف — يسبب شد عضلي',req:false},
+      {name:'L-Arginine',dose:'⛔ موقوف',req:false}]},
+    {icon:'🌙',time:'قبل النوم',items:[
+      {name:'Magnesium Bisglycinate',dose:'حبتين',note:'⭐ مهم جداً بعد الكورة',req:true},
+      {name:'Ashwagandha KSM-66',dose:'حبة واحدة',req:true}]}
+  ]},
+  both:{label:'يوم حديد + كورة 🔥',color:'#a78bfa',
+    special:'⚠️ لا تكرر Prelox أو Creatine قبل الكورة. اكل 30–60 جرام كارب بين الجلستين (موز/تمر/عصير رياضي).',
+    blocks:[
+      {icon:'🌅',time:'الصباح — معدة فارغة',items:[
+        {name:'NAC',dose:'حبة واحدة',req:true},
+        {name:'Methyl B12',dose:'حبة واحدة',req:true}]},
+      {icon:'🍳',time:'مع الفطور أو الغداء',items:[
+        {name:"Men's Health Multivitamin",dose:'حبة واحدة',req:true},
+        {name:'Omega-3 Fish Oil',dose:'حبتين',req:true},
+        {name:'CoQ10 200mg',dose:'حبة واحدة',req:true}]},
+      {icon:'🏋️',time:'قبل الحديد فقط',items:[
+        {name:'Prelox',dose:'حبة واحدة — مرة وحدة بس',note:'لا تكرر قبل الكورة',req:true},
+        {name:'Pure Creatine',dose:'5 جرام — مرة وحدة بس',note:'لا تكرر قبل الكورة',req:true}]},
+      {icon:'🍌',time:'بين الحديد والكورة',items:[
+        {name:'كارب خفيف + إلكتروليت',dose:'30–60 جرام كارب + ماي',note:'موز / تمر / عصير رياضي',req:true}]},
+      {icon:'🌙',time:'قبل النوم',items:[
+        {name:'Magnesium Bisglycinate',dose:'حبتين',note:'⭐ أهم يوم تاخذه',req:true},
+        {name:'Ashwagandha KSM-66',dose:'حبة واحدة',req:true}]}
+  ]},
+  rest:{label:'يوم الراحة 😴',color:'#f59e0b',blocks:[
+    {icon:'🌅',time:'الصباح — معدة فارغة',items:[
+      {name:'NAC',dose:'حبة واحدة',req:true},
+      {name:'Methyl B12',dose:'حبة واحدة (اختياري 3×/أسبوع)',req:false}]},
+    {icon:'🍳',time:'مع الفطور أو الغداء',items:[
+      {name:"Men's Health Multivitamin",dose:'حبة واحدة',req:true},
+      {name:'Omega-3 Fish Oil',dose:'حبة واحدة (نص الجرعة)',req:true},
+      {name:'CoQ10 200mg',dose:'حبة واحدة',req:true}]},
+    {icon:'🕐',time:'أي وقت',items:[
+      {name:'Pure Creatine',dose:'5 جرام',note:'لازم يومي حتى في الراحة',req:true},
+      {name:'Prelox',dose:'⛔ موقوف',req:false}]},
+    {icon:'🌙',time:'قبل النوم',items:[
+      {name:'Magnesium Bisglycinate',dose:'حبتين',note:'الراحة والنوم هدفك اليوم',req:true},
+      {name:'Ashwagandha KSM-66',dose:'حبة واحدة',req:true}]}
+  ]}
+};
+
+const TYPE_LABELS={gym:'حديد',football:'كورة',both:'حديد+كورة',rest:'راحة'};
+const ARABIC_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const ARABIC_DAYS=['ح','ن','ث','ر','خ','ج','س'];
+
+// ══ STATE ══
+let selectedDay=null;
+let viewMonth=new Date();
+viewMonth.setDate(1);
+
+// ══ STORAGE ══
+function getHistory(){try{return JSON.parse(localStorage.getItem('supp_history')||'{}');}catch{return {};}}
+function saveHistory(h){localStorage.setItem('supp_history',JSON.stringify(h));}
+function todayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded',()=>{
+  const d=new Date();
+  const days=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  document.getElementById('today-date').textContent=days[d.getDay()]+' — '+d.toLocaleDateString('ar-SA');
+  // load today if saved
+  const h=getHistory();const k=todayKey();
+  if(h[k]){
+    selectDay(h[k].type,true);
+    // restore checks
+    setTimeout(()=>{
+      if(h[k].checks){
+        h[k].checks.forEach(i=>{
+          const cb=document.getElementById('ck-'+i);
+          if(cb){cb.checked=true;}
+        });
+        updateProgress();
+      }
+    },50);
+  }
+});
+
+// ══ PAGES ══
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if(id==='history')renderHistory();
+}
+
+// ══ SELECT DAY ══
+function selectDay(type,silent){
+  selectedDay=type;
+  document.querySelectorAll('.day-btn').forEach(b=>b.className='day-btn');
+  document.getElementById('btn-'+type).classList.add('active-'+type);
+  document.getElementById('plan-area').style.display='block';
+
+  const plan=PLANS[type];
+  document.getElementById('plan-title').textContent=plan.label;
+  document.getElementById('plan-title').style.color=plan.color;
+
+  const sn=document.getElementById('special-notice');
+  if(plan.special){sn.style.display='block';sn.textContent=plan.special;}
+  else sn.style.display='none';
+
+  let html='';let idx=0;
+  plan.blocks.forEach(block=>{
+    html+=`<div class="time-block"><div class="time-header"><span class="time-icon">${block.icon}</span><span class="time-name">${block.time}</span></div>`;
+    block.items.forEach(item=>{
+      const stopped=item.dose.startsWith('⛔');
+      html+=`<div class="supplement-row" style="${stopped?'opacity:.4;':''}">
+        <div class="check-wrap">
+          <input type="checkbox" id="ck-${idx}" data-idx="${idx}" ${stopped?'disabled':''} onchange="updateProgress()">
+          <div class="check-custom"></div>
+        </div>
+        <div class="supp-info">
+          <div class="supp-name">${item.name}</div>
+          <div class="supp-dose">${item.dose}</div>
+          ${item.note?`<div class="supp-note">${item.note}</div>`:''}
+        </div>
+        ${!stopped?`<span class="supp-badge ${item.req?'badge-must':'badge-opt'}">${item.req?'أساسي':'اختياري'}</span>`:''}
+      </div>`;idx++;
+    });
+    html+='</div>';
+  });
+  document.getElementById('plan-content').innerHTML=html;
+  updateProgress();
+  if(!silent)document.getElementById('save-msg').textContent='✏️ ضع تشيك على كل مكمل أخذته ثم احفظ اليوم';
+}
+
+function updateProgress(){
+  const all=document.querySelectorAll('#plan-content input[type=checkbox]:not([disabled])');
+  const done=document.querySelectorAll('#plan-content input[type=checkbox]:not([disabled]):checked');
+  const pct=all.length?Math.round(done.length/all.length*100):0;
+  document.getElementById('pct-display').textContent=pct+'%';
+  const fill=document.getElementById('progress-fill');
+  fill.style.width=pct+'%';
+  if(pct===100){fill.style.background='linear-gradient(90deg,#16a34a,#22c55e)';document.getElementById('pct-display').style.color='#22c55e';}
+  else if(pct>=50){fill.style.background='linear-gradient(90deg,#0099cc,#00d4ff)';document.getElementById('pct-display').style.color='#00d4ff';}
+  else{fill.style.background='linear-gradient(90deg,#b45309,#f59e0b)';document.getElementById('pct-display').style.color='#f59e0b';}
+  const cnt=document.getElementById('taken-count');
+  if(cnt)cnt.textContent=done.length+' / '+all.length+' مكمل';
+}
+
+function saveDay(){
+  if(!selectedDay){alert('اختر نوع اليوم أول');return;}
+  const checks=[];
+  document.querySelectorAll('#plan-content input[type=checkbox]:not([disabled]):checked').forEach(cb=>{
+    checks.push(parseInt(cb.dataset.idx));
+  });
+  const all=document.querySelectorAll('#plan-content input[type=checkbox]:not([disabled])');
+  const pct=all.length?Math.round(checks.length/all.length*100):0;
+  const h=getHistory();
+  h[todayKey()]={type:selectedDay,pct,checks,ts:Date.now()};
+  saveHistory(h);
+  document.getElementById('save-msg').textContent='✅ تم الحفظ! '+pct+'% إنجاز اليوم';
+}
+
+// ══ HISTORY ══
+function renderHistory(){
+  const h=getHistory();
+  const keys=Object.keys(h).sort((a,b)=>new Date(b)-new Date(a));
+
+  // streak
+  let streak=0;
+  const today=new Date();today.setHours(0,0,0,0);
+  for(let i=0;i<365;i++){
+    const d=new Date(today);d.setDate(d.getDate()-i);
+    const k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    if(h[k]&&h[k].pct>=80)streak++;
+    else if(i>0)break;
+  }
+  const sa=document.getElementById('streak-area');
+  sa.innerHTML=streak>0?`<div class="streak-banner"><div class="streak-fire">🔥</div><div><div class="streak-num">${streak} يوم</div><div class="streak-lbl">Streak متواصل (إنجاز 80%+)</div></div></div>`:'';
+
+  // stats
+  const total=keys.length;
+  const gymD=keys.filter(k=>h[k].type==='gym').length;
+  const footD=keys.filter(k=>h[k].type==='football').length;
+  const bothD=keys.filter(k=>h[k].type==='both').length;
+  const restD=keys.filter(k=>h[k].type==='rest').length;
+  const perfect=keys.filter(k=>h[k].pct===100).length;
+  const avgPct=total?Math.round(keys.reduce((s,k)=>s+h[k].pct,0)/total):0;
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${total}</div><div class="stat-lbl">إجمالي الأيام</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${perfect}</div><div class="stat-lbl">أيام مثالية 💯</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${avgPct}%</div><div class="stat-lbl">متوسط الإنجاز</div></div>
+    <div class="stat-card">
+      <div style="display:flex;justify-content:center;gap:8px;margin-bottom:4px">
+        <span style="color:#00d4ff;font-size:13px;font-weight:700">🏋️${gymD}</span>
+        <span style="color:#22c55e;font-size:13px;font-weight:700">⚽${footD}</span>
+        <span style="color:#a78bfa;font-size:13px;font-weight:700">🔥${bothD}</span>
+        <span style="color:#f59e0b;font-size:13px;font-weight:700">😴${restD}</span>
+      </div>
+      <div class="stat-lbl">توزيع الأيام</div>
+    </div>
+  `;
+  renderCalendar(h);
+  renderList(h,keys);
+}
+
+function renderCalendar(h){
+  const y=viewMonth.getFullYear();const m=viewMonth.getMonth();
+  document.getElementById('month-title').textContent=ARABIC_MONTHS[m]+' '+y;
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  let html=ARABIC_DAYS.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for(let i=0;i<firstDay;i++)html+='<div class="cal-cell empty"></div>';
+  for(let d=1;d<=daysInMonth;d++){
+    const k=y+'-'+(m+1)+'-'+d;
+    const rec=h[k];
+    const isToday=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    if(rec){
+      const cls='day-'+rec.type+(isToday?' today-cell':'');
+      html+=`<div class="cal-cell ${cls}" title="${TYPE_LABELS[rec.type]} — ${rec.pct}%">${d}<div class="cal-pct">${rec.pct}%</div></div>`;
+    } else {
+      html+=`<div class="cal-cell no-data${isToday?' today-cell':''}">${d}</div>`;
+    }
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+}
+
+function changeMonth(dir){
+  viewMonth.setMonth(viewMonth.getMonth()+dir);
+  renderHistory();
+}
+
+function renderList(h,keys){
+  const el=document.getElementById('history-list');
+  if(!keys.length){
+    el.innerHTML='<div class="empty-history"><div class="empty-icon">📭</div><div>ما فيه سجلات بعد</div><div style="font-size:13px;margin-top:8px">ارجع لتبويب اليوم واحفظ يومك</div></div>';
+    return;
+  }
+  const monthKeys=keys.filter(k=>{
+    const [y,mo]=k.split('-').map(Number);
+    return y===viewMonth.getFullYear()&&mo===viewMonth.getMonth()+1;
+  });
+  if(!monthKeys.length){
+    el.innerHTML='<div class="empty-history"><div class="empty-icon">📭</div><div>ما فيه سجلات لهذا الشهر</div></div>';
+    return;
+  }
+  el.innerHTML=monthKeys.sort((a,b)=>new Date(b)-new Date(a)).map(k=>{
+    const r=h[k];
+    const [y,mo,d]=k.split('-');
+    const dateStr=d+' '+ARABIC_MONTHS[mo-1];
+    return `<div class="history-row">
+      <div class="h-date">${dateStr}</div>
+      <div class="h-type ${r.type}">${TYPE_LABELS[r.type]}</div>
+      <div class="h-pct" style="color:${r.pct===100?'#22c55e':r.pct>=70?'#00d4ff':'#f59e0b'}">${r.pct}%</div>
+      <div class="h-bar-wrap"><div class="h-bar" style="width:${r.pct}%;background:${r.pct===100?'#22c55e':'linear-gradient(90deg,#0099cc,#00d4ff)'}"></div></div>
+      <div class="h-perfect">${r.pct===100?'💯':r.pct>=80?'✅':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function clearHistory(){
+  if(confirm('هل تبغا تمسح كل السجلات؟')){localStorage.removeItem('supp_history');renderHistory();}}
+
+// ══ AI ══
+function setQ(q){document.getElementById('ai-input').value=q;}
+
+async function askAI(){
+  const input=document.getElementById('ai-input');
+  const btn=document.getElementById('ai-btn');
+  const resp=document.getElementById('ai-response');
+  const q=input.value.trim();if(!q)return;
+  btn.disabled=true;
+  resp.classList.add('visible');
+  resp.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  const dayCtx=selectedDay?'اليوم المختار: '+PLANS[selectedDay].label:'لم يختر نوع اليوم';
+  const h=getHistory();const keys=Object.keys(h);
+  const statsCtx=keys.length?`لديه ${keys.length} يوم مسجل، متوسط إنجاز ${Math.round(keys.reduce((s,k)=>s+h[k].pct,0)/keys.length)}%`:'لا يوجد سجلات بعد';
+  const sys=`أنت مساعد ذكي لأحمد الحداد متخصص في مكملاته. جاوب بالعربي بإيجاز (أقل من 80 كلمة).
+
+مكملاته: NAC يومي | Methyl B12 يومي | Multivitamin يومي | Omega-3 حبتين تمرين / حبة راحة | CoQ10 يومي | Creatine 5جرام يومياً | Prelox أيام التمرين فقط (لا كورة لا راحة) | L-Arginine اختياري تمارين شاقة فقط | Magnesium حبتين قبل النوم | Ashwagandha قبل النوم / راحة كل 6-8 أسابيع.
+مخزون (أيام): NAC:120 B12:100 Multi:90 Omega3:90 CoQ10:60 Creatine:80 Prelox:60 Mag:60 Ashwagandha:60.
+${dayCtx}. ${statsCtx}.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:q}]})});
+    const data=await res.json();
+    resp.innerHTML='<p>'+(data.content?.[0]?.text||'جرب مرة ثانية')+'</p>';
+  }catch(e){resp.innerHTML='<p style="color:var(--red)">خطأ في الاتصال</p>';}
+  btn.disabled=false;input.value='';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
+});
+</script>
+</body>
+</html>
