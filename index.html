@@ -122,6 +122,8 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 
 /* GOAL banner */
 .goal-banner{background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(167,139,250,.08));border:1px solid rgba(0,212,255,.25);border-radius:18px;padding:18px;margin-bottom:14px;}
+.progress-bar-bg{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;}
+.progress-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
 .goal-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .goal-title{font-size:14px;font-weight:700;}
 .goal-badge{background:var(--surface3);border-radius:14px;padding:4px 12px;font-size:12px;color:var(--accent);}
@@ -236,6 +238,11 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <button class="add-meal-btn" onclick="document.getElementById('food-photo').click()" style="border-color:rgba(167,139,250,.5);color:var(--purple);background:rgba(167,139,250,.06)">📸 صوّر الوجبة — حساب ذكي *</button>
     <input type="file" id="food-photo" accept="image/*" capture="environment" style="display:none" onchange="analyzePhoto(event)">
     <button class="add-meal-btn" onclick="openMealModal()">🔢 إدخال يدوي مرن</button>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="add-meal-btn" onclick="openPastMeals()" style="flex:1;margin-top:0;border-color:rgba(245,158,11,.4);color:var(--orange);background:rgba(245,158,11,.06)">🕐 وجبات سابقة</button>
+      <button class="add-meal-btn" onclick="openSavedMeals()" style="flex:1;margin-top:0;border-color:rgba(236,72,153,.4);color:var(--pink);background:rgba(236,72,153,.06)">⭐ وجبات محفوظة</button>
+    </div>
+    <button class="add-meal-btn" onclick="saveCurrentAsMeal()" style="font-size:12px">💾 احفظ وجبة اليوم كقالب</button>
     <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">* الميزات الذكية تحتاج اتصال — قاعدة الأكل والإدخال اليدوي يشتغلان دائماً</div>
     <div class="ai-resp" id="photo-result" style="margin-top:12px"></div>
   </div>
@@ -354,6 +361,12 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="section-title">📊 البروقرس</div>
   <div class="section-desc">رحلتك نحو 75 كيلو بنهاية 2026</div>
 
+  <!-- Today remaining -->
+  <div class="card" id="today-remaining-card" style="margin-bottom:14px">
+    <div class="sec-label">باقي لك اليوم</div>
+    <div id="today-remaining-content"></div>
+  </div>
+
   <!-- Goal -->
   <div class="goal-banner">
     <div class="goal-top"><div class="goal-title">🎯 هدف التنشيف</div><div class="goal-badge" id="goal-remaining">—</div></div>
@@ -389,6 +402,26 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <button class="month-btn" onclick="navMonth(1)">▶</button>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- PAST MEALS MODAL -->
+<div class="modal-bg" id="past-meals-modal">
+  <div class="modal" style="max-height:80vh;display:flex;flex-direction:column">
+    <div class="modal-title">🕐 وجبات سابقة</div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px">اضغط أي وجبة لإضافتها لليوم</div>
+    <div id="past-meals-list" style="overflow-y:auto;flex:1;min-height:150px"></div>
+    <div class="modal-btns" style="margin-top:10px"><button class="modal-btn mb-cancel" onclick="closePastMeals()">إغلاق</button></div>
+  </div>
+</div>
+
+<!-- SAVED MEALS MODAL -->
+<div class="modal-bg" id="saved-meals-modal">
+  <div class="modal" style="max-height:80vh;display:flex;flex-direction:column">
+    <div class="modal-title">⭐ وجبات محفوظة</div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px">قوالب وجباتك المتكررة — اضغط لإضافة كل أصنافها</div>
+    <div id="saved-meals-list" style="overflow-y:auto;flex:1;min-height:150px"></div>
+    <div class="modal-btns" style="margin-top:10px"><button class="modal-btn mb-cancel" onclick="closeSavedMeals()">إغلاق</button></div>
+  </div>
 </div>
 
 <!-- FOOD DB MODAL -->
@@ -497,7 +530,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
     <!-- WEIGHT MODE -->
     <div id="weight-mode">
-      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:12px">حط وزن كل مكوّن بالجرام — نحسب السعرات والماكروز الصح</div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:12px">حط وزن البروتين والكارب بالجرام — نحسب ماكروزهم. ولو تعرف السعرات الكلية، حطها ونحسب الدهون من الباقي.</div>
       <div class="modal-field">
         <label>مصدر البروتين</label>
         <div style="display:flex;gap:8px">
@@ -532,7 +565,11 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       </div>
       <div class="modal-field">
         <label>الدهون المضافة (زيت/زبدة) — جرام</label>
-        <input class="modal-input" id="wm-fat-g" type="number" inputmode="numeric" placeholder="مثال 10">
+        <input class="modal-input" id="wm-fat-g" type="number" inputmode="numeric" placeholder="اتركها فاضية لو ما تعرف">
+      </div>
+      <div class="modal-field">
+        <label>السعرات الكلية (اختياري) — لو حطيتها نحسب الدهون من الباقي</label>
+        <input class="modal-input" id="wm-total-cal" type="number" inputmode="numeric" placeholder="مثال 384">
       </div>
       <div id="wm-preview" style="background:var(--surface2);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);text-align:center;margin-bottom:6px">احسب بعد إدخال المكوّنات</div>
     </div>
@@ -680,7 +717,7 @@ const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو',
 const AR_DAYS=['ح','ن','ث','ر','خ','ج','س'];
 
 // ═══ STATE ═══
-let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, viewMonth=new Date();
+let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, viewMonth=new Date();
 viewMonth.setDate(1);
 
 // ═══ STORAGE ═══
@@ -705,12 +742,14 @@ document.addEventListener('DOMContentLoaded',()=>{
     burned=db[k].burned||0;
     water=db[k].water||0;
     steps=db[k].steps||0;
+    suppChecks=db[k].suppChecks||{};
+    flexChecks=db[k].flexChecks||{};
     renderMeals();updateHero();renderWaterSteps();
   }
   renderWeight();
   renderSlotPicker();
   document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
-  ['wm-protein-type','wm-protein-g','wm-carb-type','wm-carb-g','wm-fat-g'].forEach(id=>{
+  ['wm-protein-type','wm-protein-g','wm-carb-type','wm-carb-g','wm-fat-g','wm-total-cal'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.addEventListener('input',updateWeightPreview);el.addEventListener('change',updateWeightPreview);}
   });
@@ -767,20 +806,88 @@ function renderMeals(){
         <div class="meal-check done" onclick="removeMeal(${i})" title="حذف">✕</div>
         <div class="meal-info"><div class="meal-name">${m.name}</div>
         <div class="meal-cal">${m.cal} سعرة · ${m.protein||0}ب · ${m.carb||0}ك · ${m.fat||0}د</div></div>
+        <div onclick="repeatMeal(${i})" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div>
       </div>`;
     });
   });
   el.innerHTML=html;
 }
-function removeMeal(i){meals.splice(i,1);renderMeals();updateHero();}
-function addMeal(name,cal,p,c,f){meals.push({name,cal,protein:p||0,carb:c||0,fat:f||0,slot:activeSlot});renderMeals();updateHero();}
+function removeMeal(i){meals.splice(i,1);renderMeals();updateHero();autoSaveToday();}
+function addMeal(name,cal,p,c,f){meals.push({name,cal,protein:p||0,carb:c||0,fat:f||0,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
+function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
+
+// ═══ PAST LOGGED (from history) ═══
+function openPastMeals(){
+  const db=getDB();
+  // collect unique meals from all days (most recent first)
+  const seen=new Set();const list=[];
+  Object.keys(db).sort((a,b)=>(db[b].ts||0)-(db[a].ts||0)).forEach(k=>{
+    (db[k].meals||[]).forEach(m=>{
+      const key=m.name+'_'+m.cal;
+      if(!seen.has(key)){seen.add(key);list.push(m);}
+    });
+  });
+  // also include current meals
+  meals.forEach(m=>{const key=m.name+'_'+m.cal;if(!seen.has(key)){seen.add(key);list.push(m);}});
+  const el=document.getElementById('past-meals-list');
+  if(!list.length){el.innerHTML='<div class="empty-mini">ما عندك وجبات سابقة بعد</div>';}
+  else{
+    el.innerHTML=list.slice(0,50).map((m,idx)=>`
+      <div class="meal-row" style="cursor:pointer" onclick='addPastMeal(${JSON.stringify(JSON.stringify(m))})'>
+        <div class="meal-info"><div class="meal-name">${m.name}</div>
+        <div class="meal-cal">${m.cal} سعرة · ${m.protein||0}ب · ${m.carb||0}ك · ${m.fat||0}د</div></div>
+        <div style="color:var(--accent);font-size:18px">+</div>
+      </div>`).join('');
+  }
+  document.getElementById('past-meals-modal').classList.add('show');
+}
+function closePastMeals(){document.getElementById('past-meals-modal').classList.remove('show');}
+function addPastMeal(mStr){const m=JSON.parse(mStr);addMeal(m.name,m.cal,m.protein,m.carb,m.fat);closePastMeals();}
+
+// ═══ SAVED MEALS (named combos) ═══
+function getSavedMeals(){try{return JSON.parse(localStorage.getItem('cc_saved_meals')||'[]');}catch{return[];}}
+function setSavedMeals(a){localStorage.setItem('cc_saved_meals',JSON.stringify(a));}
+function openSavedMeals(){
+  renderSavedMeals();
+  document.getElementById('saved-meals-modal').classList.add('show');
+}
+function closeSavedMeals(){document.getElementById('saved-meals-modal').classList.remove('show');}
+function renderSavedMeals(){
+  const saved=getSavedMeals();
+  const el=document.getElementById('saved-meals-list');
+  if(!saved.length){el.innerHTML='<div class="empty-mini">ما حفظت وجبات بعد — احفظ وجبة من زر "احفظ وجبة اليوم"</div>';return;}
+  el.innerHTML=saved.map((s,i)=>{
+    const tot=s.items.reduce((a,m)=>a+m.cal,0);
+    return `<div class="meal-row">
+      <div class="meal-check done" onclick="deleteSavedMeal(${i})" title="حذف">✕</div>
+      <div class="meal-info" style="cursor:pointer" onclick="addSavedMeal(${i})"><div class="meal-name">${s.name}</div>
+      <div class="meal-cal">${s.items.length} أصناف · ${tot} سعرة</div></div>
+      <div onclick="addSavedMeal(${i})" style="color:var(--accent);font-size:18px;cursor:pointer">+</div>
+    </div>`;
+  }).join('');
+}
+function addSavedMeal(i){
+  const s=getSavedMeals()[i];
+  s.items.forEach(m=>meals.push({...m,slot:activeSlot}));
+  renderMeals();updateHero();autoSaveToday();closeSavedMeals();
+}
+function deleteSavedMeal(i){const a=getSavedMeals();a.splice(i,1);setSavedMeals(a);renderSavedMeals();}
+function saveCurrentAsMeal(){
+  if(!meals.length){alert('ما عندك وجبات اليوم لحفظها');return;}
+  const name=prompt('اسم الوجبة المحفوظة (مثل: فطوري المعتاد):');
+  if(!name)return;
+  const a=getSavedMeals();
+  a.push({name,items:meals.map(m=>({name:m.name,cal:m.cal,protein:m.protein,carb:m.carb,fat:m.fat}))});
+  setSavedMeals(a);
+  alert('✅ تم حفظ "'+name+'" — تقدر تضيفها بضغطة من زر الوجبات المحفوظة');
+}
 
 // manual
 let mealMode='weight';
 function openMealModal(){setMealMode('weight');document.getElementById('meal-modal').classList.add('show');}
 function closeMealModal(){
   document.getElementById('meal-modal').classList.remove('show');
-  ['mm-name','mm-cal','mm-protein','mm-carb','mm-fat','wm-protein-g','wm-carb-g','wm-fat-g'].forEach(id=>document.getElementById(id).value='');
+  ['mm-name','mm-cal','mm-protein','mm-carb','mm-fat','wm-protein-g','wm-carb-g','wm-fat-g','wm-total-cal'].forEach(id=>document.getElementById(id).value='');
   ['wm-protein-type','wm-carb-type'].forEach(id=>document.getElementById(id).value='0');
   document.getElementById('wm-preview').textContent='احسب بعد إدخال المكوّنات';
 }
@@ -793,25 +900,52 @@ function setMealMode(m){
   document.getElementById('mode-macro').className='modal-btn '+(m==='macro'?'mb-save':'mb-cancel');
   document.getElementById('mode-macro').style.flex='1';document.getElementById('mode-macro').style.fontSize='13px';
 }
+// fat per 100g for protein sources (matches the protein-per-100g select values)
+const PROT_FAT={31:3.6,26:15,25:21,22:6,13:10}; // chicken, beef, lamb, fish/salmon, egg(approx)
 function calcWeightMode(){
-  // protein source: g of food × (protein per g). The select value = protein per 100g
   const pPer=parseFloat(document.getElementById('wm-protein-type').value)||0;
   const pG=parseFloat(document.getElementById('wm-protein-g').value)||0;
   const cPer=parseFloat(document.getElementById('wm-carb-type').value)||0;
   const cG=parseFloat(document.getElementById('wm-carb-g').value)||0;
   const fG=parseFloat(document.getElementById('wm-fat-g').value)||0;
-  // protein food also carries some fat; we approximate protein-food fat ~ small. Use lookup for fat in protein source
+  const totalCal=parseFloat(document.getElementById('wm-total-cal').value)||0;
   const protein=Math.round(pG*pPer/100);
   const carb=Math.round(cG*cPer/100);
-  // estimate fat from protein source (chicken/meat ~ varies). Approx 5g fat per 100g protein-food + added fat
-  const protFat=Math.round(pG*0.06); // ~6g fat per 100g (lean avg)
-  const fat=Math.round(fG+protFat);
-  const cal=Math.round(protein*4+carb*4+fat*9);
-  return {protein,carb,fat,cal};
+  // natural fat from the protein food itself + any added fat
+  const natFat=Math.round((pG*(PROT_FAT[pPer]||5)/100)+fG);
+  const natCal=Math.round(protein*4+carb*4+natFat*9);
+  let fat,cal,note='';
+  if(totalCal>0){
+    // restaurant total is the authority. Derive fat from remainder.
+    const remCal=totalCal-(protein*4+carb*4);
+    if(remCal<0){
+      fat=0;cal=Math.round(protein*4+carb*4);
+      note='⚠️ سعرات المطعم أقل من البروتين+الكارب المحسوب — تأكد من الأوزان أو نوع المكوّن';
+    }else{
+      fat=Math.round(remCal/9);
+      cal=totalCal;
+      // sanity check vs natural estimate
+      const diff=totalCal-natCal;
+      if(Math.abs(diff)>120){
+        note=`ℹ️ تقديرنا من الأوزان ~${natCal} سعرة، وسعرات المطعم ${totalCal} (فرق ${diff>0?'+':''}${diff}). اعتمدنا رقم المطعم والدهون ${fat}غ — الفرق غالباً زيوت الطبخ.`;
+      }else{
+        note=`✅ سعرات المطعم تطابق تقديرنا (~${natCal}) — توزيع دقيق`;
+      }
+    }
+  }else{
+    fat=natFat;
+    cal=natCal;
+  }
+  return {protein,carb,fat,cal,note};
 }
 function updateWeightPreview(){
   const r=calcWeightMode();
-  document.getElementById('wm-preview').innerHTML=`<b style="color:var(--text)">${r.cal} سعرة</b> · ${r.protein}ب · ${r.carb}ك · ${r.fat}د`;
+  let html=`<b style="color:var(--text);font-size:15px">${r.cal} سعرة</b> · ${r.protein}ب · ${r.carb}ك · ${r.fat}د`;
+  if(r.note){
+    const col=r.note.startsWith('⚠️')?'var(--red)':r.note.startsWith('✅')?'var(--green)':'var(--accent)';
+    html+=`<div style="color:${col};font-size:11px;margin-top:8px;line-height:1.5">${r.note}</div>`;
+  }
+  document.getElementById('wm-preview').innerHTML=html;
 }
 function saveMealModal(){
   const name=document.getElementById('mm-name').value.trim()||'وجبة';
@@ -1015,13 +1149,26 @@ function updateHero(){
 }
 
 // ═══ SAVE TODAY ═══
+function buildDayRecord(){
+  const eaten=meals.reduce((s,m)=>s+m.cal,0);
+  // supp count
+  let suppTotal=0,suppDone=0,i=0;
+  if(day){SUPPS[day].forEach(b=>b.items.forEach(it=>{if(!it.includes('⛔')){suppTotal++;if(suppChecks['supp_'+i])suppDone++;}i++;}));}
+  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,suppTotal,suppDone,eaten,target:day?TARGETS[day].cal:0,ts:Date.now()};
+}
+function autoSaveToday(){
+  if(!day)return;
+  const db=getDB();
+  db[tKey()]=buildDayRecord();
+  setDB(db);
+}
 function saveToday(){
   if(!day){alert('اختر نوع اليوم');return;}
   const db=getDB();
-  const eaten=meals.reduce((s,m)=>s+m.cal,0);
-  db[tKey()]={day,meals,exLog,burnLog,burnMode,burned,water,steps,eaten,target:TARGETS[day].cal,ts:Date.now()};
+  const rec=buildDayRecord();
+  db[tKey()]=rec;
   setDB(db);
-  document.getElementById('today-save-msg').textContent='✅ تم الحفظ! '+eaten+' سعرة مسجلة';
+  document.getElementById('today-save-msg').textContent='✅ تم الحفظ! '+rec.eaten+' سعرة · '+rec.suppDone+'/'+rec.suppTotal+' مكمل';
 }
 
 // ═══ WEIGHT ═══
@@ -1151,17 +1298,25 @@ function renderWorkout(){
   const el=document.getElementById('workout-content');
   if(!day){el.innerHTML='<div class="empty-mini">اختر نوع اليوم في تبويب "اليوم" لعرض تمارين المرونة المناسبة</div>';return;}
   const w=WORKOUTS[day];
-  let html='';
+  let html='';let idx=0;
   w.blocks.forEach(b=>{
     html+=`<div class="wkt-block"><div class="wkt-head">${b.h}</div>`;
     b.items.forEach(it=>{
+      const id='flex_'+idx;
+      const checked=flexChecks[id]?'done':'';
       html+=`<div class="wkt-item">
-        <div class="wkt-check" onclick="this.classList.toggle('done');this.textContent=this.classList.contains('done')?'✓':''"></div>
+        <div class="wkt-check ${checked}" onclick="toggleFlex('${id}')">${flexChecks[id]?'✓':''}</div>
         <div class="wkt-name">${it.n}</div><div class="wkt-detail">${it.d}</div></div>`;
+      idx++;
     });
     html+='</div>';
   });
   el.innerHTML=html;
+}
+function toggleFlex(id){
+  flexChecks[id]=!flexChecks[id];
+  renderWorkout();
+  autoSaveToday();
 }
 // ═══ BURN ═══
 function setBurnMode(m){
@@ -1179,9 +1334,9 @@ function addBurn(){
   burnLog.push({cal:v,time:new Date().toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'})});
   burned=burnLog.reduce((s,b)=>s+b.cal,0);
   document.getElementById('burn-input').value='';
-  renderBurn();updateHero();
+  renderBurn();updateHero();autoSaveToday();
 }
-function removeBurn(i){burnLog.splice(i,1);burned=burnLog.reduce((s,b)=>s+b.cal,0);renderBurn();updateHero();}
+function removeBurn(i){burnLog.splice(i,1);burned=burnLog.reduce((s,b)=>s+b.cal,0);renderBurn();updateHero();autoSaveToday();}
 function renderBurn(){
   document.getElementById('burned-display').textContent=burned;
   const el=document.getElementById('burn-log');
@@ -1191,11 +1346,11 @@ function renderBurn(){
 // ═══ WATER & STEPS ═══
 function addWater(ml){
   water=Math.max(0,water+ml);
-  renderWaterSteps();
+  renderWaterSteps();autoSaveToday();
 }
 function setSteps(){
   steps=parseInt(document.getElementById('steps-input').value)||0;
-  renderWaterSteps();
+  renderWaterSteps();autoSaveToday();
 }
 function renderWaterSteps(){
   const wd=document.getElementById('water-display');if(wd)wd.textContent=water;
@@ -1210,7 +1365,7 @@ function editStepGoal(){
   const v=prompt('هدف الخطوات اليومي:',cur);
   if(v===null)return;
   const n=parseInt(v)||0;
-  if(n>0){customStepGoal=n;renderWaterSteps();}
+  if(n>0){customStepGoal=n;renderWaterSteps();autoSaveToday();}
 }
 function renderExLog(){
   const el=document.getElementById('exlog-list');
@@ -1224,7 +1379,7 @@ function renderExLog(){
       </div>
     </div>`).join('');
 }
-function removeEx(i){exLog.splice(i,1);renderExLog();}
+function removeEx(i){exLog.splice(i,1);renderExLog();autoSaveToday();}
 function openExModal(){document.getElementById('ex-modal').classList.add('show');}
 function closeExModal(){
   document.getElementById('ex-modal').classList.remove('show');
@@ -1240,7 +1395,7 @@ function saveEx(){
     sets:parseInt(document.getElementById('ex-sets').value)||0,
     link:document.getElementById('ex-link').value.trim()
   });
-  closeExModal();renderExLog();
+  closeExModal();renderExLog();autoSaveToday();
 }
 async function analyzeExPhoto(e){
   const file=e.target.files[0];if(!file)return;
@@ -1270,24 +1425,73 @@ async function analyzeExPhoto(e){
 function renderSupps(){
   const el=document.getElementById('supps-content');
   if(!day){el.innerHTML='<div class="empty-mini">اختر نوع اليوم في تبويب "اليوم" أولاً</div>';return;}
+  // count total active (non-stopped) supps
+  let total=0,done=0,idx=0;
   let html='';
   SUPPS[day].forEach(block=>{
     html+=`<div class="wkt-block"><div class="wkt-head">${block.t}</div>`;
     block.items.forEach(it=>{
       const stop=it.includes('⛔');
+      const id='supp_'+idx;
+      if(!stop){total++;if(suppChecks[id])done++;}
+      const checked=suppChecks[id]?'done':'';
       html+=`<div class="wkt-item" style="${stop?'opacity:.5':''}">
-        <div class="wkt-check ${stop?'':''}" ${stop?'':'onclick="this.classList.toggle(\'done\');this.textContent=this.classList.contains(\'done\')?\'✓\':\'\'"'}></div>
+        <div class="wkt-check ${checked}" ${stop?'':`onclick="toggleSupp('${id}')"`}>${suppChecks[id]?'✓':''}</div>
         <div class="wkt-name">${it}</div></div>`;
+      idx++;
     });
     html+='</div>';
   });
-  el.innerHTML=html;
+  // header summary
+  const pct=total?Math.round(done/total*100):0;
+  const summary=`<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+    <div class="plan-count">${done} / ${total} مكمل</div>
+    <div style="font-size:14px;font-weight:600;color:${pct===100?'var(--green)':'var(--accent)'}">${pct}% ✅</div>
+  </div>`;
+  el.innerHTML=summary+html;
+}
+function toggleSupp(id){
+  suppChecks[id]=!suppChecks[id];
+  renderSupps();
+  autoSaveToday();
+}
+function renderTodayRemaining(){
+  const el=document.getElementById('today-remaining-content');
+  const card=document.getElementById('today-remaining-card');
+  if(!el)return;
+  if(!day){card.style.display='none';return;}
+  card.style.display='block';
+  const t=TARGETS[day];
+  const eaten=meals.reduce((s,m)=>s+m.cal,0);
+  const protein=meals.reduce((s,m)=>s+(m.protein||0),0);
+  const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
+  const fat=meals.reduce((s,m)=>s+(m.fat||0),0);
+  const tFat=t.fat||Math.round(t.cal*0.25/9);
+  const budget=t.cal+(burnMode==='add'?burned:0);
+  const remCal=budget-eaten;
+  const rows=[
+    ['🔥 السعرات',remCal,budget,remCal<0?'var(--red)':'var(--accent)'],
+    ['🍗 بروتين',t.protein-protein,t.protein,'#22c55e'],
+    ['🌾 كارب',t.carb-carb,t.carb,'var(--orange)'],
+    ['🥑 دهون',tFat-fat,tFat,'var(--purple)']
+  ];
+  el.innerHTML=`<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${t.label}</div>`+rows.map(r=>{
+    const pct=Math.max(0,Math.min(100,(r[2]-r[1])/r[2]*100));
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+        <span style="color:${r[3]};font-weight:700">${r[1]<0?'تجاوزت '+Math.abs(r[1]):'باقي '+r[1]}</span>
+        <span style="color:var(--text2)">${r[0]}</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${r[3]}"></div></div>
+    </div>`;
+  }).join('');
 }
 
 // ═══ PROGRESS ═══
 function renderProgress(){
   renderWeight();
   renderInbody();
+  renderTodayRemaining();
   const db=getDB();
   const keys=Object.keys(db);
   const w=getWeights();
@@ -1295,10 +1499,19 @@ function renderProgress(){
   const totalDays=keys.length;
   const avgCal=totalDays?Math.round(keys.reduce((s,k)=>s+(db[k].eaten||0),0)/totalDays):0;
   let onTarget=keys.filter(k=>{const r=db[k];return r.eaten&&r.eaten<=r.target+100;}).length;
+  // supplement adherence
+  const suppDays=keys.filter(k=>db[k].suppTotal>0);
+  const avgSuppPct=suppDays.length?Math.round(suppDays.reduce((s,k)=>s+(db[k].suppDone/db[k].suppTotal*100),0)/suppDays.length):0;
+  const perfectSuppDays=keys.filter(k=>db[k].suppTotal>0&&db[k].suppDone===db[k].suppTotal).length;
+  // total exercises logged
+  const totalEx=keys.reduce((s,k)=>s+((db[k].exLog||[]).length),0);
   document.getElementById('prog-stats').innerHTML=`
     <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${totalDays}</div><div class="stat-lbl">يوم مسجل</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--green)">${onTarget}</div><div class="stat-lbl">يوم ضمن الهدف</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--orange)">${avgCal||'—'}</div><div class="stat-lbl">متوسط السعرات</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#ec4899">${avgSuppPct}%</div><div class="stat-lbl">التزام المكملات</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${perfectSuppDays}</div><div class="stat-lbl">يوم مكملات كامل 💊</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${totalEx}</div><div class="stat-lbl">تمرين مسجّل 🏋️</div></div>
     <div class="stat-card"><div class="stat-val" style="color:var(--purple)">${w.length}</div><div class="stat-lbl">قياس وزن</div></div>
   `;
   renderCal(db);
