@@ -34,6 +34,8 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .botnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--text3);transition:color .2s;}
 .botnav-tab.active{color:var(--accent);}
 .botnav-icon{font-size:20px;}
+.botnav-icon svg{width:22px;height:22px;display:block;}
+.day-icon svg{width:24px;height:24px;display:block;margin:0 auto;}
 .botnav-lbl{font-size:10px;font-weight:600;}
 
 /* SECTION */
@@ -55,12 +57,12 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .day-btn.active-football{border-color:var(--football);background:rgba(34,197,94,.08);}
 .day-btn.active-both{border-color:var(--both);background:rgba(167,139,250,.08);}
 .day-btn.active-rest{border-color:var(--rest);background:rgba(245,158,11,.08);}
-.day-icon{font-size:22px;}
+.day-icon{font-size:22px;color:var(--text3);}
 .day-name{font-size:11px;font-weight:600;}
-.day-btn.active-gym .day-name{color:var(--gym);}
-.day-btn.active-football .day-name{color:var(--football);}
-.day-btn.active-both .day-name{color:var(--both);}
-.day-btn.active-rest .day-name{color:var(--rest);}
+.day-btn.active-gym .day-name,.day-btn.active-gym .day-icon{color:var(--gym);}
+.day-btn.active-football .day-name,.day-btn.active-football .day-icon{color:var(--football);}
+.day-btn.active-both .day-name,.day-btn.active-both .day-icon{color:var(--both);}
+.day-btn.active-rest .day-name,.day-btn.active-rest .day-icon{color:var(--rest);}
 
 /* HERO RING - calories remaining */
 .hero{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:22px;padding:24px;margin-bottom:14px;text-align:center;}
@@ -206,10 +208,10 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="sec-label">نوع اليوم</div>
   <div id="day-hint" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--orange);text-align:center">👆 اختر نوع يومك أولاً عشان تشتغل حاسبة السعرات</div>
   <div class="day-grid">
-    <button class="day-btn" id="d-gym" onclick="setDay('gym')"><div class="day-icon">🏋️</div><div class="day-name">حديد</div></button>
-    <button class="day-btn" id="d-football" onclick="setDay('football')"><div class="day-icon">⚽</div><div class="day-name">كورة</div></button>
-    <button class="day-btn" id="d-both" onclick="setDay('both')"><div class="day-icon">🔥</div><div class="day-name">مزدوج</div></button>
-    <button class="day-btn" id="d-rest" onclick="setDay('rest')"><div class="day-icon">😴</div><div class="day-name">راحة</div></button>
+    <button class="day-btn" id="d-gym" onclick="setDay('gym')"><div class="day-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.657 21.485a2 2 0 1 1-2.829-2.828l-1.767 1.768a2 2 0 1 1-2.829-2.829l6.364-6.364a2 2 0 1 1 2.829 2.829l-1.768 1.767a2 2 0 1 1 2.828 2.829z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.404 12.768a2 2 0 1 1-2.829-2.829l1.768-1.767a2 2 0 1 1-2.828-2.829l2.828-2.828a2 2 0 1 1 2.829 2.828l1.767-1.768a2 2 0 1 1 2.829 2.829z"/></svg></div><div class="day-name">حديد</div></button>
+    <button class="day-btn" id="d-football" onclick="setDay('football')"><div class="day-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 7 9 9.5l1 3.5h4l1-3.5z"/><path d="M12 7V2.5"/><path d="m15 9.5 4-1.5"/><path d="m14 13 2.5 3.5"/><path d="M10 13l-2.5 3.5"/><path d="M9 9.5 5 8"/></svg></div><div class="day-name">كورة</div></button>
+    <button class="day-btn" id="d-both" onclick="setDay('both')"><div class="day-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c1 3 3 5 3 8a3 3 0 0 1-6 0c0-1 .5-2 1-3"/><path d="M12 22a7 7 0 0 0 7-7c0-3-2-5-3.5-7C14 9 13 11 12 11s-2-1-3.5-3C7 10 5 12 5 15a7 7 0 0 0 7 7Z"/></svg></div><div class="day-name">مزدوج</div></button>
+    <button class="day-btn" id="d-rest" onclick="setDay('rest')"><div class="day-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div><div class="day-name">راحة</div></button>
   </div>
 
   <!-- smart reminders -->
@@ -283,6 +285,20 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="save-bar">
     <div class="save-msg" id="today-save-msg">احفظ يومك ليدخل في البروقرس الشهري</div>
     <button class="btn-primary" onclick="saveToday()">💾 حفظ</button>
+  </div>
+  <button class="add-meal-btn" onclick="shareDayCard()" style="border-color:rgba(236,72,153,.4);color:var(--pink);background:rgba(236,72,153,.06);margin-bottom:30px">📸 شارك ملخص اليوم كبطاقة</button>
+</div>
+
+<!-- SHARE CARD MODAL -->
+<div class="modal-bg" id="sharecard-modal" style="z-index:300">
+  <div class="modal" style="text-align:center">
+    <div class="modal-title" id="sharecard-title">بطاقة المشاركة</div>
+    <canvas id="share-canvas" width="600" height="600" style="width:100%;max-width:340px;border-radius:18px;margin:0 auto 14px;display:block"></canvas>
+    <div class="modal-btns">
+      <button class="modal-btn mb-cancel" onclick="document.getElementById('sharecard-modal').classList.remove('show')">إغلاق</button>
+      <button class="modal-btn mb-save" onclick="downloadCard()">💾 حفظ الصورة</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:10px">احفظ الصورة ثم انشرها في ستوريك 📱</div>
   </div>
 </div>
 
@@ -531,11 +547,11 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
 <!-- BOTTOM NAV -->
 <div class="botnav">
-  <button class="botnav-tab active" onclick="goPage('today',this)"><span class="botnav-icon">🍽️</span><span class="botnav-lbl">اليوم</span></button>
-  <button class="botnav-tab" onclick="goPage('workout',this)"><span class="botnav-icon">🏋️</span><span class="botnav-lbl">تمارين</span></button>
-  <button class="botnav-tab" onclick="goPage('supps',this)"><span class="botnav-icon">💊</span><span class="botnav-lbl">مكملات</span></button>
-  <button class="botnav-tab" onclick="goPage('progress',this)"><span class="botnav-icon">📊</span><span class="botnav-lbl">بروقرس</span></button>
-  <button class="botnav-tab" onclick="goPage('ai',this)"><span class="botnav-icon">🤖</span><span class="botnav-lbl">مدرب</span></button>
+  <button class="botnav-tab active" onclick="goPage('today',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h0a2 2 0 0 0 2-2V2"/><path d="M5 2v20"/><path d="M21 15V2a5 5 0 0 0-3 9v6"/></svg></span><span class="botnav-lbl">اليوم</span></button>
+  <button class="botnav-tab" onclick="goPage('workout',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6.5 6.5 11 11"/><path d="m21 21-1-1"/><path d="m3 3 1 1"/><path d="m18 22 4-4"/><path d="m2 6 4-4"/><path d="m3 10 7-7"/><path d="m14 21 7-7"/></svg></span><span class="botnav-lbl">تمارين</span></button>
+  <button class="botnav-tab" onclick="goPage('supps',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></span><span class="botnav-lbl">مكملات</span></button>
+  <button class="botnav-tab" onclick="goPage('progress',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg></span><span class="botnav-lbl">بروقرس</span></button>
+  <button class="botnav-tab" onclick="goPage('ai',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span><span class="botnav-lbl">مدرب</span></button>
 </div>
 
 <!-- MEAL MODAL (manual - two modes) -->
@@ -737,7 +753,7 @@ const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو',
 const AR_DAYS=['ح','ن','ث','ر','خ','ج','س'];
 
 // ═══ STATE ═══
-let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, viewMonth=new Date();
+let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, viewMonth=new Date(), currentDate=new Date();
 viewMonth.setDate(1);
 
 // ═══ STORAGE ═══
@@ -745,27 +761,12 @@ function getDB(){try{return JSON.parse(localStorage.getItem('cc_db')||'{}');}cat
 function setDB(d){localStorage.setItem('cc_db',JSON.stringify(d));}
 function getWeights(){try{return JSON.parse(localStorage.getItem('cc_weights')||'[]');}catch{return[];}}
 function setWeights(w){localStorage.setItem('cc_weights',JSON.stringify(w));}
-function tKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function tKey(){const d=currentDate;return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function isToday(){const t=new Date();return currentDate.getFullYear()===t.getFullYear()&&currentDate.getMonth()===t.getMonth()&&currentDate.getDate()===t.getDate();}
 
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',()=>{
-  const d=new Date();
-  const dn=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  document.getElementById('tb-date').textContent=dn[d.getDay()];
-  const db=getDB(),k=tKey();
-  if(db[k]){
-    setDay(db[k].day,true);
-    meals=db[k].meals||[];
-    exLog=db[k].exLog||[];
-    burnLog=db[k].burnLog||[];
-    burnMode=db[k].burnMode||'add';
-    burned=db[k].burned||0;
-    water=db[k].water||0;
-    steps=db[k].steps||0;
-    suppChecks=db[k].suppChecks||{};
-    flexChecks=db[k].flexChecks||{};
-    renderMeals();updateHero();renderWaterSteps();
-  }
+  loadDay();
   renderWeight();
   renderSlotPicker();
   renderWeekStrip();
@@ -778,24 +779,81 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
+// load the state for currentDate
+function loadDay(){
+  const dn=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  // reset state
+  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};
+  const db=getDB(),k=tKey();
+  if(db[k]){
+    meals=db[k].meals||[];
+    exLog=db[k].exLog||[];
+    burnLog=db[k].burnLog||[];
+    burnMode=db[k].burnMode||'add';
+    burned=db[k].burned||0;
+    water=db[k].water||0;
+    steps=db[k].steps||0;
+    suppChecks=db[k].suppChecks||{};
+    flexChecks=db[k].flexChecks||{};
+    if(db[k].day)setDay(db[k].day,true);
+  }
+  // reset day buttons if no day
+  if(!day){['gym','football','both','rest'].forEach(t=>document.getElementById('d-'+t).className='day-btn');
+    const hint=document.getElementById('day-hint');if(hint)hint.style.display='block';}
+  // header date label
+  const lbl=isToday()?'اليوم · '+dn[currentDate.getDay()]:dn[currentDate.getDay()]+' '+currentDate.getDate()+' '+months[currentDate.getMonth()];
+  document.getElementById('tb-date').textContent=lbl;
+  // past-day banner
+  const sb=document.getElementById('streak-banner');
+  if(sb){
+    if(!isToday()){
+      sb.style.background='linear-gradient(135deg,rgba(167,139,250,.15),rgba(0,212,255,.08))';
+      sb.innerHTML=`<div style="font-size:13px;color:var(--purple)">📅 تعرض يوم سابق — ${currentDate.getDate()} ${months[currentDate.getMonth()]}</div><button class="chip" onclick="goToDate(new Date())" style="color:var(--accent)">⏎ ارجع لليوم</button>`;
+    }else{
+      sb.style.background='linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.08))';
+      sb.innerHTML=`<div style="font-size:13px;color:var(--text2)">سلسلة أيامك المتتالية</div><div style="font-size:18px;font-weight:700;color:var(--orange)" id="streak-count">🔥 0</div>`;
+      renderStreak();
+    }
+  }
+  renderMeals();updateHero();renderWaterSteps();
+}
+// navigate days
+function goToDate(d){
+  // don't allow future
+  const t=new Date();t.setHours(23,59,59);
+  if(d>t)return;
+  currentDate=new Date(d);
+  loadDay();renderWeekStrip();renderStreak();renderSmartReminders();
+  if(document.getElementById('page-workout').classList.contains('active'))renderWorkout();
+  if(document.getElementById('page-supps').classList.contains('active'))renderSupps();
+}
+function shiftDay(n){const d=new Date(currentDate);d.setDate(d.getDate()+n);goToDate(d);}
+
 // ═══ WEEK STRIP + STREAK + REMINDERS ═══
 function dateKey(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 const AR_DAY_SHORT=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
 function renderWeekStrip(){
   const el=document.getElementById('week-strip');if(!el)return;
-  const db=getDB();const today=new Date();
-  let html='';
-  // show last 7 days (today on the right for RTL)
+  const db=getDB();const todayK=dateKey(new Date());const curK=tKey();
+  let html='<div onclick="shiftDay(1)" style="display:flex;align-items:center;padding:0 4px;color:var(--text3);font-size:18px;cursor:pointer">‹</div>';
+  // show 7 days centered around currentDate (3 before, current, 3 after but not future)
   for(let i=6;i>=0;i--){
-    const d=new Date();d.setDate(today.getDate()-i);
-    const k=dateKey(d);const rec=db[k];const isToday=i===0;
+    const d=new Date(currentDate);d.setDate(currentDate.getDate()-i+0);
+    // we want currentDate on right edge: show last 7 ending at currentDate
+    const dd=new Date(currentDate);dd.setDate(currentDate.getDate()-i);
+    const k=dateKey(dd);const rec=db[k];
+    const isCur=k===curK;const isTod=k===todayK;
     const has=rec&&(rec.meals?.length||rec.suppDone||rec.eaten);
-    html+=`<div style="flex:1;text-align:center;padding:8px 2px;border-radius:12px;border:1px solid ${isToday?'var(--accent)':'var(--border)'};background:${has?'rgba(34,197,94,.12)':'var(--surface)'};">
-      <div style="font-size:9px;color:var(--text3)">${AR_DAY_SHORT[d.getDay()]}</div>
-      <div style="font-size:15px;font-weight:700;color:${isToday?'var(--accent)':has?'var(--green)':'var(--text2)'}">${d.getDate()}</div>
+    html+=`<div onclick="goToDate(new Date(${dd.getFullYear()},${dd.getMonth()},${dd.getDate()}))" style="flex:1;text-align:center;padding:8px 2px;border-radius:12px;border:1px solid ${isCur?'var(--accent)':'var(--border)'};background:${isCur?'rgba(0,212,255,.12)':has?'rgba(34,197,94,.1)':'var(--surface)'};cursor:pointer">
+      <div style="font-size:9px;color:${isTod?'var(--accent)':'var(--text3)'}">${AR_DAY_SHORT[dd.getDay()]}${isTod?'•':''}</div>
+      <div style="font-size:15px;font-weight:700;color:${isCur?'var(--accent)':has?'var(--green)':'var(--text2)'}">${dd.getDate()}</div>
       <div style="font-size:9px;height:10px">${has?'●':''}</div>
     </div>`;
   }
+  // next-day arrow (disabled if current is today)
+  const atToday=curK===todayK;
+  html+=`<div onclick="${atToday?'':'shiftDay(-1)'}" style="display:flex;align-items:center;padding:0 4px;color:${atToday?'var(--surface3)':'var(--text3)'};font-size:18px;cursor:${atToday?'default':'pointer'}">›</div>`;
   el.innerHTML=html;
 }
 function renderStreak(){
@@ -850,6 +908,11 @@ function goPage(id,el){
   if(id==='progress')renderProgress();
   if(id==='ai')renderApiKeyStatus();
 }
+function goPageByName(id){
+  const idx={today:0,workout:1,supps:2,progress:3,ai:4}[id];
+  const tabs=document.querySelectorAll('.botnav-tab');
+  goPage(id,tabs[idx]);
+}
 
 // ═══ DAY ═══
 function setDay(type,silent){
@@ -889,6 +952,7 @@ function renderMeals(){
         <div class="meal-check done" onclick="removeMeal(${i})" title="حذف">✕</div>
         <div class="meal-info"><div class="meal-name">${m.name}</div>
         <div class="meal-cal">${m.cal} سعرة · ${m.protein||0}ب · ${m.carb||0}ك · ${m.fat||0}د</div></div>
+        <div onclick="shareMealCard(${i})" title="شارك" style="color:var(--pink);font-size:16px;cursor:pointer;padding:0 4px">📸</div>
         <div onclick="repeatMeal(${i})" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div>
       </div>`;
     });
@@ -1655,15 +1719,101 @@ function renderCal(db){
     const k=y+'-'+(m+1)+'-'+d;
     const rec=db[k];
     const isT=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    const future=new Date(y,m,d)>today;
+    const click=future?'':`onclick="goToDate(new Date(${y},${m},${d}));goPageByName('today')"`;
+    const cur=future?'':'cursor:pointer';
     if(rec){
-      html+=`<div class="cal-cell has-data${isT?' today':''}">${d}<div class="cal-dot" style="background:${TYPE_COLOR[rec.day]}"></div></div>`;
+      html+=`<div class="cal-cell has-data${isT?' today':''}" ${click} style="${cur}">${d}<div class="cal-dot" style="background:${TYPE_COLOR[rec.day]}"></div></div>`;
     }else{
-      html+=`<div class="cal-cell no-data${isT?' today':''}">${d}</div>`;
+      html+=`<div class="cal-cell no-data${isT?' today':''}" ${click} style="${cur}">${d}</div>`;
     }
   }
   document.getElementById('cal-grid').innerHTML=html;
 }
 function navMonth(dir){viewMonth.setMonth(viewMonth.getMonth()+dir);renderProgress();}
+
+// ═══ SHARE CARDS (canvas) ═══
+function drawCard(title,cal,protein,carb,fat){
+  const cv=document.getElementById('share-canvas');
+  const ctx=cv.getContext('2d');
+  const W=600,H=600;
+  // bg gradient
+  const bg=ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,'#0d1426');bg.addColorStop(1,'#0a0e1a');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // card border glow
+  ctx.strokeStyle='rgba(0,212,255,0.25)';ctx.lineWidth=2;
+  roundRect(ctx,20,20,W-40,H-40,28);ctx.stroke();
+  // title
+  ctx.fillStyle='#e2e8f0';ctx.font='bold 34px "IBM Plex Sans Arabic",sans-serif';ctx.textAlign='center';
+  ctx.direction='rtl';
+  ctx.fillText(title.length>22?title.slice(0,22)+'…':title,W/2,90);
+  // macro percentages
+  const pCal=protein*4,cCal=carb*4,fCal=fat*9;
+  const tot=pCal+cCal+fCal||1;
+  const pPct=pCal/tot,cPct=cCal/tot,fPct=fCal/tot;
+  // ring
+  const cx=W/2,cy=270,r=95,lw=30;
+  let start=-Math.PI/2;
+  const segs=[[pPct,'#22c55e'],[cPct,'#3b82f6'],[fPct,'#a78bfa']];
+  segs.forEach(s=>{
+    const end=start+s[0]*Math.PI*2;
+    ctx.beginPath();ctx.arc(cx,cy,r,start+0.03,end-0.03);
+    ctx.strokeStyle=s[1];ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
+    start=end;
+  });
+  // center calories
+  ctx.fillStyle='#fff';ctx.font='bold 56px "IBM Plex Sans Arabic",sans-serif';
+  ctx.fillText(cal,cx,cy+5);
+  ctx.fillStyle='#64748b';ctx.font='20px "IBM Plex Sans Arabic",sans-serif';
+  ctx.fillText('سعرة',cx,cy+38);
+  // macro boxes
+  const boxes=[['البروتين',protein,Math.round(pPct*100),'#22c55e',150],['الكارب',carb,Math.round(cPct*100),'#3b82f6',300],['الدهون',fat,Math.round(fPct*100),'#a78bfa',450]];
+  boxes.forEach(b=>{
+    const x=b[4];
+    ctx.fillStyle=b[3];ctx.font='bold 17px "IBM Plex Sans Arabic",sans-serif';
+    ctx.fillText(b[2]+'%',x,420);
+    ctx.fillStyle='#fff';ctx.font='bold 30px "IBM Plex Sans Arabic",sans-serif';
+    ctx.fillText(b[1]+' g',x,460);
+    ctx.fillStyle='#94a3b8';ctx.font='18px "IBM Plex Sans Arabic",sans-serif';
+    ctx.fillText(b[0],x,490);
+  });
+  // footer brand
+  ctx.fillStyle='#00d4ff';ctx.font='bold 24px "IBM Plex Sans Arabic",sans-serif';
+  ctx.fillText('⚡ Command Center',W/2,550);
+  ctx.fillStyle='#475569';ctx.font='15px "IBM Plex Sans Arabic",sans-serif';
+  ctx.fillText('Ahmed Al-Haddad',W/2,575);
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+}
+function shareMealCard(i){
+  const m=meals[i];
+  document.getElementById('sharecard-title').textContent='بطاقة الوجبة';
+  document.getElementById('sharecard-modal').classList.add('show');
+  setTimeout(()=>drawCard(m.name,m.cal,m.protein||0,m.carb||0,m.fat||0),50);
+}
+function shareDayCard(){
+  if(!meals.length){alert('ما عندك وجبات اليوم لمشاركتها');return;}
+  const cal=meals.reduce((s,m)=>s+m.cal,0);
+  const p=meals.reduce((s,m)=>s+(m.protein||0),0);
+  const c=meals.reduce((s,m)=>s+(m.carb||0),0);
+  const f=meals.reduce((s,m)=>s+(m.fat||0),0);
+  document.getElementById('sharecard-title').textContent='ملخص اليوم';
+  document.getElementById('sharecard-modal').classList.add('show');
+  setTimeout(()=>drawCard('ملخص اليوم',cal,p,c,f),50);
+}
+function downloadCard(){
+  const cv=document.getElementById('share-canvas');
+  cv.toBlob(blob=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='command-center-card.png';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  },'image/png');
+}
 
 // ═══ API KEY (stored in browser only) ═══
 function getApiKey(){return localStorage.getItem('cc_apikey')||'';}
