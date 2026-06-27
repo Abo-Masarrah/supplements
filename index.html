@@ -352,6 +352,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div class="sec-label">تمارين سجّلتها يدوياً ✍️</div>
     <div id="exlog-list"></div>
     <button class="add-meal-btn" onclick="openExModal()" style="border-color:rgba(0,212,255,.5);color:var(--accent);background:rgba(0,212,255,.06)">+ سجّل تمرين</button>
+    <button class="add-meal-btn" onclick="openPastExercises()" style="border-color:rgba(245,158,11,.5);color:var(--orange);background:rgba(245,158,11,.06)">🕐 كرّر تمرين سابق — بجلساته</button>
     <button class="add-meal-btn" onclick="document.getElementById('ex-photo').click()" style="border-color:rgba(167,139,250,.5);color:var(--purple);background:rgba(167,139,250,.06)">📸 صوّر الجهاز / التمرين — كلود يتعرّف عليه ويسجّل جلساته</button>
     <input type="file" id="ex-photo" accept="image/*" capture="environment" style="display:none" onchange="analyzeExPhoto(event)">
     <div class="ai-resp" id="ex-photo-result" style="margin-top:12px"></div>
@@ -624,6 +625,44 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <button class="botnav-tab" onclick="goPage('supps',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg></span><span class="botnav-lbl">مكملات</span></button>
   <button class="botnav-tab" onclick="goPage('progress',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="m19 9-5 5-4-4-3 3"/></svg></span><span class="botnav-lbl">بروقرس</span></button>
   <button class="botnav-tab" onclick="goPage('ai',this)"><span class="botnav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span><span class="botnav-lbl">مدرب</span></button>
+</div>
+
+<!-- PAST EXERCISES MODAL -->
+<div class="modal-bg" id="past-ex-modal" style="z-index:215">
+  <div class="modal" style="max-height:80vh;display:flex;flex-direction:column">
+    <div class="modal-title">🕐 كرّر تمرين سابق</div>
+    <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:10px">اضغط تمرين عشان يفتح بجلسات آخر مرة — تقدر تعدّلها</div>
+    <div id="past-ex-list" style="overflow-y:auto;flex:1;min-height:150px"></div>
+    <div class="modal-btns" style="margin-top:10px"><button class="modal-btn mb-cancel" onclick="document.getElementById('past-ex-modal').classList.remove('show')">إغلاق</button></div>
+  </div>
+</div>
+
+<!-- EDIT MEAL MODAL -->
+<div class="modal-bg" id="edit-meal-modal" style="z-index:215">
+  <div class="modal">
+    <div class="modal-title">تعديل الوجبة ✏️</div>
+    <div class="modal-field"><label>اسم الوجبة</label><input class="modal-input" id="em-name"></div>
+    <div class="modal-field">
+      <label>الوجبة</label>
+      <div id="em-slots" class="chips">
+        <button class="chip" data-slot="فطور" onclick="setEditSlot('فطور')">🌅 فطور</button>
+        <button class="chip" data-slot="غداء" onclick="setEditSlot('غداء')">🍽️ غداء</button>
+        <button class="chip" data-slot="عشاء" onclick="setEditSlot('عشاء')">🌙 عشاء</button>
+        <button class="chip" data-slot="سناك" onclick="setEditSlot('سناك')">🍎 سناك</button>
+      </div>
+    </div>
+    <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric"></div>
+    <div style="display:flex;gap:8px">
+      <div class="modal-field" style="flex:1"><label>بروتين (غ)</label><input class="modal-input" id="em-protein" type="number" inputmode="numeric"></div>
+      <div class="modal-field" style="flex:1"><label>كارب (غ)</label><input class="modal-input" id="em-carb" type="number" inputmode="numeric"></div>
+      <div class="modal-field" style="flex:1"><label>دهون (غ)</label><input class="modal-input" id="em-fat" type="number" inputmode="numeric"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn mb-cancel" onclick="deleteEditMeal()" style="color:var(--red)">🗑 حذف</button>
+      <button class="modal-btn mb-cancel" onclick="closeEditMeal()">إلغاء</button>
+      <button class="modal-btn mb-save" onclick="saveEditMeal()">حفظ</button>
+    </div>
+  </div>
 </div>
 
 <!-- MEAL MODAL (manual - two modes) -->
@@ -1009,10 +1048,74 @@ function findPrevExercise(id){
     if(arr.length){
       const mult=v.side?2:1;
       const maxW=Math.max(...arr.map(s=>(s.w||0)*mult));
-      return {date:k,sets:arr.length,maxW,ts:db[k].ts};
+      return {date:k,sets:arr.length,maxW,ts:db[k].ts,side:v.side,rawSets:arr.map(s=>({w:s.w,r:s.r}))};
     }
   }
   return null;
+}
+// طبّق جلسات آخر مرة على التمرين الحالي
+function loadPrevSets(){
+  const prev=findPrevExercise(activeSetEx.id);
+  if(!prev)return;
+  exSets[activeSetEx.id]={side:prev.side,sets:prev.rawSets.map(s=>({w:s.w,r:s.r}))};
+  setSideMode(prev.side,true);
+  renderSetsModal();renderPrevCompare();autoSaveToday();
+}
+// فهرس عناوين كل التمارين المعروفة (لعرض الاسم في قائمة التمارين السابقة)
+function buildExTitleIndex(){
+  const idx={};
+  MUSCLES.forEach(mu=>{
+    mu.ex.forEach((it,i)=>idx['mus_'+mu.id+'_'+i]={title:it.e,sub:it.n,color:mu.c,q:it.q});
+  });
+  let pIdx=0;POWER.blocks.forEach(b=>b.items.forEach(it=>{idx['pw_'+pIdx]={title:it.e,sub:it.n,color:'#00d4ff',q:it.q};pIdx++;}));
+  // التمارين المخصصة من كل الأيام
+  const db=getDB();
+  Object.keys(db).forEach(k=>{
+    const ce=db[k].customEx;
+    if(ce)Object.keys(ce).forEach(mid=>{
+      const mu=MUSCLES.find(m=>m.id===mid);
+      (ce[mid]||[]).forEach((c,ci)=>{idx['cus_'+mid+'_'+ci]={title:c.name,sub:'تمرينك',color:mu?mu.c:'#00d4ff',q:c.q||c.name};});
+    });
+  });
+  return idx;
+}
+function openPastExercises(){
+  const db=getDB();const curK=tKey();
+  const idx=buildExTitleIndex();
+  // اجمع آخر جلسات لكل تمرين عبر الأيام السابقة
+  const seen={};
+  Object.keys(db).filter(k=>k!==curK).sort((a,b)=>(db[b].ts||0)-(db[a].ts||0)).forEach(k=>{
+    const es=db[k].exSets;if(!es)return;
+    Object.keys(es).forEach(id=>{
+      if(seen[id])return;
+      let v=es[id];if(Array.isArray(v))v={side:false,sets:v};
+      const arr=(v.sets||[]).filter(s=>s.w||s.r);
+      if(!arr.length)return;
+      const mult=v.side?2:1;
+      const maxW=Math.max(...arr.map(s=>(s.w||0)*mult));
+      seen[id]={id,sets:arr.length,maxW,side:v.side,raw:arr.map(s=>({w:s.w,r:s.r})),info:idx[id]||{title:id,sub:'',color:'#00d4ff'}};
+    });
+  });
+  const list=Object.values(seen);
+  const el=document.getElementById('past-ex-list');
+  if(!list.length){el.innerHTML='<div class="empty-mini">ما سجّلت تمارين بجلسات في أيام سابقة بعد</div>';}
+  else{
+    el.innerHTML=list.map(x=>'<div class="meal-row" style="cursor:pointer" onclick="repeatPastExercise(\''+x.id+'\')"><div class="meal-info"><div class="meal-name" style="color:'+x.info.color+'">'+x.info.title+'</div><div class="meal-cal">'+x.info.sub+' · آخر مرة: '+x.sets+' جلسة · أعلى '+round1(x.maxW)+'كجم</div></div><div style="color:'+x.info.color+';font-size:18px">⟳</div></div>').join('');
+  }
+  document.getElementById('past-ex-modal').classList.add('show');
+}
+function repeatPastExercise(id){
+  const prev=findPrevExercise(id);
+  if(!prev)return;
+  // حمّل جلسات آخر مرة في اليوم الحالي
+  exSets[id]={side:prev.side,sets:prev.rawSets.map(s=>({w:s.w,r:s.r}))};
+  autoSaveToday();
+  document.getElementById('past-ex-modal').classList.remove('show');
+  // افتح التمرين للتعديل مباشرة
+  const idx=buildExTitleIndex();
+  const info=idx[id]||{title:id,color:'#00d4ff'};
+  openSets(id,info.title,info.color);
+  renderMuscleContent();renderPower();
 }
 function renderPrevCompare(){
   const el=document.getElementById('prev-compare');if(!el){return;}
@@ -1020,7 +1123,9 @@ function renderPrevCompare(){
   if(!prev){el.innerHTML='';return;}
   const cur=exStats(activeSetEx.id);
   let html='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2)">';
-  html+='📅 آخر مرة: <b style="color:var(--text)">'+prev.sets+' جلسة · أعلى '+round1(prev.maxW)+'كجم</b>';
+  html+='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">';
+  html+='<span>📅 آخر مرة: <b style="color:var(--text)">'+prev.sets+' جلسة · أعلى '+round1(prev.maxW)+'كجم</b></span>';
+  html+='<button class="chip" onclick="loadPrevSets()" style="border-color:var(--accent);color:var(--accent)">⟳ جيب جلساتها</button></div>';
   if(cur){
     // مقارنة الوزن
     if(cur.maxW<prev.maxW){
@@ -1345,7 +1450,7 @@ function renderMeals(){
     const slotCal=slotMeals.reduce((s,x)=>s+x.m.cal,0);
     html+='<div style="margin-top:10px;margin-bottom:4px;font-size:12px;color:var(--text3);font-weight:600">'+SLOT_ICON[slot]+' '+slot+' <span style="color:var(--text2)">· '+slotCal+' سعرة</span></div>';
     slotMeals.forEach(({m,i})=>{
-      html+='<div class="meal-row"><div class="meal-check done" onclick="removeMeal('+i+')" title="حذف">✕</div><div class="meal-info"><div class="meal-name">'+m.name+'</div><div class="meal-cal">'+m.cal+' سعرة · '+(m.protein||0)+'ب · '+(m.carb||0)+'ك · '+(m.fat||0)+'د</div></div><div onclick="shareMealCard('+i+')" title="شارك" style="color:var(--pink);font-size:16px;cursor:pointer;padding:0 4px">📸</div><div onclick="repeatMeal('+i+')" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div></div>';
+      html+='<div class="meal-row"><div class="meal-check done" onclick="removeMeal('+i+')" title="حذف">✕</div><div class="meal-info" style="cursor:pointer" onclick="openEditMeal('+i+')"><div class="meal-name">'+m.name+' <span style="font-size:11px;color:var(--text3)">✏️</span></div><div class="meal-cal">'+m.cal+' سعرة · '+(m.protein||0)+'ب · '+(m.carb||0)+'ك · '+(m.fat||0)+'د</div></div><div onclick="shareMealCard('+i+')" title="شارك" style="color:var(--pink);font-size:16px;cursor:pointer;padding:0 4px">📸</div><div onclick="repeatMeal('+i+')" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div></div>';
     });
   });
   el.innerHTML=html;
@@ -1353,6 +1458,43 @@ function renderMeals(){
 function removeMeal(i){meals.splice(i,1);renderMeals();updateHero();autoSaveToday();}
 function addMeal(name,cal,p,c,f){meals.push({name,cal:Math.round(cal)||0,protein:Math.round(p)||0,carb:Math.round(c)||0,fat:Math.round(f)||0,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
 function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
+// تعديل وجبة مضافة
+let editMealIdx=-1;
+function openEditMeal(i){
+  editMealIdx=i;
+  const m=meals[i];
+  document.getElementById('em-name').value=m.name;
+  document.getElementById('em-cal').value=m.cal;
+  document.getElementById('em-protein').value=m.protein||0;
+  document.getElementById('em-carb').value=m.carb||0;
+  document.getElementById('em-fat').value=m.fat||0;
+  // slot picker
+  document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===(m.slot||'غداء')?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
+  editMealSlot=m.slot||'غداء';
+  document.getElementById('edit-meal-modal').classList.add('show');
+}
+let editMealSlot='غداء';
+function setEditSlot(s){
+  editMealSlot=s;
+  document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===s?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
+}
+function saveEditMeal(){
+  if(editMealIdx<0)return;
+  const name=document.getElementById('em-name').value.trim()||'وجبة';
+  let cal=parseInt(document.getElementById('em-cal').value)||0;
+  const p=parseInt(document.getElementById('em-protein').value)||0;
+  const c=parseInt(document.getElementById('em-carb').value)||0;
+  const f=parseInt(document.getElementById('em-fat').value)||0;
+  if(!cal&&(p||c||f))cal=Math.round(p*4+c*4+f*9);
+  meals[editMealIdx]={name,cal,protein:p,carb:c,fat:f,slot:editMealSlot};
+  closeEditMeal();renderMeals();updateHero();autoSaveToday();
+}
+function closeEditMeal(){editMealIdx=-1;document.getElementById('edit-meal-modal').classList.remove('show');}
+function deleteEditMeal(){
+  if(editMealIdx<0)return;
+  meals.splice(editMealIdx,1);
+  closeEditMeal();renderMeals();updateHero();autoSaveToday();
+}
 
 // ═══ PAST LOGGED (from history) ═══
 function openPastMeals(){
