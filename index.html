@@ -337,6 +337,13 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div class="ai-resp" id="ex-photo-result" style="margin-top:12px"></div>
   </div>
 
+  <!-- explosive power reference -->
+  <div class="card">
+    <div class="sec-label">القوة الانفجارية والتنشيف ⚡</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">سوِّ الـ Power block أول الجلسة قبل الحديد · اضغط ▶ لشرح التكنيك في يوتيوب</div>
+    <div id="power-content"></div>
+  </div>
+
   <!-- flexibility reference -->
   <div class="card">
     <div class="sec-label">المرونة والإطالة (لعمر الـ30)</div>
@@ -719,6 +726,46 @@ const WORKOUTS={
   }
 };
 
+// ═══ EXPLOSIVE POWER + CUTTING DRILLS ═══
+const POWER={
+  blocks:[
+    {h:'⚡ القوة الانفجارية (قبل الحديد · 10 دقائق)',items:[
+      {n:'Box Jumps',d:'4 × 5',q:'box jumps tutorial proper form'},
+      {n:'Broad Jumps',d:'4 × 4',q:'broad jump technique tutorial'},
+      {n:'Medicine Ball Slam',d:'3 × 8',q:'medicine ball slam exercise'},
+      {n:'Medicine Ball Chest Pass',d:'3 × 8',q:'medicine ball explosive chest pass'},
+      {n:'Kettlebell Swing',d:'3 × 12',q:'kettlebell swing proper form'}]},
+    {h:'🏋️ رفعات القوة (سرعة تنفيذ عالية · وزن متوسط)',items:[
+      {n:'Trap Bar Deadlift',d:'4 × 5 سريع',q:'trap bar deadlift form'},
+      {n:'Front Squat',d:'4 × 5',q:'front squat technique tutorial'},
+      {n:'Push Press',d:'4 × 5',q:'push press tutorial form'},
+      {n:'Hang Power Clean',d:'4 × 3',q:'hang power clean tutorial beginner'}]},
+    {h:'🔥 السبرينت والتحمل (RSA · يوم الكورة أو بعد الحديد)',items:[
+      {n:'Sprint Intervals',d:'8 × 30 ثانية · راحة 90 ث',q:'repeated sprint training drills'},
+      {n:'Sled Push',d:'5 × 20 متر',q:'sled push sprint technique'},
+      {n:'Shuttle Runs',d:'6 × 20 متر',q:'shuttle run agility drill'}]},
+    {h:'🦵 مرونة + استقرار للكورة',items:[
+      {n:'Cossack Squat',d:'3 × 6 لكل جهة',q:'cossack squat mobility tutorial'},
+      {n:'Single-Leg RDL',d:'3 × 8 لكل رجل',q:'single leg romanian deadlift form'},
+      {n:'Nordic Hamstring Curl',d:'3 × 5',q:'nordic hamstring curl tutorial'},
+      {n:'90/90 Hip Stretch',d:'دقيقة لكل جهة',q:'90 90 hip stretch mobility'}]}
+  ]
+};
+function renderPower(){
+  const el=document.getElementById('power-content');
+  if(!el)return;
+  let html='';
+  POWER.blocks.forEach(b=>{
+    html+='<div class="wkt-block"><div class="wkt-head">'+b.h+'</div>';
+    b.items.forEach(it=>{
+      const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(it.q);
+      html+='<div class="wkt-item"><div class="wkt-name">'+it.n+'</div><div class="wkt-detail">'+it.d+'</div><a href="'+yt+'" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;padding:0 6px">▶ شرح</a></div>';
+    });
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+
 // ═══ SUPPLEMENTS (from previous app, condensed) ═══
 const SUPPS={
   gym:[
@@ -809,10 +856,10 @@ function loadDay(){
   if(sb){
     if(!isToday()){
       sb.style.background='linear-gradient(135deg,rgba(167,139,250,.15),rgba(0,212,255,.08))';
-      sb.innerHTML=`<div style="font-size:13px;color:var(--purple)">📅 تعرض يوم سابق — ${currentDate.getDate()} ${months[currentDate.getMonth()]}</div><button class="chip" onclick="goToDate(new Date())" style="color:var(--accent)">⏎ ارجع لليوم</button>`;
+      sb.innerHTML='<div style="font-size:13px;color:var(--purple)">📅 تعرض يوم سابق — '+currentDate.getDate()+' '+months[currentDate.getMonth()]+'</div><button class="chip" onclick="goToDate(new Date())" style="color:var(--accent)">⏎ ارجع لليوم</button>';
     }else{
       sb.style.background='linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.08))';
-      sb.innerHTML=`<div style="font-size:13px;color:var(--text2)">سلسلة أيامك المتتالية</div><div style="font-size:18px;font-weight:700;color:var(--orange)" id="streak-count">🔥 0</div>`;
+      sb.innerHTML='<div style="font-size:13px;color:var(--text2)">سلسلة أيامك المتتالية</div><div style="font-size:18px;font-weight:700;color:var(--orange)" id="streak-count">🔥 0</div>';
       renderStreak();
     }
   }
@@ -837,35 +884,26 @@ function renderWeekStrip(){
   const el=document.getElementById('week-strip');if(!el)return;
   const db=getDB();const todayK=dateKey(new Date());const curK=tKey();
   let html='<div onclick="shiftDay(1)" style="display:flex;align-items:center;padding:0 4px;color:var(--text3);font-size:18px;cursor:pointer">‹</div>';
-  // show 7 days centered around currentDate (3 before, current, 3 after but not future)
   for(let i=6;i>=0;i--){
-    const d=new Date(currentDate);d.setDate(currentDate.getDate()-i+0);
-    // we want currentDate on right edge: show last 7 ending at currentDate
     const dd=new Date(currentDate);dd.setDate(currentDate.getDate()-i);
     const k=dateKey(dd);const rec=db[k];
     const isCur=k===curK;const isTod=k===todayK;
     const has=rec&&(rec.meals?.length||rec.suppDone||rec.eaten);
-    html+=`<div onclick="goToDate(new Date(${dd.getFullYear()},${dd.getMonth()},${dd.getDate()}))" style="flex:1;text-align:center;padding:8px 2px;border-radius:12px;border:1px solid ${isCur?'var(--accent)':'var(--border)'};background:${isCur?'rgba(0,212,255,.12)':has?'rgba(34,197,94,.1)':'var(--surface)'};cursor:pointer">
-      <div style="font-size:9px;color:${isTod?'var(--accent)':'var(--text3)'}">${AR_DAY_SHORT[dd.getDay()]}${isTod?'•':''}</div>
-      <div style="font-size:15px;font-weight:700;color:${isCur?'var(--accent)':has?'var(--green)':'var(--text2)'}">${dd.getDate()}</div>
-      <div style="font-size:9px;height:10px">${has?'●':''}</div>
-    </div>`;
+    html+='<div onclick="goToDate(new Date('+dd.getFullYear()+','+dd.getMonth()+','+dd.getDate()+'))" style="flex:1;text-align:center;padding:8px 2px;border-radius:12px;border:1px solid '+(isCur?'var(--accent)':'var(--border)')+';background:'+(isCur?'rgba(0,212,255,.12)':has?'rgba(34,197,94,.1)':'var(--surface)')+';cursor:pointer"><div style="font-size:9px;color:'+(isTod?'var(--accent)':'var(--text3)')+'">'+AR_DAY_SHORT[dd.getDay()]+(isTod?'•':'')+'</div><div style="font-size:15px;font-weight:700;color:'+(isCur?'var(--accent)':has?'var(--green)':'var(--text2)')+'">'+dd.getDate()+'</div><div style="font-size:9px;height:10px">'+(has?'●':'')+'</div></div>';
   }
-  // next-day arrow (disabled if current is today)
   const atToday=curK===todayK;
-  html+=`<div onclick="${atToday?'':'shiftDay(-1)'}" style="display:flex;align-items:center;padding:0 4px;color:${atToday?'var(--surface3)':'var(--text3)'};font-size:18px;cursor:${atToday?'default':'pointer'}">›</div>`;
+  html+='<div onclick="'+(atToday?'':'shiftDay(-1)')+'" style="display:flex;align-items:center;padding:0 4px;color:'+(atToday?'var(--surface3)':'var(--text3)')+';font-size:18px;cursor:'+(atToday?'default':'pointer')+'">›</div>';
   el.innerHTML=html;
 }
 function renderStreak(){
   const el=document.getElementById('streak-count');if(!el)return;
   const db=getDB();let streak=0;const d=new Date();
-  // count consecutive days (back from today) that have logged data
   for(let i=0;i<365;i++){
     const k=dateKey(d);const rec=db[k];
     const has=rec&&(rec.meals?.length||rec.suppDone||rec.eaten);
     if(has)streak++;
-    else if(i>0)break; // allow today to be empty without breaking
-    else if(i===0&&!has){} // today empty, keep checking yesterday
+    else if(i>0)break;
+    else if(i===0&&!has){}
     d.setDate(d.getDate()-1);
   }
   el.textContent='🔥 '+streak;
@@ -876,24 +914,21 @@ function renderSmartReminders(){
   const el=document.getElementById('smart-reminders');if(!el)return;
   const hour=new Date().getHours();
   const reminders=[];
-  // supplement morning reminder
   if(day){
     let suppTotal=0,suppDone=0,i=0;
     SUPPS[day].forEach(b=>b.items.forEach(it=>{if(!it.includes('⛔')){suppTotal++;if(suppChecks['supp_'+i])suppDone++;}i++;}));
     if(hour>=6&&hour<12&&suppDone===0&&suppTotal>0)reminders.push(['💊','ما أخذت مكملات الصباح بعد','var(--pink)']);
     if(hour>=21&&suppDone<suppTotal)reminders.push(['🌙','باقي عليك مكملات اليوم — '+(suppTotal-suppDone)+' مكمل','var(--purple)']);
   }
-  // water reminder
   if(hour>=14&&water<1800)reminders.push(['💧','شرب الماء قليل اليوم — '+water+' مل فقط','var(--accent)']);
   if(hour>=20&&water<3000)reminders.push(['💧','باقي '+(3600-water)+' مل لهدف الماء','var(--accent)']);
-  // meal reminder
   if(day&&hour>=20){
     const eaten=meals.reduce((s,m)=>s+m.cal,0);
     const t=TARGETS[day];
     if(eaten<t.cal*0.5)reminders.push(['🍽️','أكلك اليوم قليل ('+eaten+' سعرة) — لا تنسى تتغذى','var(--orange)']);
   }
   if(!reminders.length){el.innerHTML='';return;}
-  el.innerHTML='<div style="margin-bottom:14px">'+reminders.map(r=>`<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid ${r[2]}44;border-right:3px solid ${r[2]};border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px"><span style="font-size:18px">${r[0]}</span><span style="color:var(--text2)">${r[1]}</span></div>`).join('')+'</div>';
+  el.innerHTML='<div style="margin-bottom:14px">'+reminders.map(r=>'<div style="display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid '+r[2]+'44;border-right:3px solid '+r[2]+';border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:13px"><span style="font-size:18px">'+r[0]+'</span><span style="color:var(--text2)">'+r[1]+'</span></div>').join('')+'</div>';
 }
 
 // ═══ NAV ═══
@@ -933,28 +968,22 @@ function setSlot(s){activeSlot=s;renderSlotPicker();}
 function renderSlotPicker(){
   const el=document.getElementById('slot-picker');
   if(!el)return;
-  el.innerHTML=SLOTS.map(s=>`<button class="chip" style="${s===activeSlot?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':''}" onclick="setSlot('${s}')">${SLOT_ICON[s]} ${s}</button>`).join('');
+  el.innerHTML=SLOTS.map(s=>'<button class="chip" style="'+(s===activeSlot?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'')+'" onclick="setSlot(\''+s+'\')">'+SLOT_ICON[s]+' '+s+'</button>').join('');
 }
 function renderMeals(){
   const el=document.getElementById('meals-list');
   if(!meals.length){
     const msg=!day?'⓵ اختر نوع اليوم فوق · ⓶ اختر الوجبة · ⓷ أضف أكلك':'✅ اخترت الوجبة — الآن أضف أكلك من الأزرار تحت ⬇️';
-    el.innerHTML=`<div class="empty-mini">${msg}</div>`;return;
+    el.innerHTML='<div class="empty-mini">'+msg+'</div>';return;
   }
   let html='';
   SLOTS.forEach(slot=>{
     const slotMeals=meals.map((m,i)=>({m,i})).filter(x=>(x.m.slot||'غداء')===slot);
     if(!slotMeals.length)return;
     const slotCal=slotMeals.reduce((s,x)=>s+x.m.cal,0);
-    html+=`<div style="margin-top:10px;margin-bottom:4px;font-size:12px;color:var(--text3);font-weight:600">${SLOT_ICON[slot]} ${slot} <span style="color:var(--text2)">· ${slotCal} سعرة</span></div>`;
+    html+='<div style="margin-top:10px;margin-bottom:4px;font-size:12px;color:var(--text3);font-weight:600">'+SLOT_ICON[slot]+' '+slot+' <span style="color:var(--text2)">· '+slotCal+' سعرة</span></div>';
     slotMeals.forEach(({m,i})=>{
-      html+=`<div class="meal-row">
-        <div class="meal-check done" onclick="removeMeal(${i})" title="حذف">✕</div>
-        <div class="meal-info"><div class="meal-name">${m.name}</div>
-        <div class="meal-cal">${m.cal} سعرة · ${m.protein||0}ب · ${m.carb||0}ك · ${m.fat||0}د</div></div>
-        <div onclick="shareMealCard(${i})" title="شارك" style="color:var(--pink);font-size:16px;cursor:pointer;padding:0 4px">📸</div>
-        <div onclick="repeatMeal(${i})" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div>
-      </div>`;
+      html+='<div class="meal-row"><div class="meal-check done" onclick="removeMeal('+i+')" title="حذف">✕</div><div class="meal-info"><div class="meal-name">'+m.name+'</div><div class="meal-cal">'+m.cal+' سعرة · '+(m.protein||0)+'ب · '+(m.carb||0)+'ك · '+(m.fat||0)+'د</div></div><div onclick="shareMealCard('+i+')" title="شارك" style="color:var(--pink);font-size:16px;cursor:pointer;padding:0 4px">📸</div><div onclick="repeatMeal('+i+')" title="كرّر" style="color:var(--accent);font-size:18px;cursor:pointer;padding:0 6px">⟳</div></div>';
     });
   });
   el.innerHTML=html;
@@ -966,7 +995,6 @@ function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});rende
 // ═══ PAST LOGGED (from history) ═══
 function openPastMeals(){
   const db=getDB();
-  // collect unique meals from all days (most recent first)
   const seen=new Set();const list=[];
   Object.keys(db).sort((a,b)=>(db[b].ts||0)-(db[a].ts||0)).forEach(k=>{
     (db[k].meals||[]).forEach(m=>{
@@ -974,17 +1002,11 @@ function openPastMeals(){
       if(!seen.has(key)){seen.add(key);list.push(m);}
     });
   });
-  // also include current meals
   meals.forEach(m=>{const key=m.name+'_'+m.cal;if(!seen.has(key)){seen.add(key);list.push(m);}});
   const el=document.getElementById('past-meals-list');
   if(!list.length){el.innerHTML='<div class="empty-mini">ما عندك وجبات سابقة بعد</div>';}
   else{
-    el.innerHTML=list.slice(0,50).map((m,idx)=>`
-      <div class="meal-row" style="cursor:pointer" onclick='addPastMeal(${JSON.stringify(JSON.stringify(m))})'>
-        <div class="meal-info"><div class="meal-name">${m.name}</div>
-        <div class="meal-cal">${m.cal} سعرة · ${m.protein||0}ب · ${m.carb||0}ك · ${m.fat||0}د</div></div>
-        <div style="color:var(--accent);font-size:18px">+</div>
-      </div>`).join('');
+    el.innerHTML=list.slice(0,50).map((m,idx)=>'<div class="meal-row" style="cursor:pointer" onclick=\'addPastMeal('+JSON.stringify(JSON.stringify(m))+')\'><div class="meal-info"><div class="meal-name">'+m.name+'</div><div class="meal-cal">'+m.cal+' سعرة · '+(m.protein||0)+'ب · '+(m.carb||0)+'ك · '+(m.fat||0)+'د</div></div><div style="color:var(--accent);font-size:18px">+</div></div>').join('');
   }
   document.getElementById('past-meals-modal').classList.add('show');
 }
@@ -1005,12 +1027,7 @@ function renderSavedMeals(){
   if(!saved.length){el.innerHTML='<div class="empty-mini">ما حفظت وجبات بعد — احفظ وجبة من زر "احفظ وجبة اليوم"</div>';return;}
   el.innerHTML=saved.map((s,i)=>{
     const tot=s.items.reduce((a,m)=>a+m.cal,0);
-    return `<div class="meal-row">
-      <div class="meal-check done" onclick="deleteSavedMeal(${i})" title="حذف">✕</div>
-      <div class="meal-info" style="cursor:pointer" onclick="addSavedMeal(${i})"><div class="meal-name">${s.name}</div>
-      <div class="meal-cal">${s.items.length} أصناف · ${tot} سعرة</div></div>
-      <div onclick="addSavedMeal(${i})" style="color:var(--accent);font-size:18px;cursor:pointer">+</div>
-    </div>`;
+    return '<div class="meal-row"><div class="meal-check done" onclick="deleteSavedMeal('+i+')" title="حذف">✕</div><div class="meal-info" style="cursor:pointer" onclick="addSavedMeal('+i+')"><div class="meal-name">'+s.name+'</div><div class="meal-cal">'+s.items.length+' أصناف · '+tot+' سعرة</div></div><div onclick="addSavedMeal('+i+')" style="color:var(--accent);font-size:18px;cursor:pointer">+</div></div>';
   }).join('');
 }
 function addSavedMeal(i){
@@ -1047,8 +1064,7 @@ function setMealMode(m){
   document.getElementById('mode-macro').className='modal-btn '+(m==='macro'?'mb-save':'mb-cancel');
   document.getElementById('mode-macro').style.flex='1';document.getElementById('mode-macro').style.fontSize='13px';
 }
-// fat per 100g for protein sources (matches the protein-per-100g select values)
-const PROT_FAT={31:3.6,26:15,25:21,22:6,13:10}; // chicken, beef, lamb, fish/salmon, egg(approx)
+const PROT_FAT={31:3.6,26:15,25:21,22:6,13:10};
 function calcWeightMode(){
   const pPer=parseFloat(document.getElementById('wm-protein-type').value)||0;
   const pG=parseFloat(document.getElementById('wm-protein-g').value)||0;
@@ -1058,12 +1074,10 @@ function calcWeightMode(){
   const totalCal=parseFloat(document.getElementById('wm-total-cal').value)||0;
   const protein=Math.round(pG*pPer/100);
   const carb=Math.round(cG*cPer/100);
-  // natural fat from the protein food itself + any added fat
   const natFat=Math.round((pG*(PROT_FAT[pPer]||5)/100)+fG);
   const natCal=Math.round(protein*4+carb*4+natFat*9);
   let fat,cal,note='';
   if(totalCal>0){
-    // restaurant total is the authority. Derive fat from remainder.
     const remCal=totalCal-(protein*4+carb*4);
     if(remCal<0){
       fat=0;cal=Math.round(protein*4+carb*4);
@@ -1071,12 +1085,11 @@ function calcWeightMode(){
     }else{
       fat=Math.round(remCal/9);
       cal=totalCal;
-      // sanity check vs natural estimate
       const diff=totalCal-natCal;
       if(Math.abs(diff)>120){
-        note=`ℹ️ تقديرنا من الأوزان ~${natCal} سعرة، وسعرات المطعم ${totalCal} (فرق ${diff>0?'+':''}${diff}). اعتمدنا رقم المطعم والدهون ${fat}غ — الفرق غالباً زيوت الطبخ.`;
+        note='ℹ️ تقديرنا من الأوزان ~'+natCal+' سعرة، وسعرات المطعم '+totalCal+' (فرق '+(diff>0?'+':'')+diff+'). اعتمدنا رقم المطعم والدهون '+fat+'غ — الفرق غالباً زيوت الطبخ.';
       }else{
-        note=`✅ سعرات المطعم تطابق تقديرنا (~${natCal}) — توزيع دقيق`;
+        note='✅ سعرات المطعم تطابق تقديرنا (~'+natCal+') — توزيع دقيق';
       }
     }
   }else{
@@ -1087,10 +1100,10 @@ function calcWeightMode(){
 }
 function updateWeightPreview(){
   const r=calcWeightMode();
-  let html=`<b style="color:var(--text);font-size:15px">${r.cal} سعرة</b> · ${r.protein}ب · ${r.carb}ك · ${r.fat}د`;
+  let html='<b style="color:var(--text);font-size:15px">'+r.cal+' سعرة</b> · '+r.protein+'ب · '+r.carb+'ك · '+r.fat+'د';
   if(r.note){
     const col=r.note.startsWith('⚠️')?'var(--red)':r.note.startsWith('✅')?'var(--green)':'var(--accent)';
-    html+=`<div style="color:${col};font-size:11px;margin-top:8px;line-height:1.5">${r.note}</div>`;
+    html+='<div style="color:'+col+';font-size:11px;margin-top:8px;line-height:1.5">'+r.note+'</div>';
   }
   document.getElementById('wm-preview').innerHTML=html;
 }
@@ -1121,7 +1134,7 @@ function openFoodDB(){
 function closeFoodDB(){document.getElementById('fooddb-modal').classList.remove('show');document.getElementById('fdb-search').value='';fdbCat='الكل';}
 function renderFoodCats(){
   const cats=['الكل',...new Set(FOOD_DB.map(f=>f.cat))];
-  document.getElementById('fdb-cats').innerHTML=cats.map(c=>`<button class="chip" style="white-space:nowrap;${c===fdbCat?'border-color:var(--accent);color:var(--accent)':''}" onclick="fdbCat='${c}';renderFoodCats();searchFood()">${c}</button>`).join('');
+  document.getElementById('fdb-cats').innerHTML=cats.map(c=>'<button class="chip" style="white-space:nowrap;'+(c===fdbCat?'border-color:var(--accent);color:var(--accent)':'')+'" onclick="fdbCat=\''+c+'\';renderFoodCats();searchFood()">'+c+'</button>').join('');
 }
 function searchFood(){
   const q=document.getElementById('fdb-search').value.trim();
@@ -1131,11 +1144,7 @@ function searchFood(){
   el.innerHTML=list.slice(0,60).map(f=>{
     const idx=FOOD_DB.indexOf(f);
     const per=f.u==='pc'?'للحبة':'لكل 100غ';
-    return `<div class="meal-row" style="cursor:pointer" onclick="selectFood(${idx})">
-      <div class="meal-info"><div class="meal-name">${f.n}</div>
-      <div class="meal-cal">${f.cal} سعرة · ${f.p}ب · ${f.c}ك · ${f.f}د <span style="color:var(--text3)">(${per})</span></div></div>
-      <div style="color:var(--accent);font-size:18px">+</div>
-    </div>`;
+    return '<div class="meal-row" style="cursor:pointer" onclick="selectFood('+idx+')"><div class="meal-info"><div class="meal-name">'+f.n+'</div><div class="meal-cal">'+f.cal+' سعرة · '+f.p+'ب · '+f.c+'ك · '+f.f+'د <span style="color:var(--text3)">('+per+')</span></div></div><div style="color:var(--accent);font-size:18px">+</div></div>';
   }).join('');
 }
 function selectFood(idx){
@@ -1151,13 +1160,13 @@ function selectFood(idx){
 function updatePortionPreview(){
   const amt=parseFloat(document.getElementById('portion-amount').value)||0;
   const f=fdbSelected;const mult=f.u==='pc'?amt:amt/100;
-  document.getElementById('portion-preview').innerHTML=`<b style="color:var(--text)">${Math.round(f.cal*mult)} سعرة</b> · ${Math.round(f.p*mult)}ب · ${Math.round(f.c*mult)}ك · ${Math.round(f.f*mult)}د`;
+  document.getElementById('portion-preview').innerHTML='<b style="color:var(--text)">'+Math.round(f.cal*mult)+' سعرة</b> · '+Math.round(f.p*mult)+'ب · '+Math.round(f.c*mult)+'ك · '+Math.round(f.f*mult)+'د';
 }
 function addFromDB(){
   const amt=parseFloat(document.getElementById('portion-amount').value)||0;
   if(!amt){alert('اكتب الكمية');return;}
   const f=fdbSelected;const mult=f.u==='pc'?amt:amt/100;
-  const label=f.u==='pc'?`${f.n} ×${amt}`:`${f.n} (${amt}غ)`;
+  const label=f.u==='pc'?f.n+' ×'+amt:f.n+' ('+amt+'غ)';
   addMeal(label,Math.round(f.cal*mult),Math.round(f.p*mult),Math.round(f.c*mult),Math.round(f.f*mult));
   document.getElementById('portion-modal').classList.remove('show');
   closeFoodDB();
@@ -1187,21 +1196,12 @@ async function estimateMeal(){
   setTimeout(()=>window._estimating=false,1500);
   result.innerHTML='<div class="typing"><span></span><span></span><span></span></div> كلود يحسب...';
   const cookNote=cookState==='raw'?'الأوزان المذكورة قبل الطبخ (ني) — اضبط الحساب لأن اللحم يفقد ~25% وزن بالطبخ والرز يزيد':'الأوزان بعد الطبخ — احسب القيمة كما هي';
-  const sys=`أنت خبير تغذية دقيق. قدّر السعرات والبروتين والكارب والدهون لوصف الوجبة. ${cookNote}.
-قواعد مهمة:
-- البروتين: الدجاج ~31غ لكل 100غ، اللحم ~26غ، الرز ~2.7غ، الخبز ~9غ.
-- الكارب: الرز ~28غ لكل 100غ مطبوخ، الخبز ~50غ، الدجاج 0غ، اللحم 0غ.
-- تأكد أن السعرات = (بروتين×4)+(كارب×4)+(دهون×9) تقريباً.
-- لا تخلط بين البروتين والكارب.
-أرجع JSON فقط بدون أي نص: {"name":"اسم مختصر بالعربي","cal":رقم,"protein":رقم,"carb":رقم,"fat":رقم}`;
+  const sys='أنت خبير تغذية دقيق. قدّر السعرات والبروتين والكارب والدهون لوصف الوجبة. '+cookNote+'.\nقواعد مهمة:\n- البروتين: الدجاج ~31غ لكل 100غ، اللحم ~26غ، الرز ~2.7غ، الخبز ~9غ.\n- الكارب: الرز ~28غ لكل 100غ مطبوخ، الخبز ~50غ، الدجاج 0غ، اللحم 0غ.\n- تأكد أن السعرات = (بروتين×4)+(كارب×4)+(دهون×9) تقريباً.\n- لا تخلط بين البروتين والكارب.\nأرجع JSON فقط بدون أي نص: {"name":"اسم مختصر بالعربي","cal":رقم,"protein":رقم,"carb":رقم,"fat":رقم}';
   try{
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:txt}]});
     let t=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
     const m=JSON.parse(t);
-    result.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-      <div><b>${m.name}</b><br><span style="color:var(--text3);font-size:13px">${m.cal} سعرة · ${m.protein}ب · ${m.carb}ك · ${m.fat}د</span></div>
-      <button class="btn-primary" style="padding:8px 16px" onclick='addMeal(${JSON.stringify(m.name)},${m.cal},${m.protein},${m.carb},${m.fat});closeDescribeModal()'>+ إضافة</button>
-    </div>`;
+    result.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>'+m.name+'</b><br><span style="color:var(--text3);font-size:13px">'+m.cal+' سعرة · '+m.protein+'ب · '+m.carb+'ك · '+m.fat+'د</span></div><button class="btn-primary" style="padding:8px 16px" onclick=\'addMeal('+JSON.stringify(m.name)+','+m.cal+','+m.protein+','+m.carb+','+m.fat+');closeDescribeModal()\'>+ إضافة</button></div>';
   }catch(e){result.innerHTML='<p style="color:var(--red)">ما قدرت أحسب، جرب وصف أوضح.</p>';}
 }
 
@@ -1213,8 +1213,6 @@ async function analyzePhoto(e){
   result.classList.add('show');
   if(!getApiKey()){result.innerHTML='<p style="color:var(--orange)">⚠️ فعّل مفتاح Anthropic أولاً (تبويب المدرب) لتشغيل تصوير الوجبات</p>';e.target.value='';return;}
   result.innerHTML='<div class="typing"><span></span><span></span><span></span></div> جاري تحليل الصورة...';
-
-  // resize + convert to base64
   const b64=await new Promise((res,rej)=>{
     const img=new Image();
     const reader=new FileReader();
@@ -1234,23 +1232,12 @@ async function analyzePhoto(e){
     reader.onerror=rej;
     reader.readAsDataURL(file);
   });
-
-  const sys=`أنت خبير تغذية. حلل صورة الطعام أو جدول القيمة الغذائية وقدّر السعرات والبروتين والكارب والدهون للحصة الظاهرة.
-أرجع JSON فقط بدون أي نص آخر: {"name":"اسم الوجبة بالعربي","cal":رقم,"protein":رقم,"carb":رقم,"fat":رقم}
-إذا كان جدول قيمة غذائية، استخدم القيم المكتوبة للحصة. إذا طعام عادي، قدّر بأفضل تخمين واقعي.`;
-
+  const sys='أنت خبير تغذية. حلل صورة الطعام أو جدول القيمة الغذائية وقدّر السعرات والبروتين والكارب والدهون للحصة الظاهرة.\nأرجع JSON فقط بدون أي نص آخر: {"name":"اسم الوجبة بالعربي","cal":رقم,"protein":رقم,"carb":رقم,"fat":رقم}\nإذا كان جدول قيمة غذائية، استخدم القيم المكتوبة للحصة. إذا طعام عادي، قدّر بأفضل تخمين واقعي.';
   try{
-    const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,
-        messages:[{role:'user',content:[
-          {type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},
-          {type:'text',text:'احسب السعرات والماكروز لهذه الوجبة.'}
-        ]}]});
+    const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'احسب السعرات والماكروز لهذه الوجبة.'}]}]});
     let txt=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
     const m=JSON.parse(txt);
-    result.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-      <div><b>${m.name}</b><br><span style="color:var(--text3);font-size:13px">${m.cal} سعرة · ${m.protein}ب · ${m.carb}ك · ${m.fat||0}د</span></div>
-      <button class="btn-primary" style="padding:8px 16px" onclick='addMeal(${JSON.stringify(m.name)},${m.cal},${m.protein},${m.carb},${m.fat||0});document.getElementById("photo-result").classList.remove("show")'>+ إضافة</button>
-    </div>`;
+    result.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>'+m.name+'</b><br><span style="color:var(--text3);font-size:13px">'+m.cal+' سعرة · '+m.protein+'ب · '+m.carb+'ك · '+(m.fat||0)+'د</span></div><button class="btn-primary" style="padding:8px 16px" onclick=\'addMeal('+JSON.stringify(m.name)+','+m.cal+','+m.protein+','+m.carb+','+(m.fat||0)+');document.getElementById("photo-result").classList.remove("show")\'>+ إضافة</button></div>';
   }catch(err){
     result.innerHTML='<p style="color:var(--red)">ما قدرت أحلل الصورة، جرب صورة أوضح أو أضف يدوياً.</p>';
   }
@@ -1274,13 +1261,11 @@ function updateHero(){
   const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
   const fat=meals.reduce((s,m)=>s+(m.fat||0),0);
   const tFat=t.fat||Math.round(t.cal*0.25/9);
-  // burn mode: if 'add', burned calories increase available budget
   const budget=t.cal+(burnMode==='add'?burned:0);
   const remaining=budget-eaten;
   document.getElementById('cal-remaining').textContent=remaining;
   document.getElementById('cal-remaining').style.color=remaining<0?'var(--red)':'var(--text)';
-  document.getElementById('cal-eaten').textContent=eaten+' / '+budget+' مأكول'+(burnMode==='add'&&burned?` (+${burned}🔥)`:'');
-  // remaining macros
+  document.getElementById('cal-eaten').textContent=eaten+' / '+budget+' مأكول'+(burnMode==='add'&&burned?' (+'+burned+'🔥)':'');
   const remP=t.protein-protein, remC=t.carb-carb, remF=tFat-fat;
   document.getElementById('m-protein').textContent=remP+'g';
   document.getElementById('m-protein').style.color=remP<0?'var(--red)':'var(--accent)';
@@ -1289,7 +1274,6 @@ function updateHero(){
   document.getElementById('m-fat').textContent=remF+'g';
   document.getElementById('m-fat').style.color=remF<0?'var(--red)':'var(--purple)';
   document.getElementById('m-burned').textContent=burned;
-  // ring
   const pct=Math.min(eaten/budget,1);
   const circ=490;
   document.getElementById('cal-ring').style.strokeDashoffset=circ-(circ*pct);
@@ -1298,7 +1282,6 @@ function updateHero(){
 // ═══ SAVE TODAY ═══
 function buildDayRecord(){
   const eaten=meals.reduce((s,m)=>s+m.cal,0);
-  // supp count
   let suppTotal=0,suppDone=0,i=0;
   if(day){SUPPS[day].forEach(b=>b.items.forEach(it=>{if(!it.includes('⛔')){suppTotal++;if(suppChecks['supp_'+i])suppDone++;}i++;}));}
   return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,suppTotal,suppDone,eaten,target:day?TARGETS[day].cal:0,ts:Date.now()};
@@ -1325,7 +1308,6 @@ function renderWeight(){
   if(w.length){
     const last=w[w.length-1];
     document.getElementById('weight-display').innerHTML=last.kg+'<span class="weight-unit"> كجم</span>';
-    // goal
     const start=w[0].kg, current=last.kg, goal=75;
     const totalToLose=start-goal;
     const lost=start-current;
@@ -1333,7 +1315,6 @@ function renderWeight(){
     document.getElementById('goal-fill').style.width=pct+'%';
     document.getElementById('goal-current').textContent=current+' كجم';
     document.getElementById('goal-remaining').textContent=(current-goal>0?(current-goal).toFixed(1)+' كجم باقي':'وصلت! 🎉');
-    // BMI (height 175cm)
     const bmiEl=document.getElementById('bmi-box');
     if(bmiEl){
       const bmi=(current/(1.75*1.75)).toFixed(1);
@@ -1343,14 +1324,7 @@ function renderWeight(){
       else if(bmi<30){cat='زيادة';col='#f59e0b';}
       else{cat='سمنة';col='#ef4444';}
       const pos=Math.min(100,Math.max(0,(bmi-15)/(40-15)*100));
-      bmiEl.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="background:${col}22;color:${col};padding:3px 12px;border-radius:12px;font-size:12px;font-weight:600">${cat}</span>
-        <span style="font-size:13px;color:var(--text2)">مؤشر كتلة الجسم <b style="color:var(--text);font-size:18px">${bmi}</b></span>
-      </div>
-      <div style="height:8px;border-radius:4px;background:linear-gradient(90deg,#00d4ff 0%,#22c55e 35%,#f59e0b 60%,#ef4444 100%);position:relative">
-        <div style="position:absolute;top:-3px;width:3px;height:14px;background:#fff;border-radius:2px;right:${100-pos}%"></div>
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>`;
+      bmiEl.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="background:'+col+'22;color:'+col+';padding:3px 12px;border-radius:12px;font-size:12px;font-weight:600">'+cat+'</span><span style="font-size:13px;color:var(--text2)">مؤشر كتلة الجسم <b style="color:var(--text);font-size:18px">'+bmi+'</b></span></div><div style="height:8px;border-radius:4px;background:linear-gradient(90deg,#00d4ff 0%,#22c55e 35%,#f59e0b 60%,#ef4444 100%);position:relative"><div style="position:absolute;top:-3px;width:3px;height:14px;background:#fff;border-radius:2px;right:'+(100-pos)+'%"></div></div><div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px"><span>15</span><span>18.5</span><span>25</span><span>30</span><span>40</span></div>';
     }
   } else {
     document.getElementById('weight-display').innerHTML='—<span class="weight-unit"> كجم</span>';
@@ -1381,7 +1355,6 @@ function commitInbody(rec){
   a.push({...rec,date:tKey(),ts:Date.now()});
   setInbody(a);
   renderInbody();
-  // also log weight if present
   if(rec.weight){const w=getWeights();w.push({kg:rec.weight,date:tKey(),ts:Date.now()});setWeights(w);renderWeight();}
 }
 function saveInbody(){
@@ -1402,17 +1375,16 @@ function renderInbody(){
   if(last.waist)cards.push(['الخصر',last.waist+' سم','var(--green)']);
   if(last.chest)cards.push(['الصدر',last.chest+' سم','var(--purple)']);
   if(last.arm)cards.push(['الذراع',last.arm+' سم','var(--pink)']);
-  latest.innerHTML='<div class="stats-grid" style="margin-bottom:0">'+cards.map(c=>`<div class="stat-card"><div class="stat-val" style="color:${c[2]};font-size:20px">${c[1]}</div><div class="stat-lbl">${c[0]}</div></div>`).join('')+'</div>';
-  // history with deltas
+  latest.innerHTML='<div class="stats-grid" style="margin-bottom:0">'+cards.map(c=>'<div class="stat-card"><div class="stat-val" style="color:'+c[2]+';font-size:20px">'+c[1]+'</div><div class="stat-lbl">'+c[0]+'</div></div>').join('')+'</div>';
   if(a.length>1){
     const first=a[0];
     let deltas=[];
-    if(last.fat&&first.fat)deltas.push(`دهون ${(last.fat-first.fat>0?'+':'')}${(last.fat-first.fat).toFixed(1)}%`);
-    if(last.muscle&&first.muscle)deltas.push(`عضل ${(last.muscle-first.muscle>0?'+':'')}${(last.muscle-first.muscle).toFixed(1)}كجم`);
-    if(last.waist&&first.waist)deltas.push(`خصر ${(last.waist-first.waist>0?'+':'')}${(last.waist-first.waist).toFixed(0)}سم`);
-    hist.innerHTML=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px"><b>التغيّر منذ أول قياس (${a.length} قياسات):</b><br><span style="color:var(--text2)">${deltas.join(' · ')||'سجّل قياسات أكثر للمقارنة'}</span></div>`;
+    if(last.fat&&first.fat)deltas.push('دهون '+(last.fat-first.fat>0?'+':'')+(last.fat-first.fat).toFixed(1)+'%');
+    if(last.muscle&&first.muscle)deltas.push('عضل '+(last.muscle-first.muscle>0?'+':'')+(last.muscle-first.muscle).toFixed(1)+'كجم');
+    if(last.waist&&first.waist)deltas.push('خصر '+(last.waist-first.waist>0?'+':'')+(last.waist-first.waist).toFixed(0)+'سم');
+    hist.innerHTML='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px"><b>التغيّر منذ أول قياس ('+a.length+' قياسات):</b><br><span style="color:var(--text2)">'+(deltas.join(' · ')||'سجّل قياسات أكثر للمقارنة')+'</span></div>';
   } else {
-    hist.innerHTML=`<div style="text-align:center;color:var(--text3);font-size:12px">سجّل قياس ثانٍ لاحقاً عشان تشوف التطور</div>`;
+    hist.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px">سجّل قياس ثانٍ لاحقاً عشان تشوف التطور</div>';
   }
 }
 async function analyzeInbody(e){
@@ -1426,21 +1398,19 @@ async function analyzeInbody(e){
     reader.onload=ev=>{img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height,mx=1280;if(w>mx||h>mx){if(w>h){h=h*mx/w;w=mx;}else{w=w*mx/h;h=mx;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.85).split(',')[1]);};img.onerror=rej;img.src=ev.target.result;};
     reader.onerror=rej;reader.readAsDataURL(file);
   });
-  const sys=`أنت خبير في قراءة تقارير InBody وأجهزة قياس الجسم. استخرج القيم من الصورة.
-أرجع JSON فقط بدون نص: {"weight":الوزن_كجم,"fat":نسبة_الدهون,"muscle":كتلة_العضل_الهيكلي_كجم,"waist":محيط_الخصر_سم_او_0}
-إذا قيمة غير موجودة ضع 0.`;
+  const sys='أنت خبير في قراءة تقارير InBody وأجهزة قياس الجسم. استخرج القيم من الصورة.\nأرجع JSON فقط بدون نص: {"weight":الوزن_كجم,"fat":نسبة_الدهون,"muscle":كتلة_العضل_الهيكلي_كجم,"waist":محيط_الخصر_سم_او_0}\nإذا قيمة غير موجودة ضع 0.';
   try{
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'استخرج قياسات الجسم من هذا التقرير.'}]}]});
     let t=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
     const m=JSON.parse(t);
-    result.innerHTML=`<div><b>قرأت من التقرير:</b><br><span style="color:var(--text3);font-size:13px">${m.weight?'وزن '+m.weight+'كجم':''} ${m.fat?'· دهون '+m.fat+'%':''} ${m.muscle?'· عضل '+m.muscle+'كجم':''} ${m.waist?'· خصر '+m.waist+'سم':''}</span><br>
-      <button class="btn-primary" style="padding:8px 16px;margin-top:8px" onclick='commitInbody({weight:${m.weight||0},fat:${m.fat||0},muscle:${m.muscle||0},waist:${m.waist||0},chest:0,arm:0});document.getElementById("inbody-result").classList.remove("show")'>+ حفظ القياسات</button></div>`;
+    result.innerHTML='<div><b>قرأت من التقرير:</b><br><span style="color:var(--text3);font-size:13px">'+(m.weight?'وزن '+m.weight+'كجم':'')+' '+(m.fat?'· دهون '+m.fat+'%':'')+' '+(m.muscle?'· عضل '+m.muscle+'كجم':'')+' '+(m.waist?'· خصر '+m.waist+'سم':'')+'</span><br><button class="btn-primary" style="padding:8px 16px;margin-top:8px" onclick=\'commitInbody({weight:'+(m.weight||0)+',fat:'+(m.fat||0)+',muscle:'+(m.muscle||0)+',waist:'+(m.waist||0)+',chest:0,arm:0});document.getElementById("inbody-result").classList.remove("show")\'>+ حفظ القياسات</button></div>';
   }catch(err){result.innerHTML='<p style="color:var(--red)">ما قدرت أقرأ التقرير، جرب صورة أوضح أو أدخل يدوياً.</p>';}
   e.target.value='';
 }
 
 // ═══ WORKOUT ═══
 function renderWorkout(){
+  renderPower();
   renderExLog();
   renderBurn();
   const el=document.getElementById('workout-content');
@@ -1448,13 +1418,11 @@ function renderWorkout(){
   const w=WORKOUTS[day];
   let html='';let idx=0;
   w.blocks.forEach(b=>{
-    html+=`<div class="wkt-block"><div class="wkt-head">${b.h}</div>`;
+    html+='<div class="wkt-block"><div class="wkt-head">'+b.h+'</div>';
     b.items.forEach(it=>{
       const id='flex_'+idx;
       const checked=flexChecks[id]?'done':'';
-      html+=`<div class="wkt-item">
-        <div class="wkt-check ${checked}" onclick="toggleFlex('${id}')">${flexChecks[id]?'✓':''}</div>
-        <div class="wkt-name">${it.n}</div><div class="wkt-detail">${it.d}</div></div>`;
+      html+='<div class="wkt-item"><div class="wkt-check '+checked+'" onclick="toggleFlex(\''+id+'\')">'+(flexChecks[id]?'✓':'')+'</div><div class="wkt-name">'+it.n+'</div><div class="wkt-detail">'+it.d+'</div></div>';
       idx++;
     });
     html+='</div>';
@@ -1489,7 +1457,7 @@ function renderBurn(){
   document.getElementById('burned-display').textContent=burned;
   const el=document.getElementById('burn-log');
   if(!burnLog.length){el.innerHTML='';return;}
-  el.innerHTML=burnLog.map((b,i)=>`<div class="meal-row" style="padding:8px 0"><div class="meal-check done" onclick="removeBurn(${i})">✕</div><div class="meal-info"><div class="meal-cal">${b.cal} سعرة محروقة · ${b.time}</div></div></div>`).join('');
+  el.innerHTML=burnLog.map((b,i)=>'<div class="meal-row" style="padding:8px 0"><div class="meal-check done" onclick="removeBurn('+i+')">✕</div><div class="meal-info"><div class="meal-cal">'+b.cal+' سعرة محروقة · '+b.time+'</div></div></div>').join('');
 }
 // ═══ WATER & STEPS ═══
 function addWater(ml){
@@ -1518,14 +1486,7 @@ function editStepGoal(){
 function renderExLog(){
   const el=document.getElementById('exlog-list');
   if(!exLog.length){el.innerHTML='<div class="empty-mini">ما سجّلت تمارين بعد ⬇️</div>';return;}
-  el.innerHTML=exLog.map((x,i)=>`
-    <div class="meal-row">
-      <div class="meal-check done" onclick="removeEx(${i})" title="حذف">✕</div>
-      <div class="meal-info">
-        <div class="meal-name">${x.name}${x.link?` <a href="${x.link}" target="_blank" style="color:var(--accent);font-size:12px">▶ شرح</a>`:''}</div>
-        <div class="meal-cal">${x.weight?x.weight+' كجم':''}${x.weight&&x.reps?' · ':''}${x.reps?x.reps+' عدّة':''}${x.sets?' × '+x.sets+' جلسة':''}</div>
-      </div>
-    </div>`).join('');
+  el.innerHTML=exLog.map((x,i)=>'<div class="meal-row"><div class="meal-check done" onclick="removeEx('+i+')" title="حذف">✕</div><div class="meal-info"><div class="meal-name">'+x.name+(x.link?' <a href="'+x.link+'" target="_blank" style="color:var(--accent);font-size:12px">▶ شرح</a>':'')+'</div><div class="meal-cal">'+(x.weight?x.weight+' كجم':'')+(x.weight&&x.reps?' · ':'')+(x.reps?x.reps+' عدّة':'')+(x.sets?' × '+x.sets+' جلسة':'')+'</div></div></div>').join('');
 }
 function removeEx(i){exLog.splice(i,1);renderExLog();autoSaveToday();}
 function openExModal(){document.getElementById('ex-modal').classList.add('show');}
@@ -1556,14 +1517,12 @@ async function analyzeExPhoto(e){
     reader.onload=ev=>{img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height,mx=1024;if(w>mx||h>mx){if(w>h){h=h*mx/w;w=mx;}else{w=w*mx/h;h=mx;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.8).split(',')[1]);};img.onerror=rej;img.src=ev.target.result;};
     reader.onerror=rej;reader.readAsDataURL(file);
   });
-  const sys=`أنت مدرب لياقة. انظر لصورة الجهاز الرياضي أو التمرين وتعرّف عليه.
-أرجع JSON فقط: {"name":"اسم التمرين بالعربي","muscle":"العضلة المستهدفة","tip":"نصيحة أداء مختصرة"}`;
+  const sys='أنت مدرب لياقة. انظر لصورة الجهاز الرياضي أو التمرين وتعرّف عليه.\nأرجع JSON فقط: {"name":"اسم التمرين بالعربي","muscle":"العضلة المستهدفة","tip":"نصيحة أداء مختصرة"}';
   try{
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'وش هذا التمرين؟'}]}]});
     let t=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
     const x=JSON.parse(t);
-    result.innerHTML=`<div><b>${x.name}</b> <span style="color:var(--text3);font-size:12px">(${x.muscle})</span><br><span style="color:var(--text3);font-size:13px">${x.tip}</span><br>
-      <button class="btn-primary" style="padding:8px 16px;margin-top:8px" onclick='document.getElementById("ex-name").value=${JSON.stringify(x.name)};openExModal();document.getElementById("ex-photo-result").classList.remove("show")'>+ سجّل أوزانه</button></div>`;
+    result.innerHTML='<div><b>'+x.name+'</b> <span style="color:var(--text3);font-size:12px">('+x.muscle+')</span><br><span style="color:var(--text3);font-size:13px">'+x.tip+'</span><br><button class="btn-primary" style="padding:8px 16px;margin-top:8px" onclick=\'document.getElementById("ex-name").value='+JSON.stringify(x.name)+';openExModal();document.getElementById("ex-photo-result").classList.remove("show")\'>+ سجّل أوزانه</button></div>';
   }catch(err){result.innerHTML='<p style="color:var(--red)">ما تعرّفت على التمرين، سجّله يدوياً.</p>';}
   e.target.value='';
 }
@@ -1573,29 +1532,22 @@ async function analyzeExPhoto(e){
 function renderSupps(){
   const el=document.getElementById('supps-content');
   if(!day){el.innerHTML='<div class="empty-mini">اختر نوع اليوم في تبويب "اليوم" أولاً</div>';return;}
-  // count total active (non-stopped) supps
   let total=0,done=0,idx=0;
   let html='';
   SUPPS[day].forEach(block=>{
-    html+=`<div class="wkt-block"><div class="wkt-head">${block.t}</div>`;
+    html+='<div class="wkt-block"><div class="wkt-head">'+block.t+'</div>';
     block.items.forEach(it=>{
       const stop=it.includes('⛔');
       const id='supp_'+idx;
       if(!stop){total++;if(suppChecks[id])done++;}
       const checked=suppChecks[id]?'done':'';
-      html+=`<div class="wkt-item" style="${stop?'opacity:.5':''}">
-        <div class="wkt-check ${checked}" ${stop?'':`onclick="toggleSupp('${id}')"`}>${suppChecks[id]?'✓':''}</div>
-        <div class="wkt-name">${it}</div></div>`;
+      html+='<div class="wkt-item" style="'+(stop?'opacity:.5':'')+'"><div class="wkt-check '+checked+'" '+(stop?'':'onclick="toggleSupp(\''+id+'\')"')+'>'+(suppChecks[id]?'✓':'')+'</div><div class="wkt-name">'+it+'</div></div>';
       idx++;
     });
     html+='</div>';
   });
-  // header summary
   const pct=total?Math.round(done/total*100):0;
-  const summary=`<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
-    <div class="plan-count">${done} / ${total} مكمل</div>
-    <div style="font-size:14px;font-weight:600;color:${pct===100?'var(--green)':'var(--accent)'}">${pct}% ✅</div>
-  </div>`;
+  const summary='<div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center"><div class="plan-count">'+done+' / '+total+' مكمل</div><div style="font-size:14px;font-weight:600;color:'+(pct===100?'var(--green)':'var(--accent)')+'">'+pct+'% ✅</div></div>';
   el.innerHTML=summary+html;
 }
 function toggleSupp(id){
@@ -1623,15 +1575,9 @@ function renderTodayRemaining(){
     ['🌾 كارب',t.carb-carb,t.carb,'var(--orange)'],
     ['🥑 دهون',tFat-fat,tFat,'var(--purple)']
   ];
-  el.innerHTML=`<div style="font-size:12px;color:var(--text3);margin-bottom:12px">${t.label}</div>`+rows.map(r=>{
+  el.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+t.label+'</div>'+rows.map(r=>{
     const pct=Math.max(0,Math.min(100,(r[2]-r[1])/r[2]*100));
-    return `<div style="margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
-        <span style="color:${r[3]};font-weight:700">${r[1]<0?'تجاوزت '+Math.abs(r[1]):'باقي '+r[1]}</span>
-        <span style="color:var(--text2)">${r[0]}</span>
-      </div>
-      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%;background:${r[3]}"></div></div>
-    </div>`;
+    return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span style="color:'+r[3]+';font-weight:700">'+(r[1]<0?'تجاوزت '+Math.abs(r[1]):'باقي '+r[1])+'</span><span style="color:var(--text2)">'+r[0]+'</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:'+pct+'%;background:'+r[3]+'"></div></div></div>';
   }).join('');
 }
 
@@ -1648,16 +1594,10 @@ function lineChart(points,color,unit,goalLine){
   const y=v=>H-pad-((v-mn)/rng)*(H-2*pad);
   let path='';
   points.forEach((p,i)=>{path+=(i===0?'M':'L')+x(i).toFixed(1)+','+y(p.v).toFixed(1)+' ';});
-  let dots=points.map((p,i)=>`<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="3" fill="${color}"/>`).join('');
+  let dots=points.map((p,i)=>'<circle cx="'+x(i).toFixed(1)+'" cy="'+y(p.v).toFixed(1)+'" r="3" fill="'+color+'"/>').join('');
   let goal='';
-  if(goalLine!==undefined){const gy=y(goalLine).toFixed(1);goal=`<line x1="${pad}" y1="${gy}" x2="${W-pad}" y2="${gy}" stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/><text x="${pad+2}" y="${gy-4}" fill="var(--green)" font-size="9">الهدف ${goalLine}</text>`;}
-  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto">
-    <text x="${pad-2}" y="${y(mx)+3}" fill="var(--text3)" font-size="9" text-anchor="end">${Math.round(mx)}</text>
-    <text x="${pad-2}" y="${y(mn)+3}" fill="var(--text3)" font-size="9" text-anchor="end">${Math.round(mn)}</text>
-    ${goal}
-    <path d="${path}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-    ${dots}
-  </svg>`;
+  if(goalLine!==undefined){const gy=y(goalLine).toFixed(1);goal='<line x1="'+pad+'" y1="'+gy+'" x2="'+(W-pad)+'" y2="'+gy+'" stroke="var(--green)" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/><text x="'+(pad+2)+'" y="'+(gy-4)+'" fill="var(--green)" font-size="9">الهدف '+goalLine+'</text>';}
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto"><text x="'+(pad-2)+'" y="'+(y(mx)+3)+'" fill="var(--text3)" font-size="9" text-anchor="end">'+Math.round(mx)+'</text><text x="'+(pad-2)+'" y="'+(y(mn)+3)+'" fill="var(--text3)" font-size="9" text-anchor="end">'+Math.round(mn)+'</text>'+goal+'<path d="'+path+'" fill="none" stroke="'+color+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>'+dots+'</svg>';
 }
 function renderWeightChart(){
   const el=document.getElementById('weight-chart');if(!el)return;
@@ -1686,25 +1626,14 @@ function renderProgress(){
   const db=getDB();
   const keys=Object.keys(db);
   const w=getWeights();
-  // stats
   const totalDays=keys.length;
   const avgCal=totalDays?Math.round(keys.reduce((s,k)=>s+(db[k].eaten||0),0)/totalDays):0;
   let onTarget=keys.filter(k=>{const r=db[k];return r.eaten&&r.eaten<=r.target+100;}).length;
-  // supplement adherence
   const suppDays=keys.filter(k=>db[k].suppTotal>0);
   const avgSuppPct=suppDays.length?Math.round(suppDays.reduce((s,k)=>s+(db[k].suppDone/db[k].suppTotal*100),0)/suppDays.length):0;
   const perfectSuppDays=keys.filter(k=>db[k].suppTotal>0&&db[k].suppDone===db[k].suppTotal).length;
-  // total exercises logged
   const totalEx=keys.reduce((s,k)=>s+((db[k].exLog||[]).length),0);
-  document.getElementById('prog-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${totalDays}</div><div class="stat-lbl">يوم مسجل</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${onTarget}</div><div class="stat-lbl">يوم ضمن الهدف</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--orange)">${avgCal||'—'}</div><div class="stat-lbl">متوسط السعرات</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:#ec4899">${avgSuppPct}%</div><div class="stat-lbl">التزام المكملات</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--green)">${perfectSuppDays}</div><div class="stat-lbl">يوم مكملات كامل 💊</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--accent)">${totalEx}</div><div class="stat-lbl">تمرين مسجّل 🏋️</div></div>
-    <div class="stat-card"><div class="stat-val" style="color:var(--purple)">${w.length}</div><div class="stat-lbl">قياس وزن</div></div>
-  `;
+  document.getElementById('prog-stats').innerHTML='<div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalDays+'</div><div class="stat-lbl">يوم مسجل</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+onTarget+'</div><div class="stat-lbl">يوم ضمن الهدف</div></div><div class="stat-card"><div class="stat-val" style="color:var(--orange)">'+(avgCal||'—')+'</div><div class="stat-lbl">متوسط السعرات</div></div><div class="stat-card"><div class="stat-val" style="color:#ec4899">'+avgSuppPct+'%</div><div class="stat-lbl">التزام المكملات</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+perfectSuppDays+'</div><div class="stat-lbl">يوم مكملات كامل 💊</div></div><div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalEx+'</div><div class="stat-lbl">تمرين مسجّل 🏋️</div></div><div class="stat-card"><div class="stat-val" style="color:var(--purple)">'+w.length+'</div><div class="stat-lbl">قياس وزن</div></div>';
   renderCal(db);
 }
 function renderCal(db){
@@ -1713,19 +1642,19 @@ function renderCal(db){
   const first=new Date(y,m,1).getDay();
   const days=new Date(y,m+1,0).getDate();
   const today=new Date();
-  let html=AR_DAYS.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  let html=AR_DAYS.map(d=>'<div class="cal-dn">'+d+'</div>').join('');
   for(let i=0;i<first;i++)html+='<div class="cal-cell empty"></div>';
   for(let d=1;d<=days;d++){
     const k=y+'-'+(m+1)+'-'+d;
     const rec=db[k];
     const isT=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
     const future=new Date(y,m,d)>today;
-    const click=future?'':`onclick="goToDate(new Date(${y},${m},${d}));goPageByName('today')"`;
+    const click=future?'':'onclick="goToDate(new Date('+y+','+m+','+d+'));goPageByName(\'today\')"';
     const cur=future?'':'cursor:pointer';
     if(rec){
-      html+=`<div class="cal-cell has-data${isT?' today':''}" ${click} style="${cur}">${d}<div class="cal-dot" style="background:${TYPE_COLOR[rec.day]}"></div></div>`;
+      html+='<div class="cal-cell has-data'+(isT?' today':'')+'" '+click+' style="'+cur+'">'+d+'<div class="cal-dot" style="background:'+TYPE_COLOR[rec.day]+'"></div></div>';
     }else{
-      html+=`<div class="cal-cell no-data${isT?' today':''}" ${click} style="${cur}">${d}</div>`;
+      html+='<div class="cal-cell no-data'+(isT?' today':'')+'" '+click+' style="'+cur+'">'+d+'</div>';
     }
   }
   document.getElementById('cal-grid').innerHTML=html;
@@ -1737,22 +1666,17 @@ function drawCard(title,cal,protein,carb,fat){
   const cv=document.getElementById('share-canvas');
   const ctx=cv.getContext('2d');
   const W=600,H=600;
-  // bg gradient
   const bg=ctx.createLinearGradient(0,0,W,H);
   bg.addColorStop(0,'#0d1426');bg.addColorStop(1,'#0a0e1a');
   ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-  // card border glow
   ctx.strokeStyle='rgba(0,212,255,0.25)';ctx.lineWidth=2;
   roundRect(ctx,20,20,W-40,H-40,28);ctx.stroke();
-  // title
   ctx.fillStyle='#e2e8f0';ctx.font='bold 34px "IBM Plex Sans Arabic",sans-serif';ctx.textAlign='center';
   ctx.direction='rtl';
   ctx.fillText(title.length>22?title.slice(0,22)+'…':title,W/2,90);
-  // macro percentages
   const pCal=protein*4,cCal=carb*4,fCal=fat*9;
   const tot=pCal+cCal+fCal||1;
   const pPct=pCal/tot,cPct=cCal/tot,fPct=fCal/tot;
-  // ring
   const cx=W/2,cy=270,r=95,lw=30;
   let start=-Math.PI/2;
   const segs=[[pPct,'#22c55e'],[cPct,'#3b82f6'],[fPct,'#a78bfa']];
@@ -1762,12 +1686,10 @@ function drawCard(title,cal,protein,carb,fat){
     ctx.strokeStyle=s[1];ctx.lineWidth=lw;ctx.lineCap='round';ctx.stroke();
     start=end;
   });
-  // center calories
   ctx.fillStyle='#fff';ctx.font='bold 56px "IBM Plex Sans Arabic",sans-serif';
   ctx.fillText(cal,cx,cy+5);
   ctx.fillStyle='#64748b';ctx.font='20px "IBM Plex Sans Arabic",sans-serif';
   ctx.fillText('سعرة',cx,cy+38);
-  // macro boxes
   const boxes=[['البروتين',protein,Math.round(pPct*100),'#22c55e',150],['الكارب',carb,Math.round(cPct*100),'#3b82f6',300],['الدهون',fat,Math.round(fPct*100),'#a78bfa',450]];
   boxes.forEach(b=>{
     const x=b[4];
@@ -1778,7 +1700,6 @@ function drawCard(title,cal,protein,carb,fat){
     ctx.fillStyle='#94a3b8';ctx.font='18px "IBM Plex Sans Arabic",sans-serif';
     ctx.fillText(b[0],x,490);
   });
-  // footer brand
   ctx.fillStyle='#00d4ff';ctx.font='bold 24px "IBM Plex Sans Arabic",sans-serif';
   ctx.fillText('⚡ Command Center',W/2,550);
   ctx.fillStyle='#475569';ctx.font='15px "IBM Plex Sans Arabic",sans-serif';
@@ -1833,14 +1754,13 @@ function renderApiKeyStatus(){
   const setup=document.getElementById('apikey-setup');
   if(!status)return;
   if(has){
-    status.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:12px 14px"><span style="color:var(--green);font-size:13px">✅ المفتاح مفعّل — الميزات الذكية تشتغل</span><button class="chip" onclick="clearApiKey()" style="color:var(--red)">حذف</button></div>`;
+    status.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:12px 14px"><span style="color:var(--green);font-size:13px">✅ المفتاح مفعّل — الميزات الذكية تشتغل</span><button class="chip" onclick="clearApiKey()" style="color:var(--red)">حذف</button></div>';
     setup.style.display='none';
   } else {
     status.innerHTML='';
     setup.style.display='block';
   }
 }
-// unified Claude call — uses user's key, or falls back to in-app proxy (works only inside Claude app)
 async function callClaude(body){
   const key=getApiKey();
   const headers={'Content-Type':'application/json'};
@@ -1865,16 +1785,8 @@ async function askAI(){
   const w=getWeights();
   const curW=w.length?w[w.length-1].kg:'غير مسجل';
   const eaten=meals.reduce((s,m)=>s+m.cal,0);
-  const dayCtx=day?`اليوم: ${TARGETS[day].label}، هدف السعرات ${TARGETS[day].cal}، أكل ${eaten} حتى الآن`:'لم يحدد نوع اليوم';
-  const sys=`أنت مدرب لياقة وتغذية لأحمد الحداد. جاوب بالعربي بإيجاز (أقل من 90 كلمة)، عملي ومباشر.
-
-بياناته: طول 175سم، وزن حالي ${curW} كجم، هدف 75 كجم ناشف بنهاية 2026. عمره مقتبل الـ30.
-نشاطه: نادي 3-4 أيام، كورة يومين، شغل مكتبي (نشاط ضعيف).
-سعراته المستهدفة: حديد 1900 | كورة 2050 | مزدوج 2250 | راحة 1650.
-بروتين مستهدف ~150-170غ يومياً للحفاظ على العضل أثناء التنشيف.
-وجباته من مطعم: ~386-525 سعرة للوجبة، 3 وجبات + وجبة رابعة يوم الكورة.
-ملاحظة: كان ياكل قليل جداً (1100-1400) — يحتاج يرفع لمستوى الهدف لتنشيف صحي بدون فقد عضل.
-${dayCtx}.`;
+  const dayCtx=day?'اليوم: '+TARGETS[day].label+'، هدف السعرات '+TARGETS[day].cal+'، أكل '+eaten+' حتى الآن':'لم يحدد نوع اليوم';
+  const sys='أنت مدرب لياقة وتغذية لأحمد الحداد. جاوب بالعربي بإيجاز (أقل من 90 كلمة)، عملي ومباشر.\n\nبياناته: طول 175سم، وزن حالي '+curW+' كجم، هدف 75 كجم ناشف بنهاية 2026. عمره مقتبل الـ30.\nنشاطه: نادي 3-4 أيام، كورة يومين، شغل مكتبي (نشاط ضعيف). يركز على القوة الانفجارية والتنشيف للكورة.\nسعراته المستهدفة: حديد 1900 | كورة 2050 | مزدوج 2250 | راحة 1650.\nبروتين مستهدف ~150-170غ يومياً للحفاظ على العضل أثناء التنشيف.\n'+dayCtx+'.';
   try{
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:q}]});
     resp.innerHTML='<p>'+(data.content?.[0]?.text||'جرب مرة ثانية')+'</p>';
