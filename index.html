@@ -33,7 +33,19 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .botnav{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,26,0.95);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100;}
 .botnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--text3);transition:color .2s;}
 .botnav-tab.active{color:var(--accent);}
-.botnav-icon{font-size:20px;}
+.botnav-tab:active{transform:scale(.88);}
+.botnav-icon{font-size:20px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.botnav-tab.active .botnav-icon{transform:translateY(-2px) scale(1.12);}
+.botnav-tab.active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(0,212,255,.5));}
+.botnav-tab:nth-child(1).active{color:var(--accent);}
+.botnav-tab:nth-child(2).active{color:var(--green);}
+.botnav-tab:nth-child(2).active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(34,197,94,.5));}
+.botnav-tab:nth-child(3).active{color:var(--purple);}
+.botnav-tab:nth-child(3).active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(167,139,250,.5));}
+.botnav-tab:nth-child(4).active{color:var(--orange);}
+.botnav-tab:nth-child(4).active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(245,158,11,.5));}
+.botnav-tab:nth-child(5).active{color:var(--pink);}
+.botnav-tab:nth-child(5).active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(236,72,153,.5));}
 .botnav-icon svg{width:22px;height:22px;display:block;}
 .day-icon svg{width:24px;height:24px;display:block;margin:0 auto;}
 .botnav-lbl{font-size:10px;font-weight:600;}
@@ -57,7 +69,8 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .day-btn.active-football{border-color:var(--football);background:rgba(34,197,94,.08);}
 .day-btn.active-both{border-color:var(--both);background:rgba(167,139,250,.08);}
 .day-btn.active-rest{border-color:var(--rest);background:rgba(245,158,11,.08);}
-.day-icon{font-size:22px;color:var(--text3);}
+.day-icon{font-size:22px;color:var(--text3);transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.day-btn[class*="active-"] .day-icon{transform:scale(1.18);}
 .day-name{font-size:11px;font-weight:600;}
 .day-btn.active-gym .day-name,.day-btn.active-gym .day-icon{color:var(--gym);}
 .day-btn.active-football .day-name,.day-btn.active-football .day-icon{color:var(--football);}
@@ -266,10 +279,14 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       <div style="font-size:24px;font-weight:700;color:var(--accent)" id="water-display">0</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:10px">/ 3600 مل</div>
       <div class="progress-bar-bg" style="margin-bottom:10px"><div class="progress-bar-fill" id="water-bar" style="width:0%;background:linear-gradient(90deg,#0099cc,#00d4ff)"></div></div>
-      <div style="display:flex;gap:6px;justify-content:center">
+      <div style="display:flex;gap:6px;justify-content:center;margin-bottom:8px">
         <button class="chip" onclick="addWater(250)">+ كوب</button>
         <button class="chip" onclick="addWater(500)">+ لتر½</button>
         <button class="chip" onclick="addWater(-250)" style="color:var(--text3)">−</button>
+      </div>
+      <div style="display:flex;gap:6px">
+        <input class="modal-input" id="water-input" type="number" inputmode="numeric" placeholder="مل" style="flex:1;font-size:13px;padding:8px;text-align:center">
+        <button class="chip" onclick="addWaterCustom()" style="border-color:var(--accent);color:var(--accent);white-space:nowrap">+ أضف</button>
       </div>
     </div>
     <div class="card" style="flex:1;margin-bottom:0;text-align:center">
@@ -305,10 +322,42 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 <!-- ══ WORKOUT ══ -->
 <div class="page" id="page-workout">
   <div class="section-title">🏋️ التمارين</div>
-  <div class="section-desc">سجّل تمارينك وأوزانك — تدخل في البروقرس</div>
+  <div class="section-desc">اختر عضلاتك · سجّل جلساتك بالوزن والعدّات · كله يدخل البروقرس</div>
 
-  <!-- logged exercises -->
-  <!-- burned calories -->
+  <!-- muscle groups (الأساسي) -->
+  <div class="card">
+    <div class="sec-label">العضلات — اختر اللي لعبتها 💪</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">اضغط العضلة عشان تطلع تمارينها · تقدر تختار كذا عضلة في نفس اليوم · اضغط أي تمرين عشان تسجّل جلساته</div>
+    <div id="muscle-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
+    <div id="muscle-content" style="margin-top:14px"></div>
+  </div>
+
+  <!-- explosive power (اختياري) -->
+  <div class="card">
+    <div class="sec-label">القوة الانفجارية والتنشيف ⚡ <span style="color:var(--text3);font-weight:400">· اختياري</span></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">تمارين تساعد سرعتك وانفجاريتك للكورة · سجّل جلساتك · ▶ للشرح بالفيديو</div>
+    <div id="power-progress" style="margin-bottom:14px"></div>
+    <div id="power-content"></div>
+  </div>
+
+  <!-- flexibility -->
+  <div class="card">
+    <div class="sec-label">المرونة والإطالة 🧘 <span style="color:var(--text3);font-weight:400">· حسب نوع يومك</span></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">مهمة لعمر الـ30 وللوقاية من الإصابات · أشّر على اللي خلّصته · ▶ للشرح</div>
+    <div id="workout-content"></div>
+  </div>
+
+  <!-- manual exercise log -->
+  <div class="card">
+    <div class="sec-label">تمارين سجّلتها يدوياً ✍️</div>
+    <div id="exlog-list"></div>
+    <button class="add-meal-btn" onclick="openExModal()" style="border-color:rgba(0,212,255,.5);color:var(--accent);background:rgba(0,212,255,.06)">+ سجّل تمرين</button>
+    <button class="add-meal-btn" onclick="document.getElementById('ex-photo').click()" style="border-color:rgba(167,139,250,.5);color:var(--purple);background:rgba(167,139,250,.06)">📸 صوّر الجهاز / التمرين — كلود يتعرّف عليه ويسجّل جلساته</button>
+    <input type="file" id="ex-photo" accept="image/*" capture="environment" style="display:none" onchange="analyzeExPhoto(event)">
+    <div class="ai-resp" id="ex-photo-result" style="margin-top:12px"></div>
+  </div>
+
+  <!-- burned calories (آخر شي) -->
   <div class="card">
     <div class="sec-label">السعرات المحروقة 🔥</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">من ساعتك أو جهاز الكارديو أو تقديرك — أنت تدخلها</div>
@@ -327,27 +376,25 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div style="font-size:11px;color:var(--text3);text-align:center" id="burn-mode-hint">المحروق يزيد سعراتك المتاحة لليوم</div>
     <div id="burn-log" style="margin-top:10px"></div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="sec-label">تمارين اليوم</div>
-    <div id="exlog-list"></div>
-    <button class="add-meal-btn" onclick="openExModal()" style="border-color:rgba(0,212,255,.5);color:var(--accent);background:rgba(0,212,255,.06)">+ سجّل تمرين</button>
-    <button class="add-meal-btn" onclick="document.getElementById('ex-photo').click()" style="border-color:rgba(167,139,250,.5);color:var(--purple);background:rgba(167,139,250,.06)">📸 صوّر الجهاز / التمرين — كلود يتعرّف عليه</button>
-    <input type="file" id="ex-photo" accept="image/*" capture="environment" style="display:none" onchange="analyzeExPhoto(event)">
-    <div class="ai-resp" id="ex-photo-result" style="margin-top:12px"></div>
-  </div>
-
-  <!-- explosive power reference -->
-  <div class="card">
-    <div class="sec-label">القوة الانفجارية والتنشيف ⚡</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">سوِّ الـ Power block أول الجلسة قبل الحديد · اضغط ▶ لشرح التكنيك في يوتيوب</div>
-    <div id="power-content"></div>
-  </div>
-
-  <!-- flexibility reference -->
-  <div class="card">
-    <div class="sec-label">المرونة والإطالة (لعمر الـ30)</div>
-    <div id="workout-content"></div>
+<!-- SETS MODAL (تتبّع جلسات كل تمرين) -->
+<div class="modal-bg" id="sets-modal" style="z-index:220">
+  <div class="modal" style="max-height:88vh;display:flex;flex-direction:column">
+    <div class="modal-title" id="sets-title">الجلسات</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="modal-btn mb-save" id="side-total" onclick="setSideMode(false)" style="flex:1;font-size:12px">⚖️ وزن إجمالي</button>
+      <button class="modal-btn mb-cancel" id="side-perside" onclick="setSideMode(true)" style="flex:1;font-size:12px">↔️ بليت لكل جهة</button>
+    </div>
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:12px" id="sets-hint">سجّل وزن وعدّات كل جلسة · أضف جلسات بقدر ما لعبت</div>
+    <div id="sets-rows" style="overflow-y:auto;flex:1;min-height:60px"></div>
+    <button class="add-meal-btn" onclick="addSet()" style="margin-top:4px">+ أضف جلسة</button>
+    <div id="prev-compare" style="margin-top:10px"></div>
+    <div id="sets-summary" style="background:var(--surface2);border-radius:10px;padding:12px;font-size:13px;color:var(--text2);text-align:center;margin-top:12px">سجّل وزن وعدّات كل جلسة</div>
+    <div class="modal-btns" style="gap:8px">
+      <button class="modal-btn mb-cancel" onclick="repeatLastSet()" style="flex:1;font-size:13px">⟳ كرّر آخر جلسة</button>
+      <button class="modal-btn mb-save" onclick="closeSets()" style="flex:1">تم ✓</button>
+    </div>
   </div>
 </div>
 
@@ -405,6 +452,24 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div class="goal-top"><div class="goal-title">🎯 هدف التنشيف</div><div class="goal-badge" id="goal-remaining">—</div></div>
     <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
     <div class="goal-labels"><span id="goal-current">— كجم</span><span>الهدف 75 كجم</span></div>
+  </div>
+
+  <!-- Goal ETA -->
+  <div class="card">
+    <div class="sec-label">⏱️ مدة تحقيق الهدف</div>
+    <div id="goal-eta"></div>
+  </div>
+
+  <!-- Exercise PRs -->
+  <div class="card">
+    <div class="sec-label">🏋️ أرقامك القياسية في التمارين</div>
+    <div id="exercise-progress"></div>
+  </div>
+
+  <!-- Dynamic calories suggestion -->
+  <div class="card">
+    <div class="sec-label">🔢 السعرات المقترحة لك</div>
+    <div id="dynamic-cals"></div>
   </div>
 
   <!-- Weight log -->
@@ -675,29 +740,29 @@ const WORKOUTS={
     title:'يوم الحديد 🏋️',
     blocks:[
       {h:'🔥 إحماء (5 دقائق)',items:[
-        {n:'مشي سريع / دراجة',d:'5 دقائق'},
-        {n:'تدوير الكتف والورك',d:'10 لكل اتجاه'}]},
+        {n:'مشي سريع / دراجة',d:'5 دقائق',q:'treadmill warm up'},
+        {n:'تدوير الكتف والورك',d:'10 لكل اتجاه',q:'shoulder hip circles warm up'}]},
       {h:'💪 تمرين القوة',items:[
         {n:'حسب برنامجك الحالي',d:'استمر عليه'}]},
       {h:'🧘 مرونة بعد التمرين (مهم لعمر الـ30)',items:[
-        {n:'تمدد الصدر على الحائط',d:'30 ثانية ×2'},
-        {n:'تمدد الورك (Hip Flexor)',d:'30 ثانية لكل رجل'},
-        {n:'تمدد أوتار الركبة',d:'30 ثانية لكل رجل'},
-        {n:'دوران العمود الفقري أرضاً',d:'10 لكل جهة'}]}
+        {n:'تمدد الصدر على الحائط',d:'30 ثانية ×2',q:'doorway chest stretch'},
+        {n:'تمدد الورك (Hip Flexor)',d:'30 ثانية لكل رجل',q:'hip flexor stretch'},
+        {n:'تمدد أوتار الركبة',d:'30 ثانية لكل رجل',q:'hamstring stretch'},
+        {n:'دوران العمود الفقري أرضاً',d:'10 لكل جهة',q:'supine spinal twist'}]}
     ]
   },
   football:{
     title:'يوم الكورة ⚽',
     blocks:[
       {h:'🔥 إحماء ديناميكي قبل اللعب',items:[
-        {n:'ركض خفيف',d:'3 دقائق'},
-        {n:'فتح الورك ديناميكي',d:'10 لكل رجل'},
-        {n:'نطّات خفيفة',d:'20 ثانية'}]},
+        {n:'ركض خفيف',d:'3 دقائق',q:'light jog warm up'},
+        {n:'فتح الورك ديناميكي',d:'10 لكل رجل',q:'dynamic hip opener'},
+        {n:'نطّات خفيفة',d:'20 ثانية',q:'pogo jumps warm up'}]},
       {h:'🧘 تبريد ومرونة بعد الكورة (ضروري)',items:[
-        {n:'تمدد السمانة على الحائط',d:'30 ثانية لكل رجل'},
-        {n:'تمدد الفخذ الأمامي',d:'30 ثانية لكل رجل'},
-        {n:'تمدد أوتار الركبة',d:'30 ثانية لكل رجل'},
-        {n:'تمدد الورك العميق (Pigeon)',d:'30 ثانية لكل جهة'}]}
+        {n:'تمدد السمانة على الحائط',d:'30 ثانية لكل رجل',q:'calf stretch wall'},
+        {n:'تمدد الفخذ الأمامي',d:'30 ثانية لكل رجل',q:'quad stretch'},
+        {n:'تمدد أوتار الركبة',d:'30 ثانية لكل رجل',q:'hamstring stretch'},
+        {n:'تمدد الورك العميق (Pigeon)',d:'30 ثانية لكل جهة',q:'pigeon pose stretch'}]}
     ]
   },
   both:{
@@ -707,63 +772,354 @@ const WORKOUTS={
         {n:'يوم شاق جداً — رطّب جيداً',d:'ماي + إلكتروليت'},
         {n:'كل 30-60 جرام كارب بين الجلستين',d:'موز/تمر'}]},
       {h:'🧘 مرونة شاملة قبل النوم',items:[
-        {n:'تمدد كامل للجسم',d:'10 دقائق'},
-        {n:'تمدد الورك والظهر',d:'مع تنفس عميق'},
-        {n:'وضعية الطفل (Child Pose)',d:'دقيقة كاملة'}]}
+        {n:'تمدد كامل للجسم',d:'10 دقائق',q:'full body stretch routine'},
+        {n:'تمدد الورك والظهر',d:'مع تنفس عميق',q:'hip back stretch'},
+        {n:'وضعية الطفل (Child Pose)',d:'دقيقة كاملة',q:'child pose yoga'}]}
     ]
   },
   rest:{
     title:'يوم الراحة 😴',
     blocks:[
       {h:'🚶 نشاط خفيف',items:[
-        {n:'مشي 20-30 دقيقة',d:'يساعد الحرق والاسترجاع'}]},
+        {n:'مشي 20-30 دقيقة',d:'يساعد الحرق والاسترجاع',q:'walking recovery'}]},
       {h:'🧘 يوغا/مرونة استرجاعية',items:[
-        {n:'تمدد كامل بطيء',d:'10-15 دقيقة'},
-        {n:'تمارين تنفس',d:'5 دقائق'},
-        {n:'تمدد الرقبة والكتف (للجلوس الطويل)',d:'30 ثانية لكل اتجاه'},
-        {n:'تمدد أسفل الظهر',d:'دقيقة'}]}
+        {n:'تمدد كامل بطيء',d:'10-15 دقيقة',q:'recovery stretch routine'},
+        {n:'تمارين تنفس',d:'5 دقائق',q:'breathing exercise relax'},
+        {n:'تمدد الرقبة والكتف (للجلوس الطويل)',d:'30 ثانية لكل اتجاه',q:'neck shoulder stretch desk'},
+        {n:'تمدد أسفل الظهر',d:'دقيقة',q:'lower back stretch'}]}
     ]
   }
 };
 
-// ═══ EXPLOSIVE POWER + CUTTING DRILLS ═══
+// ═══ مخطط العضلات + التمارين الجاهزة ═══
+// أيقونات ملوّنة لكل عضلة
+const MUSCLES=[
+  {id:'chest',n:'صدر',c:'#00d4ff',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7c0-1 1-2 2-2 3 0 5 2 7 2s4-2 7-2c1 0 2 1 2 2 0 5-3 9-9 9S3 12 3 7Z"/></svg>',
+    ex:[
+      {e:'Bench Press',n:'بنش بريس',d:'4 × 8',q:'bench press proper form tutorial'},
+      {e:'Incline Dumbbell Press',n:'بنش مائل دمبل',d:'3 × 10',q:'incline dumbbell press form'},
+      {e:'Chest Fly',n:'تفتيح صدر',d:'3 × 12',q:'chest fly exercise form'},
+      {e:'Push-Ups',n:'ضغط',d:'3 × للفشل',q:'push up proper form'}]},
+  {id:'back',n:'ظهر',c:'#22c55e',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 6l5-3 5 3M6 10h12M7 14h10"/></svg>',
+    ex:[
+      {e:'Deadlift',n:'ديدليفت',d:'4 × 6',q:'deadlift proper form tutorial'},
+      {e:'Pull-Ups',n:'عقلة',d:'3 × للفشل',q:'pull up proper form'},
+      {e:'Lat Pulldown',n:'سحب أمامي',d:'3 × 10',q:'lat pulldown form'},
+      {e:'Barbell Row',n:'تجديف بار',d:'4 × 8',q:'barbell row form'}]},
+  {id:'shoulder',n:'كتف',c:'#a78bfa',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7M4 11l3 2M20 11l-3 2"/></svg>',
+    ex:[
+      {e:'Overhead Press',n:'ضغط كتف',d:'4 × 8',q:'overhead press shoulder form'},
+      {e:'Lateral Raise',n:'رفرفة جانبي',d:'3 × 12',q:'lateral raise form'},
+      {e:'Front Raise',n:'رفرفة أمامي',d:'3 × 12',q:'front raise shoulder form'},
+      {e:'Face Pull',n:'سحب للوجه',d:'3 × 15',q:'face pull exercise form'}]},
+  {id:'legs',n:'أرجل',c:'#f59e0b',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v7l-2 11M15 3v7l2 11M9 10h6"/></svg>',
+    ex:[
+      {e:'Squat',n:'سكوات',d:'4 × 8',q:'barbell squat proper form'},
+      {e:'Leg Press',n:'مكبس الأرجل',d:'4 × 10',q:'leg press form'},
+      {e:'Romanian Deadlift',n:'رفعة رومانية',d:'3 × 10',q:'romanian deadlift form'},
+      {e:'Leg Curl',n:'ثني الرجل',d:'3 × 12',q:'leg curl machine form'},
+      {e:'Calf Raise',n:'سمانة',d:'4 × 15',q:'calf raise form'}]},
+  {id:'biceps',n:'بايسبس',c:'#ec4899',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13c0-3 2-5 5-5l4 1c2 0 3 2 3 4M7 13c-1 3 0 6 3 7M17 13a4 4 0 0 1-4 4"/></svg>',
+    ex:[
+      {e:'Barbell Curl',n:'بايسبس بار',d:'4 × 10',q:'barbell curl form'},
+      {e:'Dumbbell Curl',n:'بايسبس دمبل',d:'3 × 12',q:'dumbbell bicep curl form'},
+      {e:'Hammer Curl',n:'هامر',d:'3 × 12',q:'hammer curl form'}]},
+  {id:'triceps',n:'ترايسبس',c:'#14b8a6',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 13c0-3-2-5-5-5l-4 1c-2 0-3 2-3 4M17 13c1 3 0 6-3 7M7 13a4 4 0 0 0 4 4"/></svg>',
+    ex:[
+      {e:'Triceps Pushdown',n:'ترايسبس كيبل',d:'4 × 12',q:'tricep pushdown form'},
+      {e:'Skull Crusher',n:'تكسير جمجمة',d:'3 × 10',q:'skull crusher tricep form'},
+      {e:'Dips',n:'غطس',d:'3 × للفشل',q:'tricep dips form'}]},
+  {id:'abs',n:'بطن',c:'#eab308',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="3"/><path d="M7 9h10M7 14h10M12 3v18"/></svg>',
+    ex:[
+      {e:'Plank',n:'بلانك',d:'3 × دقيقة',q:'plank proper form'},
+      {e:'Hanging Leg Raise',n:'رفع الأرجل معلّق',d:'3 × 12',q:'hanging leg raise form'},
+      {e:'Cable Crunch',n:'كرنش كيبل',d:'3 × 15',q:'cable crunch form'},
+      {e:'Russian Twist',n:'لف روسي',d:'3 × 20',q:'russian twist form'}]},
+  {id:'core',n:'كور',c:'#f97316',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18M12 3a9 9 0 0 0 0 18M3 12h18"/></svg>',
+    ex:[
+      {e:'Plank',n:'بلانك ثابت',d:'3 × دقيقة',q:'plank core stability'},
+      {e:'Dead Bug',n:'الحشرة الميتة',d:'3 × 10',q:'dead bug exercise core'},
+      {e:'Bird Dog',n:'بيرد دوق',d:'3 × 10',q:'bird dog exercise core'},
+      {e:'Pallof Press',n:'بالوف بريس',d:'3 × 12',q:'pallof press anti rotation'},
+      {e:'Hollow Hold',n:'هولو هولد',d:'3 × 30ث',q:'hollow hold core'}]},
+  {id:'grip',n:'قبضة',c:'#84cc16',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 11V7a2 2 0 0 1 4 0M10 11V5a2 2 0 0 1 4 0v6M14 11V7a2 2 0 0 1 4 0v8a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-3l-2-3.5a1.5 1.5 0 0 1 2.5-1.5L6 12"/></svg>',
+    ex:[
+      {e:'Farmer Carry',n:'حمل المزارع',d:'3 × 40 متر',q:'farmers carry grip strength'},
+      {e:'Dead Hang',n:'تعليق على البار',d:'3 × أطول وقت',q:'dead hang grip'},
+      {e:'Plate Pinch',n:'مسك البليت',d:'3 × 30ث',q:'plate pinch grip exercise'},
+      {e:'Wrist Curl',n:'ثني الرسغ',d:'3 × 15',q:'wrist curl forearm'},
+      {e:'Towel Pull-Up',n:'عقلة بمنشفة',d:'3 × للفشل',q:'towel pull up grip'}]}
+];
+let selectedMuscles={}; // {chest:true,...}
+function renderMuscleGrid(){
+  const el=document.getElementById('muscle-grid');
+  if(!el)return;
+  el.innerHTML=MUSCLES.map(m=>{
+    const on=selectedMuscles[m.id];
+    return '<button onclick="toggleMuscle(\''+m.id+'\')" style="background:'+(on?m.c+'1f':'var(--surface2)')+';border:2px solid '+(on?m.c:'var(--border)')+';border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s;font-family:inherit">'
+      +'<span style="width:24px;height:24px;color:'+(on?m.c:'var(--text3)')+';display:flex;align-items:center;justify-content:center">'+m.ic+'</span>'
+      +'<span style="font-size:11px;font-weight:600;color:'+(on?m.c:'var(--text2)')+'">'+m.n+'</span></button>';
+  }).join('');
+}
+function toggleMuscle(id){
+  selectedMuscles[id]=!selectedMuscles[id];
+  if(!selectedMuscles[id])delete selectedMuscles[id];
+  renderMuscleGrid();renderMuscleContent();autoSaveToday();
+}
+function renderMuscleContent(){
+  const el=document.getElementById('muscle-content');
+  if(!el)return;
+  const chosen=MUSCLES.filter(m=>selectedMuscles[m.id]);
+  if(!chosen.length){el.innerHTML='<div class="empty-mini">اختر عضلة فوق عشان تطلع تمارينها 👆</div>';return;}
+  let html='';
+  chosen.forEach(m=>{
+    html+='<div class="wkt-block" style="border-right:3px solid '+m.c+'">'
+      +'<div class="wkt-head" style="color:'+m.c+'"><span style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center">'+m.ic+'</span> '+m.n+'</div>';
+    m.ex.forEach((it,i)=>{
+      const id='mus_'+m.id+'_'+i;
+      html+=exRowHTML(id,it.e,it.n+' · '+it.d,it.q,m.c);
+    });
+    // custom exercises added for this muscle
+    (customEx[m.id]||[]).forEach((ce,ci)=>{
+      const id='cus_'+m.id+'_'+ci;
+      html+=exRowHTML(id,ce.name,'تمرينك',ce.q||(ce.name),m.c,'deleteCustomEx(\''+m.id+'\','+ci+')');
+    });
+    html+='<button class="add-meal-btn" style="margin-top:8px;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="addMuscleEx(\''+m.id+'\',\''+m.n+'\')">+ أضف تمرين لـ'+m.n+'</button>';
+    html+='</div>';
+  });
+  el.innerHTML=html;
+}
+// ═══ نظام الجلسات الموحّد (يشمل العضلات + الانفجارية + المرونة) ═══
+// exSets[exId] = {side:false, sets:[{w:60,r:10},...]}  أو نسخة قديمة: [{w,r}]
+function getSetsObj(id){
+  let v=exSets[id];
+  if(!v)return null;
+  if(Array.isArray(v)){v={side:false,sets:v};exSets[id]=v;} // ترقية النسخة القديمة
+  return v;
+}
+function exStats(id){
+  const o=getSetsObj(id);
+  if(!o)return null;
+  const arr=(o.sets||[]).filter(s=>s.w||s.r);
+  if(!arr.length)return null;
+  // لو بليت لكل جهة: الوزن الفعلي = وزن الجهة × 2
+  const mult=o.side?2:1;
+  const maxW=Math.max(...arr.map(s=>(s.w||0)*mult));
+  const vol=arr.reduce((a,s)=>a+(s.w||0)*mult*(s.r||0),0);
+  return {sets:arr.length,maxW,vol,side:o.side};
+}
+// صف تمرين موحّد: اسم + شرح يوتيوب + زر جلسات + ملخص
+function exRowHTML(id,title,subtitle,ytQuery,color,delFn){
+  const st=exStats(id);
+  const done=!!st;
+  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ytQuery);
+  let summary='';
+  if(st){
+    summary='<div style="font-size:10px;color:'+color+';margin-top:2px">✓ '+st.sets+' جلسة'+(st.maxW?' · أعلى '+round1(st.maxW)+'كجم'+(st.side?' (إجمالي)':''):'')+(st.vol?' · حجم '+round1(st.vol):'')+'</div>';
+  }
+  return '<div class="wkt-item" style="align-items:flex-start">'
+    +'<div class="wkt-check '+(done?'done':'')+'" onclick="openSets(\''+id+'\',\''+esc(title)+'\',\''+color+'\')" style="cursor:pointer;'+(done?'background:'+color+';border-color:'+color:'')+'">'+(done?'✓':'+')+'</div>'
+    +'<div class="wkt-name" style="flex:1;cursor:pointer" onclick="openSets(\''+id+'\',\''+esc(title)+'\',\''+color+'\')"><div style="font-weight:600">'+title+'</div><div style="font-size:10px;color:var(--text3)">'+subtitle+'</div>'+summary+'</div>'
+    +(delFn?'<span onclick="'+delFn+'" style="color:var(--text3);font-size:16px;cursor:pointer;padding:0 4px">🗑</span>':'')
+    +'<a href="'+yt+'" target="_blank" style="color:'+color+';font-size:12px;text-decoration:none;display:flex;align-items:center;gap:3px;padding:0 4px"><svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>شرح</a>'
+    +'</div>';
+}
+function round1(n){return Math.round(n*10)/10;}
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+let activeSetEx={id:null,title:'',color:'#00d4ff'};
+function openSets(id,title,color){
+  activeSetEx={id,title,color:color||'#00d4ff'};
+  let o=getSetsObj(id);
+  if(!o){o={side:false,sets:[{w:'',r:''}]};exSets[id]=o;}
+  if(!o.sets.length)o.sets.push({w:'',r:''});
+  document.getElementById('sets-title').textContent=title;
+  document.getElementById('sets-title').style.color=color;
+  setSideMode(o.side,true);
+  renderSetsModal();
+  renderPrevCompare();
+  document.getElementById('sets-modal').classList.add('show');
+}
+function setSideMode(on,silent){
+  const o=getSetsObj(activeSetEx.id);if(!o)return;
+  o.side=!!on;
+  const col=activeSetEx.color;
+  const t=document.getElementById('side-total'),p=document.getElementById('side-perside');
+  t.className='modal-btn '+(!on?'mb-save':'mb-cancel');t.style.cssText='flex:1;font-size:12px';
+  p.className='modal-btn '+(on?'mb-save':'mb-cancel');p.style.cssText='flex:1;font-size:12px';
+  document.getElementById('sets-hint').textContent=on?'تكتب وزن جهة وحدة — نحسب الإجمالي ×2 (مثل الليق برس)':'سجّل الوزن الإجمالي وعدّات كل جلسة';
+  if(!silent){renderSetsModal();autoSaveToday();}
+}
+function renderSetsModal(){
+  const id=activeSetEx.id,col=activeSetEx.color;
+  const o=getSetsObj(id);const arr=o.sets||[];
+  const wLabel=o.side?'وزن الجهة':'وزن كجم';
+  let html='';
+  arr.forEach((s,i)=>{
+    const sideTot=(o.side&&s.w)?' <span style="font-size:9px;color:var(--text3)">(='+round1(s.w*2)+')</span>':'';
+    html+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">'
+      +'<span style="width:48px;font-size:12px;color:'+col+';font-weight:700">جلسة '+(i+1)+'</span>'
+      +'<div style="flex:1;position:relative"><input class="modal-input" type="number" inputmode="decimal" placeholder="'+wLabel+'" value="'+(s.w||'')+'" oninput="updateSet('+i+',\'w\',this.value)" style="text-align:center">'+sideTot+'</div>'
+      +'<span style="color:var(--text3)">×</span>'
+      +'<input class="modal-input" type="number" inputmode="numeric" placeholder="عدّات" value="'+(s.r||'')+'" oninput="updateSet('+i+',\'r\',this.value)" style="flex:1;text-align:center">'
+      +(arr.length>1?'<span onclick="removeSet('+i+')" style="color:var(--red);font-size:18px;cursor:pointer;padding:0 4px">✕</span>':'<span style="width:18px"></span>')
+      +'</div>';
+  });
+  document.getElementById('sets-rows').innerHTML=html;
+  updateSetsSummary();
+}
+function updateSetsSummary(){
+  const st=exStats(activeSetEx.id),col=activeSetEx.color;
+  document.getElementById('sets-summary').innerHTML=st
+    ?'<b style="color:'+col+'">'+st.sets+' جلسة</b> · أعلى وزن '+round1(st.maxW)+'كجم · إجمالي الحجم '+round1(st.vol)
+    :'سجّل وزن وعدّات كل جلسة';
+}
+function updateSet(i,field,val){
+  const o=getSetsObj(activeSetEx.id);if(!o)return;
+  o.sets[i][field]=val===''?'':parseFloat(val)||0;
+  if(field==='w'&&o.side){renderSetsModal();} // عشان يحدّث الـ(=×2)
+  else updateSetsSummary();
+}
+function addSet(){
+  const o=getSetsObj(activeSetEx.id);if(!o)return;
+  const last=o.sets[o.sets.length-1]||{};
+  o.sets.push({w:last.w||'',r:''});
+  renderSetsModal();
+}
+function repeatLastSet(){
+  const o=getSetsObj(activeSetEx.id);if(!o||!o.sets.length)return;
+  const last=o.sets[o.sets.length-1]||{};
+  o.sets.push({w:last.w||'',r:last.r||''});
+  renderSetsModal();autoSaveToday();
+}
+function removeSet(i){
+  const o=getSetsObj(activeSetEx.id);if(!o)return;
+  o.sets.splice(i,1);
+  if(!o.sets.length)o.sets.push({w:'',r:''});
+  renderSetsModal();
+}
+// آخر مرة لعب فيها هذا التمرين (يوم سابق) — للمقارنة والتنبيه
+function findPrevExercise(id){
+  const db=getDB();const curK=tKey();
+  const keys=Object.keys(db).filter(k=>k!==curK).sort((a,b)=>(db[b].ts||0)-(db[a].ts||0));
+  for(const k of keys){
+    const es=db[k].exSets;if(!es)continue;
+    let v=es[id];if(!v)continue;
+    if(Array.isArray(v))v={side:false,sets:v};
+    const arr=(v.sets||[]).filter(s=>s.w||s.r);
+    if(arr.length){
+      const mult=v.side?2:1;
+      const maxW=Math.max(...arr.map(s=>(s.w||0)*mult));
+      return {date:k,sets:arr.length,maxW,ts:db[k].ts};
+    }
+  }
+  return null;
+}
+function renderPrevCompare(){
+  const el=document.getElementById('prev-compare');if(!el){return;}
+  const prev=findPrevExercise(activeSetEx.id);
+  if(!prev){el.innerHTML='';return;}
+  const cur=exStats(activeSetEx.id);
+  let html='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--text2)">';
+  html+='📅 آخر مرة: <b style="color:var(--text)">'+prev.sets+' جلسة · أعلى '+round1(prev.maxW)+'كجم</b>';
+  if(cur){
+    // مقارنة الوزن
+    if(cur.maxW<prev.maxW){
+      html+='<div style="color:var(--orange);margin-top:6px">⚠️ وزنك اليوم ('+round1(cur.maxW)+'كجم) أقل من آخر مرة ('+round1(prev.maxW)+'كجم) — يأثّر على البروقرس. سجّل السبب لو حاب:</div>'
+        +'<input class="modal-input" id="set-reason" placeholder="مثال: جيت ع بطن فاضية / ما أكلت زين" value="'+(getSetsObj(activeSetEx.id).reason||'')+'" oninput="setReason(this.value)" style="margin-top:6px;font-size:12px">';
+    } else if(cur.maxW>prev.maxW){
+      html+='<div style="color:var(--green);margin-top:6px">🔥 تقدّم! وزنك اليوم ('+round1(cur.maxW)+'كجم) أعلى من آخر مرة (+'+round1(cur.maxW-prev.maxW)+'كجم)</div>';
+    }
+    // مقارنة الجلسات
+    if(cur.sets<prev.sets){
+      html+='<div style="color:var(--orange);margin-top:4px">📉 جلسات أقل: '+cur.sets+' اليوم مقابل '+prev.sets+' آخر مرة — يأثّر على الحجم الكلي</div>';
+    }
+  }
+  html+='</div>';
+  el.innerHTML=html;
+}
+function setReason(v){const o=getSetsObj(activeSetEx.id);if(o)o.reason=v;}
+function closeSets(){
+  const id=activeSetEx.id;
+  const o=getSetsObj(id);
+  if(o&&!o.sets.some(s=>s.w||s.r))delete exSets[id];
+  document.getElementById('sets-modal').classList.remove('show');
+  renderMuscleContent();renderPower();renderFlex();autoSaveToday();
+}
+// custom exercises per muscle: customEx[muscleId]=[{name,q}]
+let customEx={};
+function addMuscleEx(mid,mname){
+  const name=prompt('اسم التمرين الجديد لـ'+mname+':');
+  if(!name||!name.trim())return;
+  if(!customEx[mid])customEx[mid]=[];
+  customEx[mid].push({name:name.trim(),q:name.trim()+' exercise form'});
+  renderMuscleContent();autoSaveToday();
+}
+function deleteCustomEx(mid,ci){
+  const id='cus_'+mid+'_'+ci;
+  delete exSets[id];
+  customEx[mid].splice(ci,1);
+  renderMuscleContent();autoSaveToday();
+}
+// ═══ القوة الانفجارية والتنشيف — الأساسيات ═══
+// ic = أيقونة SVG مميزة لكل تمرين · q = كلمات بحث يوتيوب
+const PI={
+  jump:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-3 6h6l-3 6"/><path d="M5 21h14"/></svg>',
+  box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="m3 8 0 8 9 5 9-5 0-8"/></svg>',
+  ball:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>',
+  kb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6a3 3 0 0 1 6 0"/><path d="M7 6c-1 1.5-2 3.5-2 6a7 7 0 0 0 14 0c0-2.5-1-4.5-2-6Z"/></svg>',
+  bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18"/><path d="M5 8v8M19 8v8M2 10v4M22 10v4"/></svg>',
+  squat:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M12 6v5l-3 4 1 5M12 11l3 4-1 5M6 9h12"/></svg>',
+  press:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="2"/><path d="M9 22v-7l3-4 3 4v7M5 6l2 2M19 6l-2 2"/></svg>',
+  sprint:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4" r="2"/><path d="m13 8-4 3 3 3-2 6M13 11l4 2M9 11 4 9"/></svg>',
+  leg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v8l-2 10M9 7h5l1 6-3 8"/></svg>',
+  stretch:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M12 6v6m0 0 4 3m-4-3-4 3m4 3v4"/></svg>'
+};
 const POWER={
   blocks:[
-    {h:'⚡ القوة الانفجارية (قبل الحديد · 10 دقائق)',items:[
-      {n:'Box Jumps',d:'4 × 5',q:'box jumps tutorial proper form'},
-      {n:'Broad Jumps',d:'4 × 4',q:'broad jump technique tutorial'},
-      {n:'Medicine Ball Slam',d:'3 × 8',q:'medicine ball slam exercise'},
-      {n:'Medicine Ball Chest Pass',d:'3 × 8',q:'medicine ball explosive chest pass'},
-      {n:'Kettlebell Swing',d:'3 × 12',q:'kettlebell swing proper form'}]},
-    {h:'🏋️ رفعات القوة (سرعة تنفيذ عالية · وزن متوسط)',items:[
-      {n:'Trap Bar Deadlift',d:'4 × 5 سريع',q:'trap bar deadlift form'},
-      {n:'Front Squat',d:'4 × 5',q:'front squat technique tutorial'},
-      {n:'Push Press',d:'4 × 5',q:'push press tutorial form'},
-      {n:'Hang Power Clean',d:'4 × 3',q:'hang power clean tutorial beginner'}]},
-    {h:'🔥 السبرينت والتحمل (RSA · يوم الكورة أو بعد الحديد)',items:[
-      {n:'Sprint Intervals',d:'8 × 30 ثانية · راحة 90 ث',q:'repeated sprint training drills'},
-      {n:'Sled Push',d:'5 × 20 متر',q:'sled push sprint technique'},
-      {n:'Shuttle Runs',d:'6 × 20 متر',q:'shuttle run agility drill'}]},
-    {h:'🦵 مرونة + استقرار للكورة',items:[
-      {n:'Cossack Squat',d:'3 × 6 لكل جهة',q:'cossack squat mobility tutorial'},
-      {n:'Single-Leg RDL',d:'3 × 8 لكل رجل',q:'single leg romanian deadlift form'},
-      {n:'Nordic Hamstring Curl',d:'3 × 5',q:'nordic hamstring curl tutorial'},
-      {n:'90/90 Hip Stretch',d:'دقيقة لكل جهة',q:'90 90 hip stretch mobility'}]}
+    {h:'⚡ القوة الانفجارية',sub:'أول الجلسة قبل الحديد',items:[
+      {n:'القفز على الصندوق',e:'Box Jump',ic:'box',d:'4 مجموعات × 5 عدّات',q:'box jump tutorial proper form'},
+      {n:'رمي الكرة الطبية للأرض',e:'Med Ball Slam',ic:'ball',d:'3 × 8',q:'medicine ball slam exercise'},
+      {n:'أرجحة الكتل (كتل بل)',e:'Kettlebell Swing',ic:'kb',d:'3 × 12',q:'kettlebell swing proper form'}]},
+    {h:'🏋️ رفعات القوة',sub:'سرعة عالية · وزن متوسط',items:[
+      {n:'رفعة التراب بار',e:'Trap Bar Deadlift',ic:'bar',d:'4 × 5 سريع',q:'trap bar deadlift form'},
+      {n:'سكوات أمامي',e:'Front Squat',ic:'squat',d:'4 × 5',q:'front squat technique tutorial'},
+      {n:'دفع الكتف (بوش بريس)',e:'Push Press',ic:'press',d:'4 × 5',q:'push press tutorial form'}]},
+    {h:'🔥 السبرينت والتحمل',sub:'يوم الكورة أو بعد الحديد',items:[
+      {n:'سبرينت متقطّع',e:'Sprint Intervals',ic:'sprint',d:'8 × 30 ث · راحة 90 ث',q:'repeated sprint training drills'},
+      {n:'جري مكوكي',e:'Shuttle Runs',ic:'sprint',d:'6 × 20 متر',q:'shuttle run agility drill'}]},
+    {h:'🦵 استقرار ومرونة للكورة',sub:'يحمي الركبة والورك',items:[
+      {n:'رفعة رومانية برجل واحدة',e:'Single-Leg RDL',ic:'leg',d:'3 × 8 لكل رجل',q:'single leg romanian deadlift form'},
+      {n:'سكوات كوساك (جانبي)',e:'Cossack Squat',ic:'squat',d:'3 × 6 لكل جهة',q:'cossack squat mobility tutorial'}]}
   ]
 };
+function powerStats(){
+  let total=0,done=0,idx=0;
+  POWER.blocks.forEach(b=>b.items.forEach(()=>{total++;if(exStats('pw_'+idx))done++;idx++;}));
+  return {total,done};
+}
+function renderPowerProgress(){
+  const el=document.getElementById('power-progress');
+  if(!el)return;
+  const {total,done}=powerStats();
+  const pct=total?Math.round(done/total*100):0;
+  const col=pct===100?'var(--green)':'var(--accent)';
+  el.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px"><span style="font-size:13px;font-weight:700;color:'+col+'">'+done+' / '+total+' تمرين</span><span style="font-size:13px;font-weight:600;color:'+col+'">'+pct+'%'+(pct===100?' 🎉':'')+'</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent2),'+(pct===100?'var(--green)':'var(--accent)')+')"></div></div>';
+}
 function renderPower(){
   const el=document.getElementById('power-content');
   if(!el)return;
-  let html='';
+  let html='';let idx=0;
   POWER.blocks.forEach(b=>{
-    html+='<div class="wkt-block"><div class="wkt-head">'+b.h+'</div>';
+    html+='<div class="wkt-block"><div class="wkt-head">'+b.h+'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-right:6px">· '+b.sub+'</span></div>';
     b.items.forEach(it=>{
-      const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(it.q);
-      html+='<div class="wkt-item"><div class="wkt-name">'+it.n+'</div><div class="wkt-detail">'+it.d+'</div><a href="'+yt+'" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;padding:0 6px">▶ شرح</a></div>';
+      const id='pw_'+idx;
+      html+=exRowHTML(id,it.e,it.n+' · '+it.d,it.q,'#00d4ff');
+      idx++;
     });
     html+='</div>';
   });
   el.innerHTML=html;
+  renderPowerProgress();
 }
 
 // ═══ SUPPLEMENTS (from previous app, condensed) ═══
@@ -800,7 +1156,7 @@ const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو',
 const AR_DAYS=['ح','ن','ث','ر','خ','ج','س'];
 
 // ═══ STATE ═══
-let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, viewMonth=new Date(), currentDate=new Date();
+let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, exSets={}, viewMonth=new Date(), currentDate=new Date();
 viewMonth.setDate(1);
 
 // ═══ STORAGE ═══
@@ -820,6 +1176,8 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderStreak();
   renderSmartReminders();
   document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
+  const wi=document.getElementById('water-input');
+  if(wi)wi.addEventListener('keydown',e=>{if(e.key==='Enter')addWaterCustom();});
   ['wm-protein-type','wm-protein-g','wm-carb-type','wm-carb-g','wm-fat-g','wm-total-cal'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.addEventListener('input',updateWeightPreview);el.addEventListener('change',updateWeightPreview);}
@@ -831,7 +1189,7 @@ function loadDay(){
   const dn=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   // reset state
-  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};
+  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};selectedMuscles={};exSets={};customEx={};customFlex=[];
   const db=getDB(),k=tKey();
   if(db[k]){
     meals=db[k].meals||[];
@@ -843,6 +1201,10 @@ function loadDay(){
     steps=db[k].steps||0;
     suppChecks=db[k].suppChecks||{};
     flexChecks=db[k].flexChecks||{};
+    selectedMuscles=db[k].selectedMuscles||{};
+    exSets=db[k].exSets||{};
+    customEx=db[k].customEx||{};
+    customFlex=db[k].customFlex||[];
     if(db[k].day)setDay(db[k].day,true);
   }
   // reset day buttons if no day
@@ -989,7 +1351,7 @@ function renderMeals(){
   el.innerHTML=html;
 }
 function removeMeal(i){meals.splice(i,1);renderMeals();updateHero();autoSaveToday();}
-function addMeal(name,cal,p,c,f){meals.push({name,cal,protein:p||0,carb:c||0,fat:f||0,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
+function addMeal(name,cal,p,c,f){meals.push({name,cal:Math.round(cal)||0,protein:Math.round(p)||0,carb:Math.round(c)||0,fat:Math.round(f)||0,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
 function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
 
 // ═══ PAST LOGGED (from history) ═══
@@ -1209,6 +1571,7 @@ async function estimateMeal(){
 async function analyzePhoto(e){
   const file=e.target.files[0];
   if(!file)return;
+  photoServings=1;
   const result=document.getElementById('photo-result');
   result.classList.add('show');
   if(!getApiKey()){result.innerHTML='<p style="color:var(--orange)">⚠️ فعّل مفتاح Anthropic أولاً (تبويب المدرب) لتشغيل تصوير الوجبات</p>';e.target.value='';return;}
@@ -1237,11 +1600,36 @@ async function analyzePhoto(e){
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'احسب السعرات والماكروز لهذه الوجبة.'}]}]});
     let txt=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
     const m=JSON.parse(txt);
-    result.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><div><b>'+m.name+'</b><br><span style="color:var(--text3);font-size:13px">'+m.cal+' سعرة · '+m.protein+'ب · '+m.carb+'ك · '+(m.fat||0)+'د</span></div><button class="btn-primary" style="padding:8px 16px" onclick=\'addMeal('+JSON.stringify(m.name)+','+m.cal+','+m.protein+','+m.carb+','+(m.fat||0)+');document.getElementById("photo-result").classList.remove("show")\'>+ إضافة</button></div>';
+    window._photoMeal=m;
+    result.innerHTML='<div><b>'+m.name+'</b><br><span style="color:var(--text3);font-size:13px" id="photo-macros">'+m.cal+' سعرة · '+m.protein+'ب · '+m.carb+'ك · '+(m.fat||0)+'د</span>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><span style="font-size:13px;color:var(--text2)">كم حصة؟</span>'
+      +'<button class="chip" onclick="setPhotoServings(-0.5)">−</button>'
+      +'<span id="photo-servings" style="font-weight:700;color:var(--accent);min-width:30px;text-align:center">1</span>'
+      +'<button class="chip" onclick="setPhotoServings(0.5)">+</button>'
+      +'<input type="number" inputmode="decimal" id="photo-serv-input" value="1" oninput="setPhotoServingsAbs(this.value)" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px;color:var(--text);text-align:center;font-family:inherit">'
+      +'</div>'
+      +'<button class="btn-primary" style="padding:8px 16px;margin-top:10px;width:100%" onclick="addPhotoMeal()">+ إضافة</button></div>';
   }catch(err){
     result.innerHTML='<p style="color:var(--red)">ما قدرت أحلل الصورة، جرب صورة أوضح أو أضف يدوياً.</p>';
   }
   e.target.value='';
+}
+let photoServings=1;
+function setPhotoServings(d){photoServings=Math.max(0.5,Math.round((photoServings+d)*2)/2);syncPhotoServings();}
+function setPhotoServingsAbs(v){photoServings=Math.max(0.5,parseFloat(v)||1);syncPhotoServings(true);}
+function syncPhotoServings(skipInput){
+  const m=window._photoMeal;if(!m)return;
+  document.getElementById('photo-servings').textContent=photoServings;
+  if(!skipInput){const inp=document.getElementById('photo-serv-input');if(inp)inp.value=photoServings;}
+  document.getElementById('photo-macros').textContent=Math.round(m.cal*photoServings)+' سعرة · '+Math.round(m.protein*photoServings)+'ب · '+Math.round(m.carb*photoServings)+'ك · '+Math.round((m.fat||0)*photoServings)+'د';
+}
+function addPhotoMeal(){
+  const m=window._photoMeal;if(!m)return;
+  const s=photoServings;
+  const name=s===1?m.name:m.name+' ×'+s;
+  addMeal(name,m.cal*s,m.protein*s,m.carb*s,(m.fat||0)*s);
+  document.getElementById('photo-result').classList.remove('show');
+  photoServings=1;
 }
 
 // ═══ HERO ═══
@@ -1256,7 +1644,7 @@ function updateHero(){
     return;
   }
   const t=TARGETS[day];
-  const eaten=meals.reduce((s,m)=>s+m.cal,0);
+  const eaten=Math.round(meals.reduce((s,m)=>s+m.cal,0));
   const protein=meals.reduce((s,m)=>s+(m.protein||0),0);
   const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
   const fat=meals.reduce((s,m)=>s+(m.fat||0),0);
@@ -1266,7 +1654,7 @@ function updateHero(){
   document.getElementById('cal-remaining').textContent=remaining;
   document.getElementById('cal-remaining').style.color=remaining<0?'var(--red)':'var(--text)';
   document.getElementById('cal-eaten').textContent=eaten+' / '+budget+' مأكول'+(burnMode==='add'&&burned?' (+'+burned+'🔥)':'');
-  const remP=t.protein-protein, remC=t.carb-carb, remF=tFat-fat;
+  const remP=Math.round(t.protein-protein), remC=Math.round(t.carb-carb), remF=Math.round(tFat-fat);
   document.getElementById('m-protein').textContent=remP+'g';
   document.getElementById('m-protein').style.color=remP<0?'var(--red)':'var(--accent)';
   document.getElementById('m-carb').textContent=remC+'g';
@@ -1284,7 +1672,10 @@ function buildDayRecord(){
   const eaten=meals.reduce((s,m)=>s+m.cal,0);
   let suppTotal=0,suppDone=0,i=0;
   if(day){SUPPS[day].forEach(b=>b.items.forEach(it=>{if(!it.includes('⛔')){suppTotal++;if(suppChecks['supp_'+i])suppDone++;}i++;}));}
-  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,suppTotal,suppDone,eaten,target:day?TARGETS[day].cal:0,ts:Date.now()};
+  // exercise sets stats: count done exercises, total sets, total volume
+  let exDone=0,totalSets=0,totalVol=0;
+  Object.keys(exSets).forEach(k=>{let v=exSets[k];if(Array.isArray(v))v={side:false,sets:v};const real=(v.sets||[]).filter(s=>s.w||s.r);if(real.length){exDone++;totalSets+=real.length;const mult=v.side?2:1;real.forEach(s=>totalVol+=(s.w||0)*mult*(s.r||0));}});
+  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,selectedMuscles,exSets,customEx,customFlex,exDone,totalSets,totalVol,suppTotal,suppDone,eaten,target:day?TARGETS[day].cal:0,ts:Date.now()};
 }
 function autoSaveToday(){
   if(!day)return;
@@ -1410,10 +1801,16 @@ async function analyzeInbody(e){
 
 // ═══ WORKOUT ═══
 function renderWorkout(){
+  renderMuscleGrid();
+  renderMuscleContent();
   renderPower();
+  renderFlex();
   renderExLog();
   renderBurn();
+}
+function renderFlex(){
   const el=document.getElementById('workout-content');
+  if(!el)return;
   if(!day){el.innerHTML='<div class="empty-mini">اختر نوع اليوم في تبويب "اليوم" لعرض تمارين المرونة المناسبة</div>';return;}
   const w=WORKOUTS[day];
   let html='';let idx=0;
@@ -1422,17 +1819,39 @@ function renderWorkout(){
     b.items.forEach(it=>{
       const id='flex_'+idx;
       const checked=flexChecks[id]?'done':'';
-      html+='<div class="wkt-item"><div class="wkt-check '+checked+'" onclick="toggleFlex(\''+id+'\')">'+(flexChecks[id]?'✓':'')+'</div><div class="wkt-name">'+it.n+'</div><div class="wkt-detail">'+it.d+'</div></div>';
+      const ytLink=it.q?'<a href="https://www.youtube.com/results?search_query='+encodeURIComponent(it.q)+'" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:3px;padding:0 4px"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>شرح</a>':'';
+      html+='<div class="wkt-item"><div class="wkt-check '+checked+'" onclick="toggleFlex(\''+id+'\')">'+(flexChecks[id]?'✓':'')+'</div><div class="wkt-name" style="flex:1">'+it.n+'<div style="font-size:10px;color:var(--text3)">'+it.d+'</div></div>'+ytLink+'</div>';
       idx++;
     });
     html+='</div>';
   });
+  // تمارين مرونة مخصصة
+  html+='<div class="wkt-block" style="border:1px dashed var(--border)"><div class="wkt-head">➕ تمارين مرونتك</div>';
+  (customFlex||[]).forEach((cf,ci)=>{
+    const id='cflex_'+ci;
+    const checked=flexChecks[id]?'done':'';
+    const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(cf.q||cf.name);
+    html+='<div class="wkt-item"><div class="wkt-check '+checked+'" onclick="toggleFlex(\''+id+'\')">'+(flexChecks[id]?'✓':'')+'</div><div class="wkt-name" style="flex:1">'+cf.name+'</div><span onclick="deleteCustomFlex('+ci+')" style="color:var(--text3);font-size:15px;cursor:pointer;padding:0 4px">🗑</span><a href="'+yt+'" target="_blank" style="color:var(--accent);font-size:12px;text-decoration:none;display:flex;align-items:center;gap:3px;padding:0 4px"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>شرح</a></div>';
+  });
+  html+='<button class="add-meal-btn" style="margin-top:6px;border-color:rgba(0,212,255,.4);color:var(--accent)" onclick="addCustomFlex()">+ أضف تمرين مرونة</button></div>';
   el.innerHTML=html;
 }
 function toggleFlex(id){
   flexChecks[id]=!flexChecks[id];
-  renderWorkout();
+  renderFlex();
   autoSaveToday();
+}
+let customFlex=[];
+function addCustomFlex(){
+  const name=prompt('اسم تمرين المرونة:');
+  if(!name||!name.trim())return;
+  customFlex.push({name:name.trim(),q:name.trim()+' stretch'});
+  renderFlex();autoSaveToday();
+}
+function deleteCustomFlex(ci){
+  delete flexChecks['cflex_'+ci];
+  customFlex.splice(ci,1);
+  renderFlex();autoSaveToday();
 }
 // ═══ BURN ═══
 function setBurnMode(m){
@@ -1462,6 +1881,14 @@ function renderBurn(){
 // ═══ WATER & STEPS ═══
 function addWater(ml){
   water=Math.max(0,water+ml);
+  renderWaterSteps();autoSaveToday();
+}
+function addWaterCustom(){
+  const inp=document.getElementById('water-input');
+  const v=parseInt(inp.value)||0;
+  if(!v){inp.focus();return;}
+  water=Math.max(0,water+v);
+  inp.value='';
   renderWaterSteps();autoSaveToday();
 }
 function setSteps(){
@@ -1562,7 +1989,7 @@ function renderTodayRemaining(){
   if(!day){card.style.display='none';return;}
   card.style.display='block';
   const t=TARGETS[day];
-  const eaten=meals.reduce((s,m)=>s+m.cal,0);
+  const eaten=Math.round(meals.reduce((s,m)=>s+m.cal,0));
   const protein=meals.reduce((s,m)=>s+(m.protein||0),0);
   const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
   const fat=meals.reduce((s,m)=>s+(m.fat||0),0);
@@ -1571,9 +1998,9 @@ function renderTodayRemaining(){
   const remCal=budget-eaten;
   const rows=[
     ['🔥 السعرات',remCal,budget,remCal<0?'var(--red)':'var(--accent)'],
-    ['🍗 بروتين',t.protein-protein,t.protein,'#22c55e'],
-    ['🌾 كارب',t.carb-carb,t.carb,'var(--orange)'],
-    ['🥑 دهون',tFat-fat,tFat,'var(--purple)']
+    ['🍗 بروتين',Math.round(t.protein-protein),t.protein,'#22c55e'],
+    ['🌾 كارب',Math.round(t.carb-carb),t.carb,'var(--orange)'],
+    ['🥑 دهون',Math.round(tFat-fat),tFat,'var(--purple)']
   ];
   el.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:12px">'+t.label+'</div>'+rows.map(r=>{
     const pct=Math.max(0,Math.min(100,(r[2]-r[1])/r[2]*100));
@@ -1632,9 +2059,87 @@ function renderProgress(){
   const suppDays=keys.filter(k=>db[k].suppTotal>0);
   const avgSuppPct=suppDays.length?Math.round(suppDays.reduce((s,k)=>s+(db[k].suppDone/db[k].suppTotal*100),0)/suppDays.length):0;
   const perfectSuppDays=keys.filter(k=>db[k].suppTotal>0&&db[k].suppDone===db[k].suppTotal).length;
-  const totalEx=keys.reduce((s,k)=>s+((db[k].exLog||[]).length),0);
-  document.getElementById('prog-stats').innerHTML='<div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalDays+'</div><div class="stat-lbl">يوم مسجل</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+onTarget+'</div><div class="stat-lbl">يوم ضمن الهدف</div></div><div class="stat-card"><div class="stat-val" style="color:var(--orange)">'+(avgCal||'—')+'</div><div class="stat-lbl">متوسط السعرات</div></div><div class="stat-card"><div class="stat-val" style="color:#ec4899">'+avgSuppPct+'%</div><div class="stat-lbl">التزام المكملات</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+perfectSuppDays+'</div><div class="stat-lbl">يوم مكملات كامل 💊</div></div><div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalEx+'</div><div class="stat-lbl">تمرين مسجّل 🏋️</div></div><div class="stat-card"><div class="stat-val" style="color:var(--purple)">'+w.length+'</div><div class="stat-lbl">قياس وزن</div></div>';
+  const totalEx=keys.reduce((s,k)=>s+((db[k].exLog||[]).length)+(db[k].exDone||0),0);
+  const totalSetsAll=keys.reduce((s,k)=>s+(db[k].totalSets||0),0);
+  document.getElementById('prog-stats').innerHTML='<div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalDays+'</div><div class="stat-lbl">يوم مسجل</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+onTarget+'</div><div class="stat-lbl">يوم ضمن الهدف</div></div><div class="stat-card"><div class="stat-val" style="color:var(--orange)">'+(avgCal||'—')+'</div><div class="stat-lbl">متوسط السعرات</div></div><div class="stat-card"><div class="stat-val" style="color:#ec4899">'+avgSuppPct+'%</div><div class="stat-lbl">التزام المكملات</div></div><div class="stat-card"><div class="stat-val" style="color:var(--green)">'+perfectSuppDays+'</div><div class="stat-lbl">يوم مكملات كامل 💊</div></div><div class="stat-card"><div class="stat-val" style="color:var(--accent)">'+totalEx+'</div><div class="stat-lbl">تمرين مسجّل 🏋️</div></div><div class="stat-card"><div class="stat-val" style="color:var(--orange)">'+totalSetsAll+'</div><div class="stat-lbl">إجمالي الجلسات 🔁</div></div><div class="stat-card"><div class="stat-val" style="color:var(--purple)">'+w.length+'</div><div class="stat-lbl">قياس وزن</div></div>';
+  renderExerciseProgress(db);
+  renderGoalETA();
+  renderDynamicCals();
   renderCal(db);
+}
+// سعرات مقترحة بناءً على الوزن الحالي (تنشيف) — تقدير Mifflin-St Jeor
+function renderDynamicCals(){
+  const el=document.getElementById('dynamic-cals');if(!el)return;
+  const w=getWeights();
+  if(!w.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center">سجّل وزنك عشان نقترح سعرات مناسبة لتنشيفك</div>';return;}
+  const kg=w[w.length-1].kg, h=175, age=30;
+  // BMR للرجال
+  const bmr=10*kg+6.25*h-5*age+5;
+  // عامل نشاط لكل نوع يوم
+  const factors={rest:1.35,gym:1.5,football:1.65,both:1.8};
+  // عجز ~20% للتنشيف
+  const cut=0.8;
+  const rows=[
+    ['😴 راحة',Math.round(bmr*factors.rest*cut),'var(--orange)'],
+    ['🏋️ حديد',Math.round(bmr*factors.gym*cut),'var(--accent)'],
+    ['⚽ كورة',Math.round(bmr*factors.football*cut),'var(--green)'],
+    ['🔥 مزدوج',Math.round(bmr*factors.both*cut),'var(--purple)']
+  ];
+  el.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:10px">محسوبة على وزنك الحالي ('+kg+' كجم) مع عجز ~20% للتنشيف · البروتين المقترح '+Math.round(kg*2)+'غ/يوم</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">'+rows.map(r=>'<div style="background:var(--surface2);border:1px solid '+r[2]+'44;border-radius:12px;padding:12px;text-align:center"><div style="font-size:22px;font-weight:700;color:'+r[2]+'">'+r[1]+'</div><div style="font-size:11px;color:var(--text3)">'+r[0]+'</div></div>').join('')+'</div>'
+    +'<div style="font-size:11px;color:var(--text3);margin-top:10px;line-height:1.6">💡 كل ما نزل وزنك، تنزل احتياجاتك — راجع هذي الأرقام كل أسبوعين. أهدافك الحالية في التطبيق ثابتة، هذي إرشادية تقدر تحدّثها يدوياً لو حبيت.</div>';
+}
+// بروقرس التمارين الاختيارية (انفجارية، سبرينت، عضلات، إلخ)
+function renderExerciseProgress(db){
+  const el=document.getElementById('exercise-progress');if(!el)return;
+  const keys=Object.keys(db);
+  // أعلى وزن لكل تمرين عبر كل الأيام (سجلات شخصية)
+  const prs={}; // exId -> {maxW, title}
+  const exTitles={};
+  // اجمع عناوين التمارين من البيانات الثابتة
+  MUSCLES.forEach(mu=>mu.ex.forEach((it,i)=>exTitles['mus_'+mu.id+'_'+i]=it.e));
+  let pIdx=0;POWER.blocks.forEach(b=>b.items.forEach(it=>{exTitles['pw_'+pIdx]=it.e;pIdx++;}));
+  keys.forEach(k=>{
+    const es=db[k].exSets;if(!es)return;
+    Object.keys(es).forEach(id=>{
+      let v=es[id];if(Array.isArray(v))v={side:false,sets:v};
+      const arr=(v.sets||[]).filter(s=>s.w);if(!arr.length)return;
+      const mult=v.side?2:1;
+      const mx=Math.max(...arr.map(s=>(s.w||0)*mult));
+      if(!prs[id]||mx>prs[id].maxW)prs[id]={maxW:mx,title:exTitles[id]||id};
+    });
+  });
+  const list=Object.values(prs).filter(p=>p.maxW>0).sort((a,b)=>b.maxW-a.maxW).slice(0,8);
+  if(!list.length){el.innerHTML='<div class="empty-mini">سجّل جلسات تمارينك عشان تظهر أرقامك القياسية 🏋️</div>';return;}
+  el.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:10px">أعلى وزن وصلته في كل تمرين (رقمك القياسي)</div>'+list.map(p=>{
+    const pct=Math.min(100,p.maxW/Math.max(...list.map(x=>x.maxW))*100);
+    return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:var(--accent);font-weight:700">'+round1(p.maxW)+' كجم</span><span style="color:var(--text2)">'+p.title+'</span></div><div class="progress-bar-bg"><div class="progress-bar-fill" style="width:'+pct+'%;background:linear-gradient(90deg,var(--accent2),var(--accent))"></div></div></div>';
+  }).join('');
+}
+// مدة تحقيق الهدف بناءً على معدل نزول الوزن
+function renderGoalETA(){
+  const el=document.getElementById('goal-eta');if(!el)return;
+  const w=getWeights();
+  if(w.length<2){el.innerHTML='<div style="font-size:12px;color:var(--text3);text-align:center">سجّل وزنك مرتين على الأقل (بفارق أيام) عشان نحسب مدة الوصول للهدف 🎯</div>';return;}
+  const goal=75;
+  const first=w[0],last=w[w.length-1];
+  const days=Math.max(1,(last.ts-first.ts)/(1000*60*60*24));
+  const lost=first.kg-last.kg;
+  const ratePerWeek=(lost/days)*7;
+  const toGo=last.kg-goal;
+  if(toGo<=0){el.innerHTML='<div style="background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:12px;padding:14px;text-align:center;color:var(--green);font-weight:700">🎉 وصلت هدفك! ('+last.kg+' كجم)</div>';return;}
+  if(ratePerWeek<=0.05){
+    el.innerHTML='<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:14px;font-size:13px;color:var(--orange);text-align:center">⚠️ وزنك ما نزل بمعدل واضح بعد — استمر على نظامك وسجّل وزنك أسبوعياً عشان نقدّر المدة</div>';return;
+  }
+  const weeksLeft=toGo/ratePerWeek;
+  const eta=new Date();eta.setDate(eta.getDate()+Math.round(weeksLeft*7));
+  const months=AR_MONTHS[eta.getMonth()];
+  el.innerHTML='<div style="background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(34,197,94,.08));border:1px solid rgba(0,212,255,.25);border-radius:12px;padding:16px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:13px;color:var(--text2)">معدل النزول</span><span style="font-weight:700;color:var(--accent)">'+round1(ratePerWeek)+' كجم/أسبوع</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><span style="font-size:13px;color:var(--text2)">باقي للهدف</span><span style="font-weight:700;color:var(--orange)">'+round1(toGo)+' كجم</span></div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text2)">الوصول المتوقّع</span><span style="font-weight:700;color:var(--green)">~'+Math.ceil(weeksLeft)+' أسبوع ('+months+' '+eta.getFullYear()+')</span></div>'
+    +(ratePerWeek>1.2?'<div style="font-size:11px;color:var(--orange);margin-top:8px">⚠️ معدل النزول سريع — انتبه للحفاظ على العضل، لا تنزّل أكثر من 1 كجم/أسبوع</div>':'')
+    +'</div>';
 }
 function renderCal(db){
   const y=viewMonth.getFullYear(),m=viewMonth.getMonth();
