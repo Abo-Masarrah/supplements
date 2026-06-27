@@ -656,11 +656,21 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
         <button class="chip" data-slot="سناك" onclick="setEditSlot('سناك')">🍎 سناك</button>
       </div>
     </div>
-    <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric"></div>
+    <div class="modal-field">
+      <label>اضبط الكمية — يضرب كل القيم تلقائياً</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="chip" onclick="adjustEditServings(-0.25)">−</button>
+        <input class="modal-input" id="em-mult" type="number" inputmode="decimal" value="1" step="0.25" style="flex:1;text-align:center" oninput="applyEditMult()">
+        <button class="chip" onclick="adjustEditServings(0.25)">+</button>
+        <span style="font-size:12px;color:var(--text3);white-space:nowrap">× الكمية</span>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">مثال: شربت ضعف الكمية؟ حط 2 · نص الكمية؟ حط 0.5</div>
+    </div>
+    <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric" oninput="markEditManual()"></div>
     <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1"><label>بروتين (غ)</label><input class="modal-input" id="em-protein" type="number" inputmode="numeric"></div>
-      <div class="modal-field" style="flex:1"><label>كارب (غ)</label><input class="modal-input" id="em-carb" type="number" inputmode="numeric"></div>
-      <div class="modal-field" style="flex:1"><label>دهون (غ)</label><input class="modal-input" id="em-fat" type="number" inputmode="numeric"></div>
+      <div class="modal-field" style="flex:1"><label>بروتين (غ)</label><input class="modal-input" id="em-protein" type="number" inputmode="numeric" oninput="markEditManual()"></div>
+      <div class="modal-field" style="flex:1"><label>كارب (غ)</label><input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()"></div>
+      <div class="modal-field" style="flex:1"><label>دهون (غ)</label><input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()"></div>
     </div>
     <div class="modal-btns">
       <button class="modal-btn mb-cancel" onclick="deleteEditMeal()" style="color:var(--red)">🗑 حذف</button>
@@ -1512,6 +1522,7 @@ function addMeal(name,cal,p,c,f){meals.push({name,cal:Math.round(cal)||0,protein
 function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
 // تعديل وجبة مضافة
 let editMealIdx=-1;
+let editBase={cal:0,p:0,c:0,f:0}; // القيم الأصلية اللي يُضرب فيها المضاعف
 function openEditMeal(i){
   editMealIdx=i;
   const m=meals[i];
@@ -1520,10 +1531,37 @@ function openEditMeal(i){
   document.getElementById('em-protein').value=m.protein||0;
   document.getElementById('em-carb').value=m.carb||0;
   document.getElementById('em-fat').value=m.fat||0;
+  document.getElementById('em-mult').value=1;
+  editBase={cal:m.cal||0,p:m.protein||0,c:m.carb||0,f:m.fat||0};
   // slot picker
   document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===(m.slot||'غداء')?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
   editMealSlot=m.slot||'غداء';
   document.getElementById('edit-meal-modal').classList.add('show');
+}
+// يضرب القيم الأصلية بالمضاعف ويعرضها
+function applyEditMult(){
+  let mult=parseFloat(document.getElementById('em-mult').value);
+  if(isNaN(mult)||mult<=0)return;
+  document.getElementById('em-cal').value=Math.round(editBase.cal*mult);
+  document.getElementById('em-protein').value=Math.round(editBase.p*mult);
+  document.getElementById('em-carb').value=Math.round(editBase.c*mult);
+  document.getElementById('em-fat').value=Math.round(editBase.f*mult);
+}
+function adjustEditServings(d){
+  let mult=parseFloat(document.getElementById('em-mult').value)||1;
+  mult=Math.max(0.25,Math.round((mult+d)*100)/100);
+  document.getElementById('em-mult').value=mult;
+  applyEditMult();
+}
+// لو عدّل القيم يدوياً: تصير هي الأساس الجديد والمضاعف يرجع 1
+function markEditManual(){
+  editBase={
+    cal:parseInt(document.getElementById('em-cal').value)||0,
+    p:parseInt(document.getElementById('em-protein').value)||0,
+    c:parseInt(document.getElementById('em-carb').value)||0,
+    f:parseInt(document.getElementById('em-fat').value)||0
+  };
+  document.getElementById('em-mult').value=1;
 }
 let editMealSlot='غداء';
 function setEditSlot(s){
