@@ -5,24 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ahmed — Command Center</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
 :root{
-  --bg:#080b14;--surface:#0f1521;--surface2:#161e2e;--surface3:#1d2738;
-  --border:#1e3050;--accent:#00d4ff;--accent2:#0099cc;
+  --bg:#070a12;--surface:#0e1420;--surface2:#161e2e;--surface3:#1d2738;
+  --border:#1e3050;--border2:#2a3f63;--accent:#00d4ff;--accent2:#0099cc;
   --green:#22c55e;--orange:#f59e0b;--red:#ef4444;--purple:#a78bfa;--pink:#ec4899;
-  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --text:#e8eef6;--text2:#94a3b8;--text3:#64748b;
   --gym:#00d4ff;--football:#22c55e;--both:#a78bfa;--rest:#f59e0b;
+  --shadow:0 4px 24px rgba(0,0,0,0.35);--shadow-glow:0 0 0 1px rgba(0,212,255,0.04),0 8px 32px rgba(0,0,0,0.4);
+  --num:'Space Grotesk',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px;}
+body{font-family:'IBM Plex Sans Arabic',sans-serif;background:radial-gradient(120% 80% at 50% 0%,#0c1626 0%,var(--bg) 55%);background-attachment:fixed;color:var(--text);min-height:100vh;padding-bottom:84px;-webkit-font-smoothing:antialiased;}
 
 /* TOP BAR */
-.topbar{background:linear-gradient(135deg,#0a0e1a,#0d1b35);padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;backdrop-filter:blur(10px);}
-.tb-logo{display:flex;align-items:center;gap:10px;}
-.tb-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;}
-.tb-title{font-size:15px;font-weight:700;}
-.tb-sub{font-size:10px;color:var(--text3);}
-.tb-date{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:5px 12px;font-size:12px;color:var(--text2);}
+.topbar{background:linear-gradient(135deg,rgba(10,14,26,0.92),rgba(13,27,53,0.85));padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:90;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+.tb-logo{display:flex;align-items:center;gap:11px;}
+.tb-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:11px;display:flex;align-items:center;justify-content:center;color:#06121e;box-shadow:0 4px 14px rgba(0,212,255,0.35),inset 0 1px 0 rgba(255,255,255,0.25);}
+.tb-icon svg{width:20px;height:20px;}
+.tb-title{font-size:15px;font-weight:700;letter-spacing:-0.2px;}
+.tb-sub{font-size:10px;color:var(--text3);letter-spacing:0.3px;}
+.tb-date{background:var(--surface2);border:1px solid var(--border);border-radius:18px;padding:6px 13px;font-size:12px;color:var(--text2);font-weight:500;}
 
 /* PAGES */
 .page{display:none;max-width:560px;margin:0 auto;padding:18px 14px;}
@@ -30,7 +33,7 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
 /* BOTTOM NAV */
-.botnav{position:fixed;bottom:0;left:0;right:0;background:rgba(11,16,26,0.95);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100;}
+.botnav{position:fixed;bottom:0;left:0;right:0;background:rgba(9,13,22,0.88);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:9px 0 calc(9px + env(safe-area-inset-bottom));z-index:100;}
 .botnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border:none;background:none;font-family:inherit;color:var(--text3);transition:color .2s;}
 .botnav-tab.active{color:var(--accent);}
 .botnav-tab:active{transform:scale(.88);}
@@ -51,20 +54,20 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .botnav-lbl{font-size:10px;font-weight:600;}
 
 /* SECTION */
-.sec-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;margin:0 0 12px;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,0.25);}
-.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:14px;padding:12px 24px;color:#08111d;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .2s;box-shadow:0 4px 14px rgba(0,212,255,0.3);}
-.btn-primary:active{transform:scale(.96);box-shadow:0 2px 8px rgba(0,212,255,0.2);}
-.chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;}
+.sec-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:1.4px;text-transform:uppercase;margin:0 0 13px;display:flex;align-items:center;gap:7px;}
+.card{background:linear-gradient(180deg,var(--surface),rgba(14,20,32,0.7));border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px;box-shadow:var(--shadow);}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));border:none;border-radius:14px;padding:12px 24px;color:#06121e;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .2s,filter .2s;box-shadow:0 4px 16px rgba(0,212,255,0.32),inset 0 1px 0 rgba(255,255,255,0.2);}
+.btn-primary:active{transform:scale(.96);box-shadow:0 2px 8px rgba(0,212,255,0.2);filter:brightness(1.05);}
+.chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:7px 14px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;transition:all .15s;font-weight:500;}
 .chip:active{transform:scale(.94);border-color:var(--accent);color:var(--accent);}
-.add-meal-btn{transition:transform .12s,background .2s;}
+.add-meal-btn{transition:transform .12s,background .2s,border-color .2s;}
 .add-meal-btn:active{transform:scale(.98);}
 .day-btn{transition:transform .15s,border-color .2s,background .2s;}
 
 /* DAY SELECTOR */
 .day-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:18px;}
-.day-btn{background:var(--surface);border:2px solid var(--border);border-radius:14px;padding:12px 6px;cursor:pointer;transition:all .2s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px;}
-.day-btn:active{transform:scale(.96);}
+.day-btn{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px 6px;cursor:pointer;transition:all .2s cubic-bezier(.34,1.4,.64,1);text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.day-btn:active{transform:scale(.95);}
 .day-btn.active-gym{border-color:var(--gym);background:rgba(0,212,255,.08);}
 .day-btn.active-football{border-color:var(--football);background:rgba(34,197,94,.08);}
 .day-btn.active-both{border-color:var(--both);background:rgba(167,139,250,.08);}
@@ -78,15 +81,15 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .day-btn.active-rest .day-name,.day-btn.active-rest .day-icon{color:var(--rest);}
 
 /* HERO RING - calories remaining */
-.hero{background:linear-gradient(135deg,var(--surface2),var(--surface));border:1px solid var(--border);border-radius:22px;padding:24px;margin-bottom:14px;text-align:center;}
+.hero{background:radial-gradient(120% 100% at 50% 0%,rgba(0,212,255,0.07),var(--surface2) 55%,var(--surface));border:1px solid var(--border);border-radius:24px;padding:26px 24px;margin-bottom:14px;text-align:center;box-shadow:var(--shadow);}
 .ring-wrap{position:relative;width:180px;height:180px;margin:0 auto 8px;}
 .ring-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
-.ring-big{font-size:38px;font-weight:700;line-height:1;}
+.ring-big{font-size:42px;font-weight:700;line-height:1;font-family:var(--num);letter-spacing:-1px;}
 .ring-lbl{font-size:12px;color:var(--text3);margin-top:4px;}
 .ring-sub{font-size:11px;color:var(--text3);margin-top:2px;}
 .macro-row{display:flex;justify-content:space-around;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
 .macro{text-align:center;}
-.macro-val{font-size:17px;font-weight:700;}
+.macro-val{font-size:17px;font-weight:700;font-family:var(--num);}
 .macro-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
 
 /* MEALS */
@@ -113,27 +116,28 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 .pbar-fill{height:100%;border-radius:5px;transition:width .5s;}
 
 /* WORKOUT */
-.wkt-block{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px;}
-.wkt-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:14px;font-weight:600;}
-.wkt-item{display:flex;align-items:center;padding:9px 0;gap:10px;border-bottom:1px solid rgba(30,48,80,.4);}
+.wkt-block{background:var(--surface2);border:1px solid var(--border);border-radius:15px;padding:15px;margin-bottom:11px;}
+.wkt-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;font-size:14px;font-weight:600;}
+.wkt-item{display:flex;align-items:center;padding:10px 0;gap:11px;border-bottom:1px solid rgba(30,48,80,.4);}
 .wkt-item:last-child{border-bottom:none;}
-.wkt-check{width:20px;height:20px;border:2px solid var(--border);border-radius:6px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .2s;}
-.wkt-check.done{background:var(--accent);border-color:var(--accent);color:#08111d;}
-.wkt-name{flex:1;font-size:13px;}
+.wkt-check{width:22px;height:22px;border:2px solid var(--border2);border-radius:7px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.wkt-check:active{transform:scale(.85);}
+.wkt-check.done{background:var(--accent);border-color:var(--accent);color:#06121e;}
+.wkt-name{flex:1;font-size:13px;line-height:1.45;}
 .wkt-detail{font-size:11px;color:var(--text3);}
 
 /* WEIGHT */
 .weight-card{text-align:center;}
-.weight-big{font-size:46px;font-weight:700;}
+.weight-big{font-size:48px;font-weight:700;font-family:var(--num);letter-spacing:-1px;}
 .weight-unit{font-size:18px;color:var(--text3);}
-.weight-input{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:inherit;font-size:16px;text-align:center;width:120px;margin:0 auto;display:block;outline:none;}
+.weight-input{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text);font-family:inherit;font-size:16px;text-align:center;width:120px;margin:0 auto;display:block;outline:none;transition:border-color .2s;}
 .weight-input:focus{border-color:var(--accent);}
 
 /* STATS GRID */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center;}
-.stat-val{font-size:26px;font-weight:700;}
-.stat-lbl{font-size:11px;color:var(--text3);margin-top:3px;}
+.stat-card{background:linear-gradient(180deg,var(--surface),rgba(14,20,32,0.6));border:1px solid var(--border);border-radius:15px;padding:17px 14px;text-align:center;}
+.stat-val{font-size:27px;font-weight:700;font-family:var(--num);letter-spacing:-0.5px;line-height:1;}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:5px;}
 
 /* GOAL banner */
 .goal-banner{background:linear-gradient(135deg,rgba(0,212,255,.12),rgba(167,139,250,.08));border:1px solid rgba(0,212,255,.25);border-radius:18px;padding:18px;margin-bottom:14px;}
@@ -180,13 +184,13 @@ body{font-family:'IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:va
 /* MODAL */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:none;align-items:flex-end;justify-content:center;}
 .modal-bg.show{display:flex;}
-.modal{background:var(--surface);border-top:1px solid var(--border);border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:560px;animation:slideup .25s;}
+.modal{background:var(--surface);border-top:1px solid var(--border);border-radius:24px 24px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom));width:100%;max-width:560px;animation:slideup .25s;}
 @keyframes slideup{from{transform:translateY(100%);}to{transform:none;}}
 .modal-title{font-size:16px;font-weight:700;margin-bottom:16px;text-align:center;}
 .modal-field{margin-bottom:12px;}
 .modal-field label{font-size:12px;color:var(--text3);display:block;margin-bottom:5px;}
 .modal-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-family:inherit;font-size:15px;outline:none;}
-.modal-input:focus{border-color:var(--accent);}
+.modal-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,212,255,0.12);}
 select.modal-input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%2394a3b8' fill='none' stroke-width='1.5'/></svg>");background-repeat:no-repeat;background-position:left 12px center;}
 select.modal-input option{background:var(--surface2);color:var(--text);}
 .modal-btns{display:flex;gap:10px;margin-top:18px;}
@@ -203,7 +207,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
 <div class="topbar">
   <div class="tb-logo">
-    <div class="tb-icon">⚡</div>
+    <div class="tb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></svg></div>
     <div><div class="tb-title">Command Center</div><div class="tb-sub">Ahmed Al-Haddad</div></div>
   </div>
   <div class="tb-date" id="tb-date"></div>
@@ -330,6 +334,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">اضغط العضلة عشان تطلع تمارينها · تقدر تختار كذا عضلة في نفس اليوم · اضغط أي تمرين عشان تسجّل جلساته</div>
     <div id="muscle-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     <div id="muscle-content" style="margin-top:14px"></div>
+    <input type="file" id="muscle-photo-input" accept="image/*" capture="environment" style="display:none" onchange="analyzeMusclePhoto(event)">
   </div>
 
   <!-- explosive power (اختياري) -->
@@ -921,9 +926,13 @@ function renderMuscleContent(){
     // custom exercises added for this muscle
     (customEx[m.id]||[]).forEach((ce,ci)=>{
       const id='cus_'+m.id+'_'+ci;
-      html+=exRowHTML(id,ce.name,'تمرينك',ce.q||(ce.name),m.c,'deleteCustomEx(\''+m.id+'\','+ci+')');
+      html+=exRowHTML(id,ce.name,ce.sub||'تمرينك',ce.q||(ce.name),m.c,'deleteCustomEx(\''+m.id+'\','+ci+')');
     });
-    html+='<button class="add-meal-btn" style="margin-top:8px;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="addMuscleEx(\''+m.id+'\',\''+m.n+'\')">+ أضف تمرين لـ'+m.n+'</button>';
+    html+='<div style="display:flex;gap:8px;margin-top:8px">'
+      +'<button class="add-meal-btn" style="margin-top:0;flex:1;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="addMuscleEx(\''+m.id+'\',\''+m.n+'\')">+ أضف تمرين</button>'
+      +'<button class="add-meal-btn" style="margin-top:0;flex:1;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="musclePhoto(\''+m.id+'\',\''+m.n+'\')">📸 صوّر تمرين</button>'
+      +'</div>';
+    html+='<div class="ai-resp" id="mphoto-'+m.id+'" style="margin-top:10px"></div>';
     html+='</div>';
   });
   el.innerHTML=html;
@@ -1164,6 +1173,49 @@ function deleteCustomEx(mid,ci){
   delete exSets[id];
   customEx[mid].splice(ci,1);
   renderMuscleContent();autoSaveToday();
+}
+// تصوير تمرين وإضافته لعضلة محددة
+let musclePhotoTarget={id:null,name:''};
+function musclePhoto(mid,mname){
+  musclePhotoTarget={id:mid,name:mname};
+  const inp=document.getElementById('muscle-photo-input');
+  inp.value='';
+  inp.click();
+}
+async function analyzeMusclePhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const mid=musclePhotoTarget.id;
+  const result=document.getElementById('mphoto-'+mid);
+  if(!result){e.target.value='';return;}
+  result.classList.add('show');
+  if(!getApiKey()){result.innerHTML='<p style="color:var(--orange)">⚠️ فعّل مفتاح Anthropic أولاً (تبويب المدرب) — أو أضف التمرين يدوياً</p>';e.target.value='';return;}
+  result.innerHTML='<div class="typing"><span></span><span></span><span></span></div> كلود يتعرّف على التمرين...';
+  const b64=await new Promise((res,rej)=>{
+    const img=new Image(),reader=new FileReader();
+    reader.onload=ev=>{img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height,mx=1024;if(w>mx||h>mx){if(w>h){h=h*mx/w;w=mx;}else{w=w*mx/h;h=mx;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.8).split(',')[1]);};img.onerror=rej;img.src=ev.target.result;};
+    reader.onerror=rej;reader.readAsDataURL(file);
+  });
+  const sys='أنت مدرب لياقة. انظر لصورة الجهاز أو التمرين وتعرّف عليه.\nأرجع JSON فقط بدون نص: {"name":"اسم التمرين بالعربي","en":"الاسم بالإنجليزي","tip":"نصيحة أداء مختصرة"}';
+  try{
+    const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:[{type:'image',source:{type:'base64',media_type:'image/jpeg',data:b64}},{type:'text',text:'وش هذا التمرين؟'}]}]});
+    let t=(data.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
+    const x=JSON.parse(t);
+    const enName=(x.en||x.name).replace(/'/g,'');
+    result.innerHTML='<div><b>'+(x.en||x.name)+'</b> <span style="color:var(--text3);font-size:12px">'+x.name+'</span><br><span style="color:var(--text3);font-size:13px">'+(x.tip||'')+'</span><br>'
+      +'<button class="btn-primary" style="padding:8px 16px;margin-top:8px" onclick="addPhotoExToMuscle(\''+mid+'\',\''+esc(x.en||x.name)+'\',\''+esc(x.name)+'\')">+ أضفه لـ'+musclePhotoTarget.name+' وسجّل جلساته</button></div>';
+  }catch(err){result.innerHTML='<p style="color:var(--red)">ما تعرّفت على التمرين، أضفه يدوياً.</p>';}
+  e.target.value='';
+}
+function addPhotoExToMuscle(mid,enName,arName){
+  if(!customEx[mid])customEx[mid]=[];
+  customEx[mid].push({name:enName,sub:arName,q:enName+' exercise form'});
+  const ci=customEx[mid].length-1;
+  const id='cus_'+mid+'_'+ci;
+  renderMuscleContent();autoSaveToday();
+  const r=document.getElementById('mphoto-'+mid);if(r){r.classList.remove('show');r.innerHTML='';}
+  // افتح جلسات التمرين الجديد مباشرة
+  const mu=MUSCLES.find(m=>m.id===mid);
+  openSets(id,enName,mu?mu.c:'#00d4ff');
 }
 // ═══ القوة الانفجارية والتنشيف — الأساسيات ═══
 // ic = أيقونة SVG مميزة لكل تمرين · q = كلمات بحث يوتيوب
