@@ -208,7 +208,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 <div class="topbar">
   <div class="tb-logo">
     <div class="tb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></svg></div>
-    <div><div class="tb-title">Command Center</div><div class="tb-sub">Ahmed Al-Haddad</div></div>
+    <div><div class="tb-title" id="tb-title">Command Center</div><div class="tb-sub" id="tb-sub">Ahmed Al-Haddad</div></div>
   </div>
   <div class="tb-date" id="tb-date"></div>
 </div>
@@ -595,6 +595,21 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="section-title">🤖 المدرب الذكي</div>
   <div class="section-desc">يعرف خطتك ووزنك وسعراتك</div>
 
+  <!-- personalization -->
+  <div class="card">
+    <div class="sec-label">✏️ تخصيص التطبيق</div>
+    <div class="modal-field" style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px">اسم التطبيق</label>
+      <input class="modal-input" id="set-appname" placeholder="Command Center">
+    </div>
+    <div class="modal-field" style="margin-bottom:12px">
+      <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:5px">اسمك (يظهر تحت العنوان)</label>
+      <input class="modal-input" id="set-username" placeholder="Ahmed Al-Haddad">
+    </div>
+    <button class="btn-primary" style="width:100%" onclick="saveAppNames()">حفظ الاسم</button>
+    <div id="appname-saved" style="font-size:12px;color:var(--green);text-align:center;margin-top:8px;display:none">✅ تم الحفظ</div>
+  </div>
+
   <!-- API key setup -->
   <div class="card" id="apikey-card">
     <div class="sec-label">🔑 تفعيل الميزات الذكية</div>
@@ -657,14 +672,25 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       </div>
     </div>
     <div class="modal-field">
-      <label>اضبط الكمية — يضرب كل القيم تلقائياً</label>
+      <label>اضبط الكمية بالمل/الجرام — يحسب القيم تلقائياً</label>
       <div style="display:flex;align-items:center;gap:8px">
-        <button class="chip" onclick="adjustEditServings(-0.25)">−</button>
-        <input class="modal-input" id="em-mult" type="number" inputmode="decimal" value="1" step="0.25" style="flex:1;text-align:center" oninput="applyEditMult()">
-        <button class="chip" onclick="adjustEditServings(0.25)">+</button>
-        <span style="font-size:12px;color:var(--text3);white-space:nowrap">× الكمية</span>
+        <div style="flex:1">
+          <input class="modal-input" id="em-base-ml" type="number" inputmode="decimal" placeholder="الأصلي" style="text-align:center" oninput="applyMlScale()">
+          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الكمية الأصلية</div>
+        </div>
+        <span style="color:var(--text3)">→</span>
+        <div style="flex:1">
+          <input class="modal-input" id="em-new-ml" type="number" inputmode="decimal" placeholder="الجديد" style="text-align:center" oninput="applyMlScale()">
+          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الكمية الجديدة</div>
+        </div>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:6px">مثال: شربت ضعف الكمية؟ حط 2 · نص الكمية؟ حط 0.5</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">مثال: سجّلت 250 مل حليب وشربت 500؟ اكتب 250 ثم 500 · أو استخدم +/− للمضاعفة السريعة</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <button class="chip" onclick="adjustEditServings(-0.25)">− ربع</button>
+        <span id="em-mult-label" style="flex:1;text-align:center;font-size:13px;color:var(--accent);font-weight:700">×1</span>
+        <button class="chip" onclick="adjustEditServings(0.25)">+ ربع</button>
+        <input type="hidden" id="em-mult" value="1">
+      </div>
     </div>
     <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric" oninput="markEditManual()"></div>
     <div style="display:flex;gap:8px">
@@ -1336,6 +1362,7 @@ function isToday(){const t=new Date();return currentDate.getFullYear()===t.getFu
 
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',()=>{
+  applyAppNames();
   loadDay();
   renderWeight();
   renderSlotPicker();
@@ -1532,6 +1559,12 @@ function openEditMeal(i){
   document.getElementById('em-carb').value=m.carb||0;
   document.getElementById('em-fat').value=m.fat||0;
   document.getElementById('em-mult').value=1;
+  const ml=document.getElementById('em-mult-label');if(ml)ml.textContent='×1';
+  // حاول استخراج رقم مل/جرام من اسم الوجبة كقيمة أصلية
+  const mlMatch=(m.name||'').match(/(\d+)\s*(مل|ml|جرام|غ|g)/i);
+  const baseMl=mlMatch?parseFloat(mlMatch[1]):'';
+  const bm=document.getElementById('em-base-ml');if(bm)bm.value=baseMl;
+  const nm=document.getElementById('em-new-ml');if(nm)nm.value=baseMl;
   editBase={cal:m.cal||0,p:m.protein||0,c:m.carb||0,f:m.fat||0};
   // slot picker
   document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===(m.slot||'غداء')?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
@@ -1546,11 +1579,24 @@ function applyEditMult(){
   document.getElementById('em-protein').value=Math.round(editBase.p*mult);
   document.getElementById('em-carb').value=Math.round(editBase.c*mult);
   document.getElementById('em-fat').value=Math.round(editBase.f*mult);
+  const lbl=document.getElementById('em-mult-label');if(lbl)lbl.textContent='×'+(Math.round(mult*100)/100);
+}
+// حساب من المل: الأصلي → الجديد
+function applyMlScale(){
+  const base=parseFloat(document.getElementById('em-base-ml').value);
+  const nw=parseFloat(document.getElementById('em-new-ml').value);
+  if(!base||base<=0||!nw||nw<=0)return;
+  const mult=nw/base;
+  document.getElementById('em-mult').value=mult;
+  applyEditMult();
 }
 function adjustEditServings(d){
   let mult=parseFloat(document.getElementById('em-mult').value)||1;
   mult=Math.max(0.25,Math.round((mult+d)*100)/100);
   document.getElementById('em-mult').value=mult;
+  // لو فيه كمية أصلية، حدّث الجديدة لتطابق المضاعف
+  const base=parseFloat(document.getElementById('em-base-ml').value);
+  if(base>0){const nm=document.getElementById('em-new-ml');if(nm)nm.value=Math.round(base*mult);}
   applyEditMult();
 }
 // لو عدّل القيم يدوياً: تصير هي الأساس الجديد والمضاعف يرجع 1
@@ -1562,6 +1608,7 @@ function markEditManual(){
     f:parseInt(document.getElementById('em-fat').value)||0
   };
   document.getElementById('em-mult').value=1;
+  const lbl=document.getElementById('em-mult-label');if(lbl)lbl.textContent='×1';
 }
 let editMealSlot='غداء';
 function setEditSlot(s){
@@ -1858,7 +1905,7 @@ function syncPhotoServings(skipInput){
 function addPhotoMeal(){
   const m=window._photoMeal;if(!m)return;
   const s=photoServings;
-  const name=s===1?m.name:m.name+' ×'+s;
+  const name=m.name;
   addMeal(name,m.cal*s,m.protein*s,m.carb*s,(m.fat||0)*s);
   document.getElementById('photo-result').classList.remove('show');
   photoServings=1;
@@ -2471,6 +2518,26 @@ function downloadCard(){
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(url),1000);
   },'image/png');
+}
+
+// ═══ تخصيص اسم التطبيق (محفوظ بالجهاز) ═══
+function applyAppNames(){
+  const name=localStorage.getItem('cc_appname')||'Command Center';
+  const user=localStorage.getItem('cc_username')||'Ahmed Al-Haddad';
+  const t=document.getElementById('tb-title');if(t)t.textContent=name;
+  const s=document.getElementById('tb-sub');if(s)s.textContent=user;
+  document.title=user+' — '+name;
+  const ni=document.getElementById('set-appname');if(ni)ni.value=name;
+  const ui=document.getElementById('set-username');if(ui)ui.value=user;
+}
+function saveAppNames(){
+  const name=document.getElementById('set-appname').value.trim()||'Command Center';
+  const user=document.getElementById('set-username').value.trim()||'Ahmed Al-Haddad';
+  localStorage.setItem('cc_appname',name);
+  localStorage.setItem('cc_username',user);
+  applyAppNames();
+  const msg=document.getElementById('appname-saved');
+  if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},2000);}
 }
 
 // ═══ API KEY (stored in browser only) ═══
