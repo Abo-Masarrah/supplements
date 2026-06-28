@@ -559,7 +559,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 </div>
 
 <!-- FOOD DB MODAL -->
-<div class="modal-bg" id="fooddb-modal">
+<div class="modal-bg" id="fooddb-modal" style="z-index:230">
   <div class="modal" style="height:90vh;display:flex;flex-direction:column;padding-bottom:12px">
     <div class="modal-title" style="margin-bottom:12px">🔍 قاعدة الأكل</div>
     <input class="modal-input" id="fdb-search" placeholder="ابحث: دجاج، رز، تمر، برقر..." oninput="searchFood()" style="margin-bottom:10px;flex-shrink:0">
@@ -570,7 +570,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 </div>
 
 <!-- FOOD PORTION MODAL -->
-<div class="modal-bg" id="portion-modal" style="z-index:210">
+<div class="modal-bg" id="portion-modal" style="z-index:240">
   <div class="modal">
     <div class="modal-title" id="portion-title">الكمية</div>
     <div class="modal-field">
@@ -727,19 +727,19 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       </div>
     </div>
     <div class="modal-field">
-      <label>اضبط الكمية بالمل/الجرام — يحسب القيم تلقائياً</label>
+      <label>وزن الوجبة (جرام/مل) — عدّله وكل القيم تتحسب تلقائياً</label>
       <div style="display:flex;align-items:center;gap:8px">
         <div style="flex:1">
-          <input class="modal-input" id="em-base-ml" type="number" inputmode="decimal" placeholder="الأصلي" style="text-align:center" oninput="applyMlScale()">
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الكمية الأصلية</div>
+          <input class="modal-input" id="em-base-ml" type="number" inputmode="decimal" placeholder="مثال 300" style="text-align:center;font-size:16px" oninput="applyMlScale()">
+          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الوزن الحالي</div>
         </div>
-        <span style="color:var(--text3)">→</span>
+        <span style="color:var(--accent);font-size:18px">←</span>
         <div style="flex:1">
-          <input class="modal-input" id="em-new-ml" type="number" inputmode="decimal" placeholder="الجديد" style="text-align:center" oninput="applyMlScale()">
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الكمية الجديدة</div>
+          <input class="modal-input" id="em-new-ml" type="number" inputmode="decimal" placeholder="الوزن الجديد" style="text-align:center;font-size:16px" oninput="applyMlScale()">
+          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">غيّره لكم تبي</div>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px">مثال: سجّلت 250 مل حليب وشربت 500؟ اكتب 250 ثم 500 · أو استخدم +/− للمضاعفة السريعة</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">اكتب وزن الوجبة الحالي يسار، وكم تبي يمين — مثال: ٣٠٠غ صارت ٢٠٠غ. أو استخدم +/− للمضاعفة السريعة</div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
         <button class="chip" onclick="adjustEditServings(-0.25)">− ربع</button>
         <span id="em-mult-label" style="flex:1;text-align:center;font-size:13px;color:var(--accent);font-weight:700">×1</span>
