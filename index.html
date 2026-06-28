@@ -222,6 +222,12 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   </div>
   <div id="week-strip" style="display:flex;gap:6px;margin-bottom:18px"></div>
 
+  <div class="sec-label">هدفك 🎯</div>
+  <div id="goal-picker" style="display:flex;gap:8px;margin-bottom:14px"></div>
+
+  <div class="sec-label">نشاطك الأسبوعي 🏃</div>
+  <div id="activity-picker" style="display:flex;gap:7px;margin-bottom:18px"></div>
+
   <div class="sec-label">نوع اليوم</div>
   <div id="day-hint" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--orange);text-align:center">👆 اختر نوع يومك أولاً عشان تشتغل حاسبة السعرات</div>
   <div class="day-grid">
@@ -331,7 +337,8 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <!-- muscle groups (الأساسي) -->
   <div class="card">
     <div class="sec-label">العضلات — اختر اللي لعبتها 💪</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">اضغط العضلة عشان تطلع تمارينها · تقدر تختار كذا عضلة في نفس اليوم · اضغط أي تمرين عشان تسجّل جلساته</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">اختر تقسيمة جاهزة أو اختر عضلاتك يدوياً · تقدر تعدّل بعدها</div>
+    <div id="split-picker" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px"></div>
     <div id="muscle-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     <div id="muscle-content" style="margin-top:14px"></div>
     <input type="file" id="muscle-photo-input" accept="image/*" capture="environment" style="display:none" onchange="analyzeMusclePhoto(event)">
@@ -455,9 +462,9 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
   <!-- Goal -->
   <div class="goal-banner">
-    <div class="goal-top"><div class="goal-title">🎯 هدف التنشيف</div><div class="goal-badge" id="goal-remaining">—</div></div>
+    <div class="goal-top"><div class="goal-title" id="goal-title">🎯 هدفك</div><div class="goal-badge" id="goal-remaining">—</div></div>
     <div class="goal-track"><div class="goal-fill" id="goal-fill" style="width:0%"></div></div>
-    <div class="goal-labels"><span id="goal-current">— كجم</span><span>الهدف 75 كجم</span></div>
+    <div class="goal-labels"><span id="goal-current">— كجم</span><span id="goal-target-label">الهدف 75 كجم</span></div>
   </div>
 
   <!-- Goal ETA -->
@@ -478,12 +485,25 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div id="dynamic-cals"></div>
   </div>
 
+  <!-- Weekly plan builder -->
+  <div class="card">
+    <div class="sec-label">📅 خطة الأسبوع الجاي</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:12px">يبني لك خطة أسبوع كاملة حسب هدفك، نشاطك، وزنك، وقياساتك — توزيع الأيام، السعرات، والتركيز على نقاط ضعفك.</div>
+    <button class="btn-primary" style="width:100%" onclick="buildWeekPlan()">🎯 ابنِ خطتي للأسبوع</button>
+    <div id="week-plan-result" style="margin-top:14px"></div>
+  </div>
+
   <!-- Weight log -->
   <div class="card weight-card">
     <div class="sec-label">الوزن الحالي</div>
     <div class="weight-big" id="weight-display">—<span class="weight-unit"> كجم</span></div>
     <input class="weight-input" id="weight-input" type="number" inputmode="decimal" placeholder="مثال 90" style="margin-bottom:10px">
     <button class="btn-primary" onclick="logWeight()">سجّل الوزن</button>
+    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px">
+      <span style="font-size:12px;color:var(--text3)">وزنك المستهدف:</span>
+      <input class="modal-input" id="target-weight-input" type="number" inputmode="decimal" placeholder="75" style="width:80px;text-align:center;padding:8px">
+      <button class="chip" onclick="saveTargetWeight()">حفظ</button>
+    </div>
     <div id="bmi-box" style="margin-top:18px;text-align:right"></div>
   </div>
 
@@ -540,14 +560,12 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
 <!-- FOOD DB MODAL -->
 <div class="modal-bg" id="fooddb-modal">
-  <div class="modal" style="max-height:85vh;display:flex;flex-direction:column">
-    <div class="modal-title">🔍 قاعدة الأكل</div>
-    <input class="modal-input" id="fdb-search" placeholder="ابحث: دجاج، رز، تمر، برقر..." oninput="searchFood()" style="margin-bottom:10px">
-    <div id="fdb-cats" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px"></div>
-    <div id="fdb-results" style="overflow-y:auto;flex:1;min-height:200px"></div>
-    <div class="modal-btns" style="margin-top:10px">
-      <button class="modal-btn mb-cancel" onclick="closeFoodDB()">إغلاق</button>
-    </div>
+  <div class="modal" style="height:90vh;display:flex;flex-direction:column;padding-bottom:12px">
+    <div class="modal-title" style="margin-bottom:12px">🔍 قاعدة الأكل</div>
+    <input class="modal-input" id="fdb-search" placeholder="ابحث: دجاج، رز، تمر، برقر..." oninput="searchFood()" style="margin-bottom:10px;flex-shrink:0">
+    <div id="fdb-cats" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:8px;flex-shrink:0;scrollbar-width:none"></div>
+    <div id="fdb-results" style="overflow-y:auto;flex:1;min-height:120px;-webkit-overflow-scrolling:touch"></div>
+    <button class="modal-btn mb-cancel" onclick="closeFoodDB()" style="margin-top:10px;flex-shrink:0">إغلاق</button>
   </div>
 </div>
 
@@ -569,19 +587,33 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 
 <!-- INBODY MODAL -->
 <div class="modal-bg" id="inbody-modal">
-  <div class="modal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
     <div class="modal-title">قياسات الجسم 📏</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:14px;text-align:center">الوزن إجباري · الباقي اختياري — كل ما سجّلت أكثر، الخطة أدق</div>
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin-bottom:6px">⚖️ الأساسي</div>
     <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1"><label>الوزن (كجم)</label><input class="modal-input" id="ib-weight" type="number" inputmode="decimal" placeholder="90"></div>
+      <div class="modal-field" style="flex:1"><label>الوزن (كجم) *</label><input class="modal-input" id="ib-weight" type="number" inputmode="decimal" placeholder="90"></div>
       <div class="modal-field" style="flex:1"><label>نسبة الدهون %</label><input class="modal-input" id="ib-fat" type="number" inputmode="decimal" placeholder="22"></div>
+      <div class="modal-field" style="flex:1"><label>كتلة العضل كجم</label><input class="modal-input" id="ib-muscle" type="number" inputmode="decimal" placeholder="38"></div>
+    </div>
+    <div style="font-size:11px;color:var(--accent);font-weight:700;margin:10px 0 6px">📐 محيط الجسم (سم)</div>
+    <div style="display:flex;gap:8px">
+      <div class="modal-field" style="flex:1"><label>الصدر</label><input class="modal-input" id="ib-chest" type="number" inputmode="decimal" placeholder="105"></div>
+      <div class="modal-field" style="flex:1"><label>الخصر</label><input class="modal-input" id="ib-waist" type="number" inputmode="decimal" placeholder="90"></div>
+      <div class="modal-field" style="flex:1"><label>أسفل الخصر</label><input class="modal-input" id="ib-lowwaist" type="number" inputmode="decimal" placeholder="95"></div>
     </div>
     <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1"><label>كتلة العضل (كجم)</label><input class="modal-input" id="ib-muscle" type="number" inputmode="decimal" placeholder="38"></div>
-      <div class="modal-field" style="flex:1"><label>محيط الخصر (سم)</label><input class="modal-input" id="ib-waist" type="number" inputmode="decimal" placeholder="95"></div>
+      <div class="modal-field" style="flex:1"><label>الورك</label><input class="modal-input" id="ib-hip" type="number" inputmode="decimal" placeholder="100"></div>
+      <div class="modal-field" style="flex:1"><label>باي يمين</label><input class="modal-input" id="ib-armR" type="number" inputmode="decimal" placeholder="36"></div>
+      <div class="modal-field" style="flex:1"><label>باي يسار</label><input class="modal-input" id="ib-armL" type="number" inputmode="decimal" placeholder="36"></div>
     </div>
     <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1"><label>الصدر (سم)</label><input class="modal-input" id="ib-chest" type="number" inputmode="decimal" placeholder="105"></div>
-      <div class="modal-field" style="flex:1"><label>الذراع (سم)</label><input class="modal-input" id="ib-arm" type="number" inputmode="decimal" placeholder="36"></div>
+      <div class="modal-field" style="flex:1"><label>فخذ يمين</label><input class="modal-input" id="ib-thighR" type="number" inputmode="decimal" placeholder="58"></div>
+      <div class="modal-field" style="flex:1"><label>فخذ يسار</label><input class="modal-input" id="ib-thighL" type="number" inputmode="decimal" placeholder="58"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="modal-field" style="flex:1"><label>بطة يمين</label><input class="modal-input" id="ib-calfR" type="number" inputmode="decimal" placeholder="38"></div>
+      <div class="modal-field" style="flex:1"><label>بطة يسار</label><input class="modal-input" id="ib-calfL" type="number" inputmode="decimal" placeholder="38"></div>
     </div>
     <div class="modal-btns">
       <button class="modal-btn mb-cancel" onclick="closeInbodyModal()">إلغاء</button>
@@ -608,6 +640,29 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     </div>
     <button class="btn-primary" style="width:100%" onclick="saveAppNames()">حفظ الاسم</button>
     <div id="appname-saved" style="font-size:12px;color:var(--green);text-align:center;margin-top:8px;display:none">✅ تم الحفظ</div>
+  </div>
+
+  <!-- macro calculator -->
+  <div class="card">
+    <div class="sec-label">🔢 معاملات الماكروز بالكيلو</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:14px">أهدافك اليومية تُحسب تلقائياً من وزنك المرصود × هذي المعاملات × هدفك (تنشيف/محافظة/تضخيم). كل ما تحدّث وزنك، الأرقام تتبعه. عدّل المعاملات لو تبي تخصيص متقدّم — أو خلّها زي ما هي (مضبوطة لك).</div>
+    <div id="macro-factors-ui"></div>
+    <button class="btn-primary" style="width:100%;margin-top:8px" onclick="saveMacroUI()">حفظ المعاملات</button>
+    <div id="macro-saved" style="font-size:12px;color:var(--green);text-align:center;margin-top:8px;display:none">✅ تم الحفظ</div>
+  </div>
+
+  <!-- month goal -->
+  <div class="card">
+    <div class="sec-label">🎯 تركيز التدريب</div>
+    <div style="font-size:12px;color:var(--text3);line-height:1.7;margin-bottom:12px">اختر نوع تدريبك ومدته — يحدّد نظام العدّات والراحة في خطتك، ويبرز عضلتك المستهدفة بنجمة ⭐.</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600">المدة</div>
+    <div id="focus-period-picker" style="display:flex;gap:6px;margin-bottom:14px"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600">نوع التدريب</div>
+    <div id="month-focus-picker" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div>
+    <div id="focus-scheme" style="margin-bottom:14px"></div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600">عضلة مستهدفة (اختياري)</div>
+    <div id="month-muscle-picker" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+    <div id="month-saved" style="font-size:12px;color:var(--green);text-align:center;margin-top:10px;display:none">✅ تم الحفظ</div>
   </div>
 
   <!-- API key setup -->
@@ -698,6 +753,11 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       <div class="modal-field" style="flex:1"><label>كارب (غ)</label><input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()"></div>
       <div class="modal-field" style="flex:1"><label>دهون (غ)</label><input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()"></div>
     </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="add-meal-btn" style="margin-top:0;flex:2;border-color:rgba(34,197,94,.5);color:var(--green);background:rgba(34,197,94,.06)" onclick="openFoodDBForEdit()">➕ أضف/استبدل صنف من القاعدة</button>
+      <button class="add-meal-btn" style="margin-top:0;flex:1;border-color:rgba(239,68,68,.4);color:var(--red);background:rgba(239,68,68,.04)" onclick="resetEditMacros()">🔄 صفّر</button>
+    </div>
+    <div id="em-ingredients" style="font-size:11px;color:var(--text3);margin-top:8px"></div>
     <div class="modal-btns">
       <button class="modal-btn mb-cancel" onclick="deleteEditMeal()" style="color:var(--red)">🗑 حذف</button>
       <button class="modal-btn mb-cancel" onclick="closeEditMeal()">إلغاء</button>
@@ -804,7 +864,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 </div>
 
 <script>
-const FOOD_DB=[{"n": "صدر دجاج مشوي", "cal": 165, "p": 31, "c": 0, "f": 3.6, "u": "g", "cat": "دجاج"}, {"n": "صدر دجاج ني", "cal": 120, "p": 23, "c": 0, "f": 2.6, "u": "g", "cat": "دجاج"}, {"n": "فخذ دجاج مشوي", "cal": 209, "p": 26, "c": 0, "f": 11, "u": "g", "cat": "دجاج"}, {"n": "دجاج مقلي", "cal": 246, "p": 30, "c": 8, "f": 12, "u": "g", "cat": "دجاج"}, {"n": "لحم بقري مشوي", "cal": 250, "p": 26, "c": 0, "f": 15, "u": "g", "cat": "لحوم"}, {"n": "لحم بقري ني", "cal": 217, "p": 26, "c": 0, "f": 12, "u": "g", "cat": "لحوم"}, {"n": "لحم غنم مشوي", "cal": 294, "p": 25, "c": 0, "f": 21, "u": "g", "cat": "لحوم"}, {"n": "لحم مفروم مطبوخ", "cal": 235, "p": 26, "c": 0, "f": 15, "u": "g", "cat": "لحوم"}, {"n": "ستيك", "cal": 271, "p": 25, "c": 0, "f": 19, "u": "g", "cat": "لحوم"}, {"n": "كبد", "cal": 175, "p": 27, "c": 4, "f": 5, "u": "g", "cat": "لحوم"}, {"n": "كبدة دجاج", "cal": 172, "p": 26, "c": 1, "f": 6, "u": "g", "cat": "لحوم"}, {"n": "ديك رومي صدر", "cal": 135, "p": 30, "c": 0, "f": 1, "u": "g", "cat": "دجاج"}, {"n": "نقانق", "cal": 301, "p": 12, "c": 2, "f": 27, "u": "g", "cat": "لحوم"}, {"n": "هوت دوق", "cal": 290, "p": 11, "c": 4, "f": 26, "u": "g", "cat": "فاست فود"}, {"n": "مرتديلا", "cal": 250, "p": 12, "c": 3, "f": 21, "u": "g", "cat": "لحوم"}, {"n": "بسطرمة", "cal": 110, "p": 18, "c": 1, "f": 4, "u": "g", "cat": "لحوم"}, {"n": "شاورما دجاج", "cal": 190, "p": 18, "c": 8, "f": 10, "u": "g", "cat": "شعبي"}, {"n": "شاورما لحم", "cal": 230, "p": 17, "c": 9, "f": 15, "u": "g", "cat": "شعبي"}, {"n": "كباب لحم", "cal": 215, "p": 18, "c": 4, "f": 14, "u": "g", "cat": "شعبي"}, {"n": "كفتة", "cal": 230, "p": 16, "c": 5, "f": 16, "u": "g", "cat": "شعبي"}, {"n": "سمك مشوي", "cal": 150, "p": 22, "c": 0, "f": 6, "u": "g", "cat": "سمك"}, {"n": "سلمون مشوي", "cal": 206, "p": 22, "c": 0, "f": 13, "u": "g", "cat": "سمك"}, {"n": "تونة معلبة بالماء", "cal": 116, "p": 26, "c": 0, "f": 1, "u": "g", "cat": "سمك"}, {"n": "تونة بالزيت", "cal": 198, "p": 29, "c": 0, "f": 8, "u": "g", "cat": "سمك"}, {"n": "روبيان مطبوخ", "cal": 99, "p": 24, "c": 0, "f": 0.3, "u": "g", "cat": "سمك"}, {"n": "سمك مقلي", "cal": 232, "p": 20, "c": 8, "f": 14, "u": "g", "cat": "سمك"}, {"n": "هامور مشوي", "cal": 105, "p": 21, "c": 0, "f": 2, "u": "g", "cat": "سمك"}, {"n": "بيضة مسلوقة", "cal": 78, "p": 6, "c": 0.6, "f": 5, "u": "pc", "cat": "بيض"}, {"n": "بيضة مقلية", "cal": 90, "p": 6, "c": 0.4, "f": 7, "u": "pc", "cat": "بيض"}, {"n": "بياض بيضة", "cal": 17, "p": 3.6, "c": 0.2, "f": 0, "u": "pc", "cat": "بيض"}, {"n": "حليب كامل الدسم", "cal": 61, "p": 3, "c": 5, "f": 3, "u": "g", "cat": "ألبان"}, {"n": "حليب قليل الدسم", "cal": 42, "p": 3, "c": 5, "f": 1, "u": "g", "cat": "ألبان"}, {"n": "لبن زبادي", "cal": 59, "p": 10, "c": 4, "f": 0.4, "u": "g", "cat": "ألبان"}, {"n": "لبن يوناني", "cal": 59, "p": 10, "c": 3.6, "f": 0.4, "u": "g", "cat": "ألبان"}, {"n": "جبن شيدر", "cal": 402, "p": 25, "c": 1, "f": 33, "u": "g", "cat": "ألبان"}, {"n": "جبن قريش", "cal": 98, "p": 11, "c": 3, "f": 4, "u": "g", "cat": "ألبان"}, {"n": "جبن موزاريلا", "cal": 280, "p": 28, "c": 3, "f": 17, "u": "g", "cat": "ألبان"}, {"n": "لبنة", "cal": 230, "p": 7, "c": 4, "f": 21, "u": "g", "cat": "ألبان"}, {"n": "قشطة", "cal": 300, "p": 2, "c": 3, "f": 30, "u": "g", "cat": "ألبان"}, {"n": "زبدة", "cal": 717, "p": 1, "c": 0, "f": 81, "u": "g", "cat": "ألبان"}, {"n": "رز ابيض مطبوخ", "cal": 130, "p": 2.7, "c": 28, "f": 0.3, "u": "g", "cat": "نشويات"}, {"n": "رز بسمتي مطبوخ", "cal": 121, "p": 3, "c": 25, "f": 0.4, "u": "g", "cat": "نشويات"}, {"n": "رز بني مطبوخ", "cal": 112, "p": 2.6, "c": 24, "f": 0.9, "u": "g", "cat": "نشويات"}, {"n": "كبسة رز", "cal": 170, "p": 5, "c": 28, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "برياني", "cal": 180, "p": 6, "c": 27, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مكرونة مطبوخة", "cal": 131, "p": 5, "c": 25, "f": 1, "u": "g", "cat": "نشويات"}, {"n": "معكرونة بالصلصة", "cal": 150, "p": 5, "c": 24, "f": 4, "u": "g", "cat": "نشويات"}, {"n": "بطاطس مسلوقة", "cal": 87, "p": 2, "c": 20, "f": 0.1, "u": "g", "cat": "نشويات"}, {"n": "بطاطس مقلية", "cal": 312, "p": 3.4, "c": 41, "f": 15, "u": "g", "cat": "فاست فود"}, {"n": "بطاطا حلوة", "cal": 90, "p": 2, "c": 21, "f": 0.1, "u": "g", "cat": "نشويات"}, {"n": "خبز ابيض", "cal": 265, "p": 9, "c": 49, "f": 3, "u": "g", "cat": "نشويات"}, {"n": "خبز اسمر", "cal": 247, "p": 13, "c": 41, "f": 4, "u": "g", "cat": "نشويات"}, {"n": "خبز عربي صامولي", "cal": 275, "p": 9, "c": 55, "f": 1, "u": "g", "cat": "نشويات"}, {"n": "خبز تميس", "cal": 290, "p": 8, "c": 52, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "شوفان", "cal": 389, "p": 17, "c": 66, "f": 7, "u": "g", "cat": "نشويات"}, {"n": "برغل", "cal": 83, "p": 3, "c": 19, "f": 0.2, "u": "g", "cat": "نشويات"}, {"n": "فريك", "cal": 368, "p": 12, "c": 72, "f": 2, "u": "g", "cat": "نشويات"}, {"n": "قرصان", "cal": 200, "p": 6, "c": 35, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "جريش", "cal": 170, "p": 5, "c": 30, "f": 3, "u": "g", "cat": "شعبي"}, {"n": "مرقوق", "cal": 190, "p": 6, "c": 30, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مطازيز", "cal": 195, "p": 7, "c": 29, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مندي رز", "cal": 185, "p": 6, "c": 27, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "مضغوط", "cal": 195, "p": 7, "c": 26, "f": 7, "u": "g", "cat": "شعبي"}, {"n": "عدس مطبوخ", "cal": 116, "p": 9, "c": 20, "f": 0.4, "u": "g", "cat": "بقوليات"}, {"n": "فول مدمس", "cal": 110, "p": 8, "c": 15, "f": 2, "u": "g", "cat": "شعبي"}, {"n": "حمص مطبوخ", "cal": 164, "p": 9, "c": 27, "f": 3, "u": "g", "cat": "بقوليات"}, {"n": "فاصوليا بيضاء", "cal": 140, "p": 9, "c": 25, "f": 0.6, "u": "g", "cat": "بقوليات"}, {"n": "لوبيا", "cal": 110, "p": 8, "c": 20, "f": 0.5, "u": "g", "cat": "بقوليات"}, {"n": "فلافل", "cal": 333, "p": 13, "c": 32, "f": 18, "u": "g", "cat": "شعبي"}, {"n": "حمص بطحينة", "cal": 177, "p": 8, "c": 20, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "خيار", "cal": 15, "p": 0.7, "c": 3.6, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "طماطم", "cal": 18, "p": 0.9, "c": 3.9, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "خس", "cal": 15, "p": 1.4, "c": 2.9, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "جزر", "cal": 41, "p": 0.9, "c": 10, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "بروكلي", "cal": 34, "p": 2.8, "c": 7, "f": 0.4, "u": "g", "cat": "خضار"}, {"n": "سبانخ", "cal": 23, "p": 2.9, "c": 3.6, "f": 0.4, "u": "g", "cat": "خضار"}, {"n": "باذنجان", "cal": 25, "p": 1, "c": 6, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "كوسة", "cal": 17, "p": 1.2, "c": 3.1, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "فلفل حلو", "cal": 31, "p": 1, "c": 6, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "بصل", "cal": 40, "p": 1.1, "c": 9, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "ثوم", "cal": 149, "p": 6, "c": 33, "f": 0.5, "u": "g", "cat": "خضار"}, {"n": "ملفوف", "cal": 25, "p": 1.3, "c": 6, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "فطر", "cal": 22, "p": 3, "c": 3, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "بامية", "cal": 33, "p": 1.9, "c": 7, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "سلطة خضراء", "cal": 20, "p": 1, "c": 4, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "تبولة", "cal": 120, "p": 3, "c": 15, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "فتوش", "cal": 130, "p": 3, "c": 16, "f": 7, "u": "g", "cat": "شعبي"}, {"n": "تفاح", "cal": 52, "p": 0.3, "c": 14, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "موز", "cal": 89, "p": 1.1, "c": 23, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "برتقال", "cal": 47, "p": 0.9, "c": 12, "f": 0.1, "u": "g", "cat": "فواكه"}, {"n": "عنب", "cal": 69, "p": 0.7, "c": 18, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "فراولة", "cal": 32, "p": 0.7, "c": 8, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "مانجو", "cal": 60, "p": 0.8, "c": 15, "f": 0.4, "u": "g", "cat": "فواكه"}, {"n": "بطيخ", "cal": 30, "p": 0.6, "c": 8, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "شمام", "cal": 34, "p": 0.8, "c": 8, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "تمر", "cal": 277, "p": 2, "c": 75, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "رطب", "cal": 142, "p": 1.5, "c": 38, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "رمان", "cal": 83, "p": 1.7, "c": 19, "f": 1.2, "u": "g", "cat": "فواكه"}, {"n": "كيوي", "cal": 61, "p": 1.1, "c": 15, "f": 0.5, "u": "g", "cat": "فواكه"}, {"n": "اناناس", "cal": 50, "p": 0.5, "c": 13, "f": 0.1, "u": "g", "cat": "فواكه"}, {"n": "افوكادو", "cal": 160, "p": 2, "c": 9, "f": 15, "u": "g", "cat": "فواكه"}, {"n": "بلح", "cal": 277, "p": 2, "c": 75, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "تين", "cal": 74, "p": 0.8, "c": 19, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "لوز", "cal": 579, "p": 21, "c": 22, "f": 50, "u": "g", "cat": "مكسرات"}, {"n": "عين جمل", "cal": 654, "p": 15, "c": 14, "f": 65, "u": "g", "cat": "مكسرات"}, {"n": "فستق", "cal": 560, "p": 20, "c": 28, "f": 45, "u": "g", "cat": "مكسرات"}, {"n": "كاجو", "cal": 553, "p": 18, "c": 30, "f": 44, "u": "g", "cat": "مكسرات"}, {"n": "فول سوداني", "cal": 567, "p": 26, "c": 16, "f": 49, "u": "g", "cat": "مكسرات"}, {"n": "زبدة فول سوداني", "cal": 588, "p": 25, "c": 20, "f": 50, "u": "g", "cat": "مكسرات"}, {"n": "زيت زيتون", "cal": 884, "p": 0, "c": 0, "f": 100, "u": "g", "cat": "دهون"}, {"n": "زيت", "cal": 884, "p": 0, "c": 0, "f": 100, "u": "g", "cat": "دهون"}, {"n": "طحينة", "cal": 595, "p": 17, "c": 21, "f": 54, "u": "g", "cat": "دهون"}, {"n": "شربة عظام", "cal": 40, "p": 5, "c": 1, "f": 2, "u": "g", "cat": "شوربات"}, {"n": "شوربة دجاج", "cal": 36, "p": 3, "c": 4, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "شوربة عدس", "cal": 100, "p": 5, "c": 16, "f": 2, "u": "g", "cat": "شوربات"}, {"n": "شوربة خضار", "cal": 45, "p": 2, "c": 8, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "حساء الطماطم", "cal": 50, "p": 1.5, "c": 9, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "برقر لحم", "cal": 295, "p": 17, "c": 24, "f": 14, "u": "g", "cat": "فاست فود"}, {"n": "برقر دجاج", "cal": 270, "p": 15, "c": 28, "f": 11, "u": "g", "cat": "فاست فود"}, {"n": "تشيز برقر", "cal": 303, "p": 15, "c": 24, "f": 17, "u": "g", "cat": "فاست فود"}, {"n": "بيتزا", "cal": 266, "p": 11, "c": 33, "f": 10, "u": "g", "cat": "فاست فود"}, {"n": "ناجتس دجاج", "cal": 296, "p": 15, "c": 16, "f": 19, "u": "g", "cat": "فاست فود"}, {"n": "سندويش دجاج", "cal": 250, "p": 14, "c": 28, "f": 9, "u": "g", "cat": "فاست فود"}, {"n": "شطيرة فلافل", "cal": 230, "p": 8, "c": 30, "f": 9, "u": "g", "cat": "شعبي"}, {"n": "بطاطس ودجز", "cal": 315, "p": 4, "c": 40, "f": 16, "u": "g", "cat": "فاست فود"}, {"n": "دونات", "cal": 452, "p": 5, "c": 51, "f": 25, "u": "g", "cat": "فاست فود"}, {"n": "بقلاوة", "cal": 430, "p": 6, "c": 50, "f": 23, "u": "g", "cat": "حلويات"}, {"n": "كنافة", "cal": 380, "p": 7, "c": 45, "f": 19, "u": "g", "cat": "حلويات"}, {"n": "لقيمات", "cal": 350, "p": 5, "c": 45, "f": 17, "u": "g", "cat": "حلويات"}, {"n": "بسبوسة", "cal": 340, "p": 5, "c": 55, "f": 12, "u": "g", "cat": "حلويات"}, {"n": "ايس كريم", "cal": 207, "p": 3.5, "c": 24, "f": 11, "u": "g", "cat": "حلويات"}, {"n": "شوكولاتة", "cal": 546, "p": 5, "c": 61, "f": 31, "u": "g", "cat": "حلويات"}, {"n": "كيك", "cal": 340, "p": 5, "c": 53, "f": 12, "u": "g", "cat": "حلويات"}, {"n": "بسكويت", "cal": 480, "p": 6, "c": 64, "f": 22, "u": "g", "cat": "حلويات"}, {"n": "عصير برتقال", "cal": 45, "p": 0.7, "c": 10, "f": 0.2, "u": "g", "cat": "مشروبات"}, {"n": "كولا", "cal": 42, "p": 0, "c": 11, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "عصير مانجو", "cal": 55, "p": 0.3, "c": 14, "f": 0.1, "u": "g", "cat": "مشروبات"}, {"n": "قهوة سادة", "cal": 2, "p": 0.1, "c": 0, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "شاي بدون سكر", "cal": 1, "p": 0, "c": 0.2, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "لاتيه", "cal": 55, "p": 3, "c": 6, "f": 2, "u": "g", "cat": "مشروبات"}, {"n": "مشروب طاقة", "cal": 45, "p": 0, "c": 11, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "هريس", "cal": 180, "p": 9, "c": 22, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "ثريد", "cal": 160, "p": 6, "c": 22, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مرقة لحم", "cal": 90, "p": 7, "c": 5, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "سليق", "cal": 170, "p": 7, "c": 25, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "معصوب", "cal": 250, "p": 4, "c": 40, "f": 9, "u": "g", "cat": "شعبي"}, {"n": "شكشوكة", "cal": 120, "p": 7, "c": 6, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "عجة", "cal": 154, "p": 11, "c": 2, "f": 11, "u": "g", "cat": "شعبي"}, {"n": "سمبوسة لحم", "cal": 290, "p": 9, "c": 28, "f": 16, "u": "g", "cat": "شعبي"}, {"n": "سمبوسة خضار", "cal": 250, "p": 5, "c": 30, "f": 12, "u": "g", "cat": "شعبي"}];
+const FOOD_DB=[{"n": "صدر دجاج مشوي", "cal": 165, "p": 31, "c": 0, "f": 3.6, "u": "g", "cat": "دجاج"}, {"n": "صدر دجاج ني", "cal": 120, "p": 23, "c": 0, "f": 2.6, "u": "g", "cat": "دجاج"}, {"n": "فخذ دجاج مشوي", "cal": 209, "p": 26, "c": 0, "f": 11, "u": "g", "cat": "دجاج"}, {"n": "دجاج مقلي", "cal": 246, "p": 30, "c": 8, "f": 12, "u": "g", "cat": "دجاج"}, {"n": "لحم بقري مشوي", "cal": 250, "p": 26, "c": 0, "f": 15, "u": "g", "cat": "لحوم"}, {"n": "لحم بقري ني", "cal": 217, "p": 26, "c": 0, "f": 12, "u": "g", "cat": "لحوم"}, {"n": "لحم غنم مشوي", "cal": 294, "p": 25, "c": 0, "f": 21, "u": "g", "cat": "لحوم"}, {"n": "لحم مفروم مطبوخ", "cal": 235, "p": 26, "c": 0, "f": 15, "u": "g", "cat": "لحوم"}, {"n": "ستيك", "cal": 271, "p": 25, "c": 0, "f": 19, "u": "g", "cat": "لحوم"}, {"n": "كبد", "cal": 175, "p": 27, "c": 4, "f": 5, "u": "g", "cat": "لحوم"}, {"n": "كبدة دجاج", "cal": 172, "p": 26, "c": 1, "f": 6, "u": "g", "cat": "لحوم"}, {"n": "ديك رومي صدر", "cal": 135, "p": 30, "c": 0, "f": 1, "u": "g", "cat": "دجاج"}, {"n": "نقانق", "cal": 301, "p": 12, "c": 2, "f": 27, "u": "g", "cat": "لحوم"}, {"n": "هوت دوق", "cal": 290, "p": 11, "c": 4, "f": 26, "u": "g", "cat": "فاست فود"}, {"n": "مرتديلا", "cal": 250, "p": 12, "c": 3, "f": 21, "u": "g", "cat": "لحوم"}, {"n": "بسطرمة", "cal": 110, "p": 18, "c": 1, "f": 4, "u": "g", "cat": "لحوم"}, {"n": "شاورما دجاج", "cal": 190, "p": 18, "c": 8, "f": 10, "u": "g", "cat": "شعبي"}, {"n": "شاورما لحم", "cal": 230, "p": 17, "c": 9, "f": 15, "u": "g", "cat": "شعبي"}, {"n": "كباب لحم", "cal": 215, "p": 18, "c": 4, "f": 14, "u": "g", "cat": "شعبي"}, {"n": "كفتة", "cal": 230, "p": 16, "c": 5, "f": 16, "u": "g", "cat": "شعبي"}, {"n": "سمك مشوي", "cal": 150, "p": 22, "c": 0, "f": 6, "u": "g", "cat": "سمك"}, {"n": "سلمون مشوي", "cal": 206, "p": 22, "c": 0, "f": 13, "u": "g", "cat": "سمك"}, {"n": "تونة معلبة بالماء", "cal": 116, "p": 26, "c": 0, "f": 1, "u": "g", "cat": "سمك"}, {"n": "تونة بالزيت", "cal": 198, "p": 29, "c": 0, "f": 8, "u": "g", "cat": "سمك"}, {"n": "روبيان مطبوخ", "cal": 99, "p": 24, "c": 0, "f": 0.3, "u": "g", "cat": "سمك"}, {"n": "سمك مقلي", "cal": 232, "p": 20, "c": 8, "f": 14, "u": "g", "cat": "سمك"}, {"n": "هامور مشوي", "cal": 105, "p": 21, "c": 0, "f": 2, "u": "g", "cat": "سمك"}, {"n": "بيضة مسلوقة", "cal": 78, "p": 6, "c": 0.6, "f": 5, "u": "pc", "cat": "بيض"}, {"n": "بيضة مقلية", "cal": 90, "p": 6, "c": 0.4, "f": 7, "u": "pc", "cat": "بيض"}, {"n": "بياض بيضة", "cal": 17, "p": 3.6, "c": 0.2, "f": 0, "u": "pc", "cat": "بيض"}, {"n": "حليب كامل الدسم", "cal": 61, "p": 3, "c": 5, "f": 3, "u": "g", "cat": "ألبان"}, {"n": "حليب قليل الدسم", "cal": 42, "p": 3, "c": 5, "f": 1, "u": "g", "cat": "ألبان"}, {"n": "لبن زبادي", "cal": 59, "p": 10, "c": 4, "f": 0.4, "u": "g", "cat": "ألبان"}, {"n": "لبن يوناني", "cal": 59, "p": 10, "c": 3.6, "f": 0.4, "u": "g", "cat": "ألبان"}, {"n": "جبن شيدر", "cal": 402, "p": 25, "c": 1, "f": 33, "u": "g", "cat": "ألبان"}, {"n": "جبن قريش", "cal": 98, "p": 11, "c": 3, "f": 4, "u": "g", "cat": "ألبان"}, {"n": "جبن موزاريلا", "cal": 280, "p": 28, "c": 3, "f": 17, "u": "g", "cat": "ألبان"}, {"n": "لبنة", "cal": 230, "p": 7, "c": 4, "f": 21, "u": "g", "cat": "ألبان"}, {"n": "قشطة", "cal": 300, "p": 2, "c": 3, "f": 30, "u": "g", "cat": "ألبان"}, {"n": "زبدة", "cal": 717, "p": 1, "c": 0, "f": 81, "u": "g", "cat": "ألبان"}, {"n": "رز ابيض مطبوخ", "cal": 130, "p": 2.7, "c": 28, "f": 0.3, "u": "g", "cat": "نشويات"}, {"n": "رز بسمتي مطبوخ", "cal": 121, "p": 3, "c": 25, "f": 0.4, "u": "g", "cat": "نشويات"}, {"n": "رز بني مطبوخ", "cal": 112, "p": 2.6, "c": 24, "f": 0.9, "u": "g", "cat": "نشويات"}, {"n": "كبسة رز", "cal": 170, "p": 5, "c": 28, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "برياني", "cal": 180, "p": 6, "c": 27, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مكرونة مطبوخة", "cal": 131, "p": 5, "c": 25, "f": 1, "u": "g", "cat": "نشويات"}, {"n": "معكرونة بالصلصة", "cal": 150, "p": 5, "c": 24, "f": 4, "u": "g", "cat": "نشويات"}, {"n": "بطاطس مسلوقة", "cal": 87, "p": 2, "c": 20, "f": 0.1, "u": "g", "cat": "نشويات"}, {"n": "بطاطس مقلية", "cal": 312, "p": 3.4, "c": 41, "f": 15, "u": "g", "cat": "فاست فود"}, {"n": "بطاطا حلوة", "cal": 90, "p": 2, "c": 21, "f": 0.1, "u": "g", "cat": "نشويات"}, {"n": "خبز ابيض", "cal": 265, "p": 9, "c": 49, "f": 3, "u": "g", "cat": "نشويات"}, {"n": "خبز اسمر", "cal": 247, "p": 13, "c": 41, "f": 4, "u": "g", "cat": "نشويات"}, {"n": "خبز عربي صامولي", "cal": 275, "p": 9, "c": 55, "f": 1, "u": "g", "cat": "نشويات"}, {"n": "خبز تميس", "cal": 290, "p": 8, "c": 52, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "شوفان", "cal": 389, "p": 17, "c": 66, "f": 7, "u": "g", "cat": "نشويات"}, {"n": "برغل", "cal": 83, "p": 3, "c": 19, "f": 0.2, "u": "g", "cat": "نشويات"}, {"n": "فريك", "cal": 368, "p": 12, "c": 72, "f": 2, "u": "g", "cat": "نشويات"}, {"n": "قرصان", "cal": 200, "p": 6, "c": 35, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "جريش", "cal": 170, "p": 5, "c": 30, "f": 3, "u": "g", "cat": "شعبي"}, {"n": "مرقوق", "cal": 190, "p": 6, "c": 30, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مطازيز", "cal": 195, "p": 7, "c": 29, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مندي رز", "cal": 185, "p": 6, "c": 27, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "مضغوط", "cal": 195, "p": 7, "c": 26, "f": 7, "u": "g", "cat": "شعبي"}, {"n": "عدس مطبوخ", "cal": 116, "p": 9, "c": 20, "f": 0.4, "u": "g", "cat": "بقوليات"}, {"n": "فول مدمس", "cal": 110, "p": 8, "c": 15, "f": 2, "u": "g", "cat": "شعبي"}, {"n": "حمص مطبوخ", "cal": 164, "p": 9, "c": 27, "f": 3, "u": "g", "cat": "بقوليات"}, {"n": "فاصوليا بيضاء", "cal": 140, "p": 9, "c": 25, "f": 0.6, "u": "g", "cat": "بقوليات"}, {"n": "لوبيا", "cal": 110, "p": 8, "c": 20, "f": 0.5, "u": "g", "cat": "بقوليات"}, {"n": "فلافل", "cal": 333, "p": 13, "c": 32, "f": 18, "u": "g", "cat": "شعبي"}, {"n": "حمص بطحينة", "cal": 177, "p": 8, "c": 20, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "خيار", "cal": 15, "p": 0.7, "c": 3.6, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "طماطم", "cal": 18, "p": 0.9, "c": 3.9, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "خس", "cal": 15, "p": 1.4, "c": 2.9, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "جزر", "cal": 41, "p": 0.9, "c": 10, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "بروكلي", "cal": 34, "p": 2.8, "c": 7, "f": 0.4, "u": "g", "cat": "خضار"}, {"n": "سبانخ", "cal": 23, "p": 2.9, "c": 3.6, "f": 0.4, "u": "g", "cat": "خضار"}, {"n": "باذنجان", "cal": 25, "p": 1, "c": 6, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "كوسة", "cal": 17, "p": 1.2, "c": 3.1, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "فلفل حلو", "cal": 31, "p": 1, "c": 6, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "بصل", "cal": 40, "p": 1.1, "c": 9, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "ثوم", "cal": 149, "p": 6, "c": 33, "f": 0.5, "u": "g", "cat": "خضار"}, {"n": "ملفوف", "cal": 25, "p": 1.3, "c": 6, "f": 0.1, "u": "g", "cat": "خضار"}, {"n": "فطر", "cal": 22, "p": 3, "c": 3, "f": 0.3, "u": "g", "cat": "خضار"}, {"n": "بامية", "cal": 33, "p": 1.9, "c": 7, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "سلطة خضراء", "cal": 20, "p": 1, "c": 4, "f": 0.2, "u": "g", "cat": "خضار"}, {"n": "تبولة", "cal": 120, "p": 3, "c": 15, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "فتوش", "cal": 130, "p": 3, "c": 16, "f": 7, "u": "g", "cat": "شعبي"}, {"n": "تفاح", "cal": 52, "p": 0.3, "c": 14, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "موز", "cal": 89, "p": 1.1, "c": 23, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "برتقال", "cal": 47, "p": 0.9, "c": 12, "f": 0.1, "u": "g", "cat": "فواكه"}, {"n": "عنب", "cal": 69, "p": 0.7, "c": 18, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "فراولة", "cal": 32, "p": 0.7, "c": 8, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "مانجو", "cal": 60, "p": 0.8, "c": 15, "f": 0.4, "u": "g", "cat": "فواكه"}, {"n": "بطيخ", "cal": 30, "p": 0.6, "c": 8, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "شمام", "cal": 34, "p": 0.8, "c": 8, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "تمر", "cal": 277, "p": 2, "c": 75, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "رطب", "cal": 142, "p": 1.5, "c": 38, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "رمان", "cal": 83, "p": 1.7, "c": 19, "f": 1.2, "u": "g", "cat": "فواكه"}, {"n": "كيوي", "cal": 61, "p": 1.1, "c": 15, "f": 0.5, "u": "g", "cat": "فواكه"}, {"n": "اناناس", "cal": 50, "p": 0.5, "c": 13, "f": 0.1, "u": "g", "cat": "فواكه"}, {"n": "افوكادو", "cal": 160, "p": 2, "c": 9, "f": 15, "u": "g", "cat": "فواكه"}, {"n": "بلح", "cal": 277, "p": 2, "c": 75, "f": 0.2, "u": "g", "cat": "فواكه"}, {"n": "تين", "cal": 74, "p": 0.8, "c": 19, "f": 0.3, "u": "g", "cat": "فواكه"}, {"n": "لوز", "cal": 579, "p": 21, "c": 22, "f": 50, "u": "g", "cat": "مكسرات"}, {"n": "عين جمل", "cal": 654, "p": 15, "c": 14, "f": 65, "u": "g", "cat": "مكسرات"}, {"n": "فستق", "cal": 560, "p": 20, "c": 28, "f": 45, "u": "g", "cat": "مكسرات"}, {"n": "كاجو", "cal": 553, "p": 18, "c": 30, "f": 44, "u": "g", "cat": "مكسرات"}, {"n": "فول سوداني", "cal": 567, "p": 26, "c": 16, "f": 49, "u": "g", "cat": "مكسرات"}, {"n": "زبدة فول سوداني", "cal": 588, "p": 25, "c": 20, "f": 50, "u": "g", "cat": "مكسرات"}, {"n": "زيت زيتون", "cal": 884, "p": 0, "c": 0, "f": 100, "u": "g", "cat": "دهون"}, {"n": "زيت", "cal": 884, "p": 0, "c": 0, "f": 100, "u": "g", "cat": "دهون"}, {"n": "طحينة", "cal": 595, "p": 17, "c": 21, "f": 54, "u": "g", "cat": "دهون"}, {"n": "شربة عظام", "cal": 40, "p": 5, "c": 1, "f": 2, "u": "g", "cat": "شوربات"}, {"n": "شوربة دجاج", "cal": 36, "p": 3, "c": 4, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "شوربة عدس", "cal": 100, "p": 5, "c": 16, "f": 2, "u": "g", "cat": "شوربات"}, {"n": "شوربة خضار", "cal": 45, "p": 2, "c": 8, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "حساء الطماطم", "cal": 50, "p": 1.5, "c": 9, "f": 1, "u": "g", "cat": "شوربات"}, {"n": "برقر لحم", "cal": 295, "p": 17, "c": 24, "f": 14, "u": "g", "cat": "فاست فود"}, {"n": "برقر دجاج", "cal": 270, "p": 15, "c": 28, "f": 11, "u": "g", "cat": "فاست فود"}, {"n": "تشيز برقر", "cal": 303, "p": 15, "c": 24, "f": 17, "u": "g", "cat": "فاست فود"}, {"n": "بيتزا", "cal": 266, "p": 11, "c": 33, "f": 10, "u": "g", "cat": "فاست فود"}, {"n": "ناجتس دجاج", "cal": 296, "p": 15, "c": 16, "f": 19, "u": "g", "cat": "فاست فود"}, {"n": "سندويش دجاج", "cal": 250, "p": 14, "c": 28, "f": 9, "u": "g", "cat": "فاست فود"}, {"n": "شطيرة فلافل", "cal": 230, "p": 8, "c": 30, "f": 9, "u": "g", "cat": "شعبي"}, {"n": "بطاطس ودجز", "cal": 315, "p": 4, "c": 40, "f": 16, "u": "g", "cat": "فاست فود"}, {"n": "دونات", "cal": 452, "p": 5, "c": 51, "f": 25, "u": "g", "cat": "فاست فود"}, {"n": "بقلاوة", "cal": 430, "p": 6, "c": 50, "f": 23, "u": "g", "cat": "حلويات"}, {"n": "كنافة", "cal": 380, "p": 7, "c": 45, "f": 19, "u": "g", "cat": "حلويات"}, {"n": "لقيمات", "cal": 350, "p": 5, "c": 45, "f": 17, "u": "g", "cat": "حلويات"}, {"n": "بسبوسة", "cal": 340, "p": 5, "c": 55, "f": 12, "u": "g", "cat": "حلويات"}, {"n": "ايس كريم", "cal": 207, "p": 3.5, "c": 24, "f": 11, "u": "g", "cat": "حلويات"}, {"n": "شوكولاتة", "cal": 546, "p": 5, "c": 61, "f": 31, "u": "g", "cat": "حلويات"}, {"n": "كيك", "cal": 340, "p": 5, "c": 53, "f": 12, "u": "g", "cat": "حلويات"}, {"n": "بسكويت", "cal": 480, "p": 6, "c": 64, "f": 22, "u": "g", "cat": "حلويات"}, {"n": "عصير برتقال", "cal": 45, "p": 0.7, "c": 10, "f": 0.2, "u": "g", "cat": "مشروبات"}, {"n": "كولا", "cal": 42, "p": 0, "c": 11, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "عصير مانجو", "cal": 55, "p": 0.3, "c": 14, "f": 0.1, "u": "g", "cat": "مشروبات"}, {"n": "قهوة سادة", "cal": 2, "p": 0.1, "c": 0, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "شاي بدون سكر", "cal": 1, "p": 0, "c": 0.2, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "لاتيه", "cal": 55, "p": 3, "c": 6, "f": 2, "u": "g", "cat": "مشروبات"}, {"n": "مشروب طاقة", "cal": 45, "p": 0, "c": 11, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "هريس", "cal": 180, "p": 9, "c": 22, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "ثريد", "cal": 160, "p": 6, "c": 22, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مرقة لحم", "cal": 90, "p": 7, "c": 5, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "سليق", "cal": 170, "p": 7, "c": 25, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "معصوب", "cal": 250, "p": 4, "c": 40, "f": 9, "u": "g", "cat": "شعبي"}, {"n": "شكشوكة", "cal": 120, "p": 7, "c": 6, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "عجة", "cal": 154, "p": 11, "c": 2, "f": 11, "u": "g", "cat": "شعبي"}, {"n": "سمبوسة لحم", "cal": 290, "p": 9, "c": 28, "f": 16, "u": "g", "cat": "شعبي"}, {"n": "سمبوسة خضار", "cal": 250, "p": 5, "c": 30, "f": 12, "u": "g", "cat": "شعبي"}, {"n": "صياديه", "cal": 175, "p": 8, "c": 26, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مقلوبة", "cal": 165, "p": 6, "c": 25, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "ورق عنب", "cal": 190, "p": 4, "c": 26, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "محشي كوسة", "cal": 130, "p": 5, "c": 18, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مجبوس دجاج", "cal": 180, "p": 9, "c": 25, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "مطبق", "cal": 280, "p": 8, "c": 32, "f": 14, "u": "g", "cat": "شعبي"}, {"n": "فتة حمص", "cal": 200, "p": 8, "c": 24, "f": 9, "u": "g", "cat": "شعبي"}, {"n": "بليلة", "cal": 120, "p": 5, "c": 22, "f": 1.5, "u": "g", "cat": "شعبي"}, {"n": "كبة مقلية", "cal": 280, "p": 11, "c": 22, "f": 16, "u": "g", "cat": "شعبي"}, {"n": "متبل باذنجان", "cal": 130, "p": 2, "c": 9, "f": 10, "u": "g", "cat": "شعبي"}, {"n": "صحن سلطة سيزر دجاج", "cal": 190, "p": 11, "c": 7, "f": 13, "u": "g", "cat": "خضار"}, {"n": "بيض عيون", "cal": 196, "p": 13, "c": 1, "f": 15, "u": "g", "cat": "بيض"}, {"n": "اومليت", "cal": 154, "p": 11, "c": 1, "f": 12, "u": "g", "cat": "بيض"}, {"n": "بان كيك", "cal": 227, "p": 6, "c": 28, "f": 9, "u": "g", "cat": "نشويات"}, {"n": "وافل", "cal": 291, "p": 8, "c": 33, "f": 14, "u": "g", "cat": "حلويات"}, {"n": "كرواسون", "cal": 406, "p": 8, "c": 46, "f": 21, "u": "g", "cat": "نشويات"}, {"n": "كورن فليكس", "cal": 357, "p": 7, "c": 84, "f": 0.4, "u": "g", "cat": "نشويات"}, {"n": "جرانولا", "cal": 471, "p": 10, "c": 64, "f": 20, "u": "g", "cat": "نشويات"}, {"n": "كيك شوكولاتة", "cal": 371, "p": 5, "c": 50, "f": 17, "u": "g", "cat": "حلويات"}, {"n": "تشيز كيك", "cal": 321, "p": 6, "c": 26, "f": 22, "u": "g", "cat": "حلويات"}, {"n": "براوني", "cal": 466, "p": 6, "c": 50, "f": 28, "u": "g", "cat": "حلويات"}, {"n": "مهلبية", "cal": 110, "p": 3, "c": 18, "f": 3, "u": "g", "cat": "حلويات"}, {"n": "ام علي", "cal": 280, "p": 7, "c": 35, "f": 13, "u": "g", "cat": "حلويات"}, {"n": "كاسترد", "cal": 122, "p": 4, "c": 17, "f": 4, "u": "g", "cat": "حلويات"}, {"n": "عسل", "cal": 304, "p": 0.3, "c": 82, "f": 0, "u": "g", "cat": "حلويات"}, {"n": "مربى", "cal": 278, "p": 0.4, "c": 69, "f": 0.1, "u": "g", "cat": "حلويات"}, {"n": "نوتيلا", "cal": 539, "p": 6, "c": 58, "f": 31, "u": "g", "cat": "حلويات"}, {"n": "تمر بالقشطة", "cal": 320, "p": 3, "c": 55, "f": 11, "u": "g", "cat": "حلويات"}, {"n": "بروتين بار", "cal": 350, "p": 30, "c": 35, "f": 10, "u": "g", "cat": "مكملات"}, {"n": "واي بروتين سكوب", "cal": 120, "p": 24, "c": 3, "f": 2, "u": "pc", "cat": "مكملات"}, {"n": "كرياتين", "cal": 0, "p": 0, "c": 0, "f": 0, "u": "pc", "cat": "مكملات"}, {"n": "مشروب بروتين جاهز", "cal": 160, "p": 30, "c": 5, "f": 2.5, "u": "g", "cat": "مكملات"}, {"n": "حليب لوز", "cal": 17, "p": 0.6, "c": 0.6, "f": 1.5, "u": "g", "cat": "ألبان"}, {"n": "حليب شوكولاتة", "cal": 83, "p": 3, "c": 12, "f": 2.5, "u": "g", "cat": "ألبان"}, {"n": "زبادي يوناني فواكه", "cal": 97, "p": 9, "c": 11, "f": 2, "u": "g", "cat": "ألبان"}, {"n": "جبن كريمي", "cal": 342, "p": 6, "c": 4, "f": 34, "u": "g", "cat": "ألبان"}, {"n": "جبن حلوم", "cal": 321, "p": 21, "c": 2, "f": 25, "u": "g", "cat": "ألبان"}, {"n": "جبن فيتا", "cal": 264, "p": 14, "c": 4, "f": 21, "u": "g", "cat": "ألبان"}, {"n": "ايس كافيه", "cal": 90, "p": 2, "c": 14, "f": 3, "u": "g", "cat": "مشروبات"}, {"n": "كابتشينو", "cal": 60, "p": 3.5, "c": 5, "f": 3, "u": "g", "cat": "مشروبات"}, {"n": "سموثي فواكه", "cal": 90, "p": 1.5, "c": 21, "f": 0.5, "u": "g", "cat": "مشروبات"}, {"n": "ماء", "cal": 0, "p": 0, "c": 0, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "عصير ليمون نعناع", "cal": 50, "p": 0.2, "c": 13, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "ريد بُل", "cal": 45, "p": 0.4, "c": 11, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "سبرايت", "cal": 39, "p": 0, "c": 10, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "موهيتو", "cal": 60, "p": 0.1, "c": 15, "f": 0, "u": "g", "cat": "مشروبات"}, {"n": "تونة بالذرة", "cal": 150, "p": 18, "c": 6, "f": 6, "u": "g", "cat": "سمك"}, {"n": "فيليه سمك مقلي", "cal": 232, "p": 18, "c": 12, "f": 12, "u": "g", "cat": "سمك"}, {"n": "كاليماري مقلي", "cal": 175, "p": 15, "c": 8, "f": 8, "u": "g", "cat": "سمك"}, {"n": "سوشي رول", "cal": 145, "p": 5, "c": 28, "f": 1.5, "u": "g", "cat": "سمك"}, {"n": "دجاج بروست", "cal": 260, "p": 19, "c": 14, "f": 15, "u": "g", "cat": "فاست فود"}, {"n": "زنجر", "cal": 290, "p": 16, "c": 25, "f": 14, "u": "g", "cat": "فاست فود"}, {"n": "فاهيتا دجاج", "cal": 210, "p": 16, "c": 18, "f": 8, "u": "g", "cat": "فاست فود"}, {"n": "راب دجاج", "cal": 230, "p": 14, "c": 25, "f": 9, "u": "g", "cat": "فاست فود"}, {"n": "تاكو", "cal": 226, "p": 9, "c": 20, "f": 12, "u": "g", "cat": "فاست فود"}, {"n": "برياني دجاج", "cal": 190, "p": 9, "c": 26, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "كبسة دجاج", "cal": 175, "p": 9, "c": 24, "f": 5, "u": "g", "cat": "شعبي"}, {"n": "كبسة لحم", "cal": 195, "p": 9, "c": 24, "f": 7, "u": "g", "cat": "شعبي"}, {"n": "رز بخاري", "cal": 185, "p": 6, "c": 28, "f": 6, "u": "g", "cat": "شعبي"}, {"n": "صالونة", "cal": 95, "p": 6, "c": 9, "f": 4, "u": "g", "cat": "شعبي"}, {"n": "دجاج مشوي فحم", "cal": 190, "p": 27, "c": 0, "f": 9, "u": "g", "cat": "دجاج"}, {"n": "جوانح دجاج", "cal": 203, "p": 18, "c": 0, "f": 14, "u": "g", "cat": "دجاج"}, {"n": "بطاطس مهروسة", "cal": 113, "p": 2, "c": 17, "f": 4, "u": "g", "cat": "نشويات"}, {"n": "ذرة مسلوقة", "cal": 96, "p": 3.4, "c": 21, "f": 1.5, "u": "g", "cat": "خضار"}, {"n": "بازلاء", "cal": 81, "p": 5, "c": 14, "f": 0.4, "u": "g", "cat": "خضار"}, {"n": "كينوا مطبوخة", "cal": 120, "p": 4.4, "c": 21, "f": 1.9, "u": "g", "cat": "نشويات"}, {"n": "حبوب الشيا", "cal": 486, "p": 17, "c": 42, "f": 31, "u": "g", "cat": "مكسرات"}, {"n": "بذور الكتان", "cal": 534, "p": 18, "c": 29, "f": 42, "u": "g", "cat": "مكسرات"}, {"n": "زبيب", "cal": 299, "p": 3, "c": 79, "f": 0.5, "u": "g", "cat": "فواكه"}, {"n": "مشمش مجفف", "cal": 241, "p": 3.4, "c": 63, "f": 0.5, "u": "g", "cat": "فواكه"}, {"n": "جوز هند", "cal": 354, "p": 3.3, "c": 15, "f": 33, "u": "g", "cat": "مكسرات"}, {"n": "بطاطس شيبس", "cal": 536, "p": 7, "c": 53, "f": 35, "u": "g", "cat": "فاست فود"}, {"n": "بوشار", "cal": 387, "p": 12, "c": 78, "f": 4.5, "u": "g", "cat": "نشويات"}, {"n": "مكسرات مشكلة", "cal": 607, "p": 20, "c": 21, "f": 54, "u": "g", "cat": "مكسرات"}, {"n": "لحم مشوي مع رز", "cal": 200, "p": 12, "c": 22, "f": 8, "u": "g", "cat": "شعبي"}, {"n": "شطيرة تونة", "cal": 240, "p": 14, "c": 28, "f": 8, "u": "g", "cat": "فاست فود"}, {"n": "شطيرة جبن", "cal": 290, "p": 12, "c": 30, "f": 14, "u": "g", "cat": "فاست فود"}, {"n": "بطاطا حلوة مشوية", "cal": 90, "p": 2, "c": 21, "f": 0.1, "u": "g", "cat": "نشويات"}];
 // ═══ TARGETS (calories + macros per day type) ═══
 const TARGETS={
   gym:{cal:1900,protein:160,carb:170,fat:53,burn:450,steps:7000,label:'يوم الحديد 🏋️'},
@@ -813,6 +873,98 @@ const TARGETS={
   rest:{cal:1650,protein:150,carb:120,fat:46,burn:150,steps:6000,label:'يوم الراحة 😴'}
 };
 let customStepGoal=0; // 0 = use day default
+// ═══ معاملات الماكروز لكل كيلو (يضبطها المستخدم) ═══
+// محفوظة بالجهاز · لو مضبوطة تتجاوز TARGETS الثابتة
+const DEFAULT_MACRO_FACTORS={
+  gym:{p:2.0,c:2.2,f:0.7},
+  football:{p:1.8,c:2.6,f:0.7},
+  both:{p:2.0,c:3.0,f:0.8},
+  rest:{p:1.8,c:1.5,f:0.6}
+};
+function getMacroFactors(){
+  try{const v=JSON.parse(localStorage.getItem('cc_macro_factors'));return v||null;}catch{return null;}
+}
+function setMacroFactors(f){localStorage.setItem('cc_macro_factors',JSON.stringify(f));}
+function macrosEnabled(){return localStorage.getItem('cc_macro_enabled')==='1';}
+// ═══ الهدف: تنشيف / محافظة / تضخيم ═══
+const GOALS={
+  cut:{n:'تنشيف 🔥',sub:'نزول دهون · عجز سعرات',calMult:0.80,pBoost:1.1,cBoost:0.85},
+  maintain:{n:'محافظة ⚖️',sub:'ثبات الوزن',calMult:1.0,pBoost:1.0,cBoost:1.0},
+  bulk:{n:'تضخيم 💪',sub:'بناء عضل · فائض سعرات',calMult:1.12,pBoost:1.0,cBoost:1.25}
+};
+function getGoal(){return localStorage.getItem('cc_goal')||'cut';}
+function setGoal(g){localStorage.setItem('cc_goal',g);}
+function renderGoalPicker(){
+  const el=document.getElementById('goal-picker');
+  if(!el)return;
+  const cur=getGoal();
+  el.innerHTML=Object.keys(GOALS).map(k=>{
+    const g=GOALS[k];const on=cur===k;
+    return '<button onclick="pickGoal(\''+k+'\')" style="flex:1;background:'+(on?'linear-gradient(135deg,rgba(0,212,255,.15),rgba(0,212,255,.05))':'var(--surface)')+';border:2px solid '+(on?'var(--accent)':'var(--border)')+';border-radius:16px;padding:13px 8px;cursor:pointer;transition:all .2s;text-align:center"><div style="font-size:14px;font-weight:700;color:'+(on?'var(--accent)':'var(--text)')+'">'+g.n+'</div><div style="font-size:9px;color:var(--text3);margin-top:3px">'+g.sub+'</div></button>';
+  }).join('');
+}
+function pickGoal(k){
+  setGoal(k);
+  renderGoalPicker();
+  if(day)updateHero();
+  renderSmartReminders();
+  if(typeof renderWeight==='function')renderWeight();
+}
+function renderActivityPicker(){
+  const el=document.getElementById('activity-picker');
+  if(!el)return;
+  const cur=getActivity();
+  el.innerHTML=Object.keys(ACTIVITY).map(k=>{
+    const a=ACTIVITY[k];const on=cur===k;
+    return '<button onclick="pickActivity(\''+k+'\')" style="flex:1;background:'+(on?'rgba(0,212,255,.12)':'var(--surface)')+';border:2px solid '+(on?'var(--accent)':'var(--border)')+';border-radius:14px;padding:10px 4px;cursor:pointer;transition:all .2s;text-align:center"><div style="font-size:12px;font-weight:700;color:'+(on?'var(--accent)':'var(--text)')+'">'+a.n+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+a.sub+'</div></button>';
+  }).join('');
+}
+function pickActivity(k){
+  setActivity(k);
+  renderActivityPicker();
+  if(day)updateHero();
+}
+// ═══ مستوى النشاط (معامل على السعرات) ═══
+const ACTIVITY={
+  low:{n:'خامل',sub:'مرة بالأسبوع',f:1.2},
+  mid:{n:'وسط',sub:'3 مرات',f:1.35},
+  high:{n:'نشيط',sub:'4-6 مرات',f:1.45},
+  athlete:{n:'نشيط جداً',sub:'يومي/مرتين',f:1.6}
+};
+function getActivity(){return localStorage.getItem('cc_activity')||'high';}
+function setActivity(a){localStorage.setItem('cc_activity',a);}
+// تعديل بسيط لمعامل النشاط حسب نوع اليوم (يوم الراحة أقل، المزدوج أعلى)
+const DAY_ACTIVITY_ADJ={gym:1.0,football:1.05,both:1.12,rest:0.88};
+// يرجّع أهداف اليوم حسب: الوزن + النشاط + الهدف
+function getTargets(dayType){
+  const base=TARGETS[dayType];
+  const goal=GOALS[getGoal()]||GOALS.cut;
+  const w=getWeights();
+  if(w.length){
+    const kg=w[w.length-1].kg;
+    const f=(getMacroFactors()||DEFAULT_MACRO_FACTORS)[dayType];
+    // BMR تقديري (Mifflin-St Jeor، ذكر، طول 175، عمر 30)
+    const bmr=10*kg+6.25*175-5*30+5;
+    // TDEE = BMR × نشاط × تعديل نوع اليوم
+    const actF=(ACTIVITY[getActivity()]||ACTIVITY.high).f*(DAY_ACTIVITY_ADJ[dayType]||1);
+    // السعرات النهائية × معامل الهدف
+    const cal=Math.round(bmr*actF*goal.calMult);
+    // البروتين من الوزن (الأصح للعضل) معدّل بالهدف
+    const protein=Math.round(kg*f.p*goal.pBoost);
+    // الدهون من الوزن
+    const fat=Math.round(kg*f.f);
+    // الكارب = باقي السعرات بعد البروتين والدهون
+    let carb=Math.round((cal-(protein*4+fat*9))/4);
+    if(carb<0)carb=0;
+    return {...base,protein,carb,fat,cal};
+  }
+  // احتياط: ما فيه وزن → الأرقام الثابتة × معامل الهدف
+  const cal=Math.round(base.cal*goal.calMult);
+  const protein=Math.round(base.protein*goal.pBoost);
+  const carb=Math.round(base.carb*goal.cBoost);
+  const fat=base.fat;
+  return {...base,cal,protein,carb,fat};
+}
 
 // ═══ WORKOUTS ═══
 const WORKOUTS={
@@ -931,6 +1083,37 @@ const MUSCLES=[
       {e:'Towel Pull-Up',n:'عقلة بمنشفة',d:'3 × للفشل',q:'towel pull up grip'}]}
 ];
 let selectedMuscles={}; // {chest:true,...}
+// ═══ تقسيمات التمارين الجاهزة ═══
+const SPLITS=[
+  {id:'push',n:'Push دفع',sub:'صدر · كتف · ترايسبس',m:['chest','shoulder','triceps']},
+  {id:'pull',n:'Pull سحب',sub:'ظهر · بايسبس · قبضة',m:['back','biceps','grip']},
+  {id:'legs',n:'Legs أرجل',sub:'أرجل · كور',m:['legs','core']},
+  {id:'upper',n:'Upper علوي',sub:'صدر · ظهر · كتف · ذراع',m:['chest','back','shoulder','biceps','triceps']},
+  {id:'lower',n:'Lower سفلي',sub:'أرجل · كور · بطن',m:['legs','core','abs']},
+  {id:'full',n:'Full Body كامل',sub:'كل الجسم',m:['chest','back','legs','shoulder','biceps','triceps']}
+];
+let activeSplit=null;
+function renderSplitPicker(){
+  const el=document.getElementById('split-picker');
+  if(!el)return;
+  el.innerHTML=SPLITS.map(s=>{
+    const on=activeSplit===s.id;
+    return '<button class="chip" onclick="applySplit(\''+s.id+'\')" style="flex-direction:column;align-items:center;gap:2px;padding:8px 12px;'+(on?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'"><span style="font-weight:700;font-size:12px">'+s.n+'</span><span style="font-size:9px;color:var(--text3)">'+s.sub+'</span></button>';
+  }).join('');
+}
+function applySplit(id){
+  const s=SPLITS.find(x=>x.id===id);
+  if(!s)return;
+  if(activeSplit===id){
+    // إلغاء التقسيمة
+    activeSplit=null;selectedMuscles={};
+  }else{
+    activeSplit=id;
+    selectedMuscles={};
+    s.m.forEach(mid=>selectedMuscles[mid]=true);
+  }
+  renderSplitPicker();renderMuscleGrid();renderMuscleContent();autoSaveToday();
+}
 function renderMuscleGrid(){
   const el=document.getElementById('muscle-grid');
   if(!el)return;
@@ -953,8 +1136,14 @@ function renderMuscleContent(){
   if(!chosen.length){el.innerHTML='<div class="empty-mini">اختر عضلة فوق عشان تطلع تمارينها 👆</div>';return;}
   let html='';
   chosen.forEach(m=>{
-    html+='<div class="wkt-block" style="border-right:3px solid '+m.c+'">'
-      +'<div class="wkt-head" style="color:'+m.c+'"><span style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center">'+m.ic+'</span> '+m.n+'</div>';
+    const mg=getMonthGoal();
+    const isTarget=(mg.muscles||[]).includes(m.id);
+    const focusObj=mg.focus?MONTH_FOCUS.find(f=>f.id===mg.focus):null;
+    html+='<div class="wkt-block" style="border-right:3px solid '+m.c+(isTarget?';box-shadow:0 0 0 1px '+m.c+'55':'')+'">'
+      +'<div class="wkt-head" style="color:'+m.c+'"><span style="width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center">'+m.ic+'</span> '+m.n
+      +(isTarget?' <span style="font-size:11px;color:var(--orange)">⭐ هدف الشهر</span>':'')
+      +(isTarget&&focusObj?' <span style="font-size:10px;color:var(--text3);font-weight:400">· '+focusObj.n+'</span>':'')
+      +'</div>';
     m.ex.forEach((it,i)=>{
       const id='mus_'+m.id+'_'+i;
       html+=exRowHTML(id,it.e,it.n+' · '+it.d,it.q,m.c);
@@ -1363,6 +1552,8 @@ function isToday(){const t=new Date();return currentDate.getFullYear()===t.getFu
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',()=>{
   applyAppNames();
+  renderGoalPicker();
+  renderActivityPicker();
   loadDay();
   renderWeight();
   renderSlotPicker();
@@ -1383,7 +1574,7 @@ function loadDay(){
   const dn=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   // reset state
-  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};selectedMuscles={};exSets={};customEx={};customFlex=[];
+  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};selectedMuscles={};exSets={};customEx={};customFlex=[];activeSplit=null;
   const db=getDB(),k=tKey();
   if(db[k]){
     meals=db[k].meals||[];
@@ -1395,7 +1586,7 @@ function loadDay(){
     steps=db[k].steps||0;
     suppChecks=db[k].suppChecks||{};
     flexChecks=db[k].flexChecks||{};
-    selectedMuscles=db[k].selectedMuscles||{};
+    selectedMuscles=db[k].selectedMuscles||{};activeSplit=db[k].activeSplit||null;
     exSets=db[k].exSets||{};
     customEx=db[k].customEx||{};
     customFlex=db[k].customFlex||[];
@@ -1480,7 +1671,7 @@ function renderSmartReminders(){
   if(hour>=20&&water<3000)reminders.push(['💧','باقي '+(3600-water)+' مل لهدف الماء','var(--accent)']);
   if(day&&hour>=20){
     const eaten=meals.reduce((s,m)=>s+m.cal,0);
-    const t=TARGETS[day];
+    const t=getTargets(day);
     if(eaten<t.cal*0.5)reminders.push(['🍽️','أكلك اليوم قليل ('+eaten+' سعرة) — لا تنسى تتغذى','var(--orange)']);
   }
   if(!reminders.length){el.innerHTML='';return;}
@@ -1497,7 +1688,7 @@ function goPage(id,el){
   if(id==='workout')renderWorkout();
   if(id==='supps')renderSupps();
   if(id==='progress')renderProgress();
-  if(id==='ai')renderApiKeyStatus();
+  if(id==='ai'){renderApiKeyStatus();renderMacroUI();renderMonthGoal();}
 }
 function goPageByName(id){
   const idx={today:0,workout:1,supps:2,progress:3,ai:4}[id];
@@ -1552,6 +1743,8 @@ let editMealIdx=-1;
 let editBase={cal:0,p:0,c:0,f:0}; // القيم الأصلية اللي يُضرب فيها المضاعف
 function openEditMeal(i){
   editMealIdx=i;
+  editIngredients=[];
+  fdbEditMode=false;
   const m=meals[i];
   document.getElementById('em-name').value=m.name;
   document.getElementById('em-cal').value=m.cal;
@@ -1569,6 +1762,7 @@ function openEditMeal(i){
   // slot picker
   document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===(m.slot||'غداء')?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
   editMealSlot=m.slot||'غداء';
+  renderEditIngredients();
   document.getElementById('edit-meal-modal').classList.add('show');
 }
 // يضرب القيم الأصلية بالمضاعف ويعرضها
@@ -1781,11 +1975,16 @@ function searchFood(){
   const q=document.getElementById('fdb-search').value.trim();
   let list=FOOD_DB.filter(f=>(fdbCat==='الكل'||f.cat===fdbCat)&&(!q||f.n.includes(q)));
   const el=document.getElementById('fdb-results');
-  if(!list.length){el.innerHTML='<div class="empty-mini">ما لقيت — جرب اسم ثاني أو أضف يدوياً</div>';return;}
-  el.innerHTML=list.slice(0,60).map(f=>{
+  if(!list.length){el.innerHTML='<div class="empty-mini">ما لقيت — جرب اسم ثاني أو أضف يدوياً من الإدخال المرن</div>';return;}
+  const head='<div style="font-size:11px;color:var(--text3);padding:4px 2px 8px">'+list.length+' صنف</div>';
+  el.innerHTML=head+list.slice(0,120).map(f=>{
     const idx=FOOD_DB.indexOf(f);
-    const per=f.u==='pc'?'للحبة':'لكل 100غ';
-    return '<div class="meal-row" style="cursor:pointer" onclick="selectFood('+idx+')"><div class="meal-info"><div class="meal-name">'+f.n+'</div><div class="meal-cal">'+f.cal+' سعرة · '+f.p+'ب · '+f.c+'ك · '+f.f+'د <span style="color:var(--text3)">('+per+')</span></div></div><div style="color:var(--accent);font-size:18px">+</div></div>';
+    const per=f.u==='pc'?'للحبة':'/100غ';
+    return '<div onclick="selectFood('+idx+')" style="display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid rgba(30,48,80,.4);cursor:pointer">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+f.n+'</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-top:2px"><span style="font-family:var(--num);color:var(--accent)">'+f.cal+'</span> سعرة · '+f.p+'ب · '+f.c+'ك · '+f.f+'د <span style="opacity:.6">'+per+'</span></div></div>'
+      +'<div style="width:26px;height:26px;border-radius:8px;background:rgba(0,212,255,.12);color:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">+</div>'
+      +'</div>';
   }).join('');
 }
 function selectFood(idx){
@@ -1807,10 +2006,75 @@ function addFromDB(){
   const amt=parseFloat(document.getElementById('portion-amount').value)||0;
   if(!amt){alert('اكتب الكمية');return;}
   const f=fdbSelected;const mult=f.u==='pc'?amt:amt/100;
+  const cal=Math.round(f.cal*mult),p=Math.round(f.p*mult),c=Math.round(f.c*mult),ff=Math.round(f.f*mult);
   const label=f.u==='pc'?f.n+' ×'+amt:f.n+' ('+amt+'غ)';
-  addMeal(label,Math.round(f.cal*mult),Math.round(f.p*mult),Math.round(f.c*mult),Math.round(f.f*mult));
+  if(fdbEditMode){
+    // أضف الصنف للوجبة المفتوحة في نافذة التعديل (يجمع الماكروز)
+    addIngredientToEdit(label,cal,p,c,ff);
+    document.getElementById('portion-modal').classList.remove('show');
+    closeFoodDB();
+    fdbEditMode=false;
+    return;
+  }
+  addMeal(label,cal,p,c,ff);
   document.getElementById('portion-modal').classList.remove('show');
   closeFoodDB();
+}
+// وضع إضافة صنف لنافذة التعديل
+let fdbEditMode=false;
+let editIngredients=[]; // [{name,cal,p,c,f}]
+function openFoodDBForEdit(){
+  fdbEditMode=true;
+  openFoodDB();
+}
+function addIngredientToEdit(name,cal,p,c,f){
+  // اجمع القيم الحالية + الصنف الجديد
+  const cur={
+    cal:parseInt(document.getElementById('em-cal').value)||0,
+    p:parseInt(document.getElementById('em-protein').value)||0,
+    c:parseInt(document.getElementById('em-carb').value)||0,
+    f:parseInt(document.getElementById('em-fat').value)||0
+  };
+  document.getElementById('em-cal').value=cur.cal+cal;
+  document.getElementById('em-protein').value=cur.p+p;
+  document.getElementById('em-carb').value=cur.c+c;
+  document.getElementById('em-fat').value=cur.f+f;
+  editIngredients.push({name,cal,p,c,f});
+  // حدّث الأساس (عشان المضاعف يشتغل على المجموع الجديد)
+  markEditManual();
+  renderEditIngredients();
+  // لو الاسم فاضي أو افتراضي، اقترح اسم مركّب
+  const nameInp=document.getElementById('em-name');
+  if(editIngredients.length>1&&nameInp){
+    nameInp.value=editIngredients.map(x=>x.name.replace(/ \(.*?\)| ×.*/,'')).join(' + ');
+  }
+}
+function renderEditIngredients(){
+  const el=document.getElementById('em-ingredients');
+  if(!el)return;
+  if(!editIngredients.length){el.innerHTML='';return;}
+  el.innerHTML='<div style="color:var(--text2);font-weight:600;margin-bottom:4px">الأصناف المضافة:</div>'
+    +editIngredients.map((x,i)=>'<div style="display:flex;justify-content:space-between;padding:3px 0"><span>'+x.name+' — '+x.cal+' سعرة</span><span onclick="removeEditIngredient('+i+')" style="color:var(--red);cursor:pointer;padding:0 6px">✕</span></div>').join('');
+}
+function removeEditIngredient(i){
+  const x=editIngredients[i];
+  if(!x)return;
+  document.getElementById('em-cal').value=Math.max(0,(parseInt(document.getElementById('em-cal').value)||0)-x.cal);
+  document.getElementById('em-protein').value=Math.max(0,(parseInt(document.getElementById('em-protein').value)||0)-x.p);
+  document.getElementById('em-carb').value=Math.max(0,(parseInt(document.getElementById('em-carb').value)||0)-x.c);
+  document.getElementById('em-fat').value=Math.max(0,(parseInt(document.getElementById('em-fat').value)||0)-x.f);
+  editIngredients.splice(i,1);
+  markEditManual();
+  renderEditIngredients();
+}
+function resetEditMacros(){
+  document.getElementById('em-cal').value=0;
+  document.getElementById('em-protein').value=0;
+  document.getElementById('em-carb').value=0;
+  document.getElementById('em-fat').value=0;
+  editIngredients=[];
+  markEditManual();
+  renderEditIngredients();
 }
 
 // describe (AI estimate from text)
@@ -1922,7 +2186,7 @@ function updateHero(){
     document.getElementById('m-burned').textContent='—';
     return;
   }
-  const t=TARGETS[day];
+  const t=getTargets(day);
   const eaten=Math.round(meals.reduce((s,m)=>s+m.cal,0));
   const protein=meals.reduce((s,m)=>s+(m.protein||0),0);
   const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
@@ -1954,7 +2218,7 @@ function buildDayRecord(){
   // exercise sets stats: count done exercises, total sets, total volume
   let exDone=0,totalSets=0,totalVol=0;
   Object.keys(exSets).forEach(k=>{let v=exSets[k];if(Array.isArray(v))v={side:false,sets:v};const real=(v.sets||[]).filter(s=>s.w||s.r);if(real.length){exDone++;totalSets+=real.length;const mult=v.side?2:1;real.forEach(s=>totalVol+=(s.w||0)*mult*(s.r||0));}});
-  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,selectedMuscles,exSets,customEx,customFlex,exDone,totalSets,totalVol,suppTotal,suppDone,eaten,target:day?TARGETS[day].cal:0,ts:Date.now()};
+  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,selectedMuscles,activeSplit,exSets,customEx,customFlex,exDone,totalSets,totalVol,suppTotal,suppDone,eaten,target:day?getTargets(day).cal:0,ts:Date.now()};
 }
 function autoSaveToday(){
   if(!day)return;
@@ -1973,18 +2237,58 @@ function saveToday(){
 }
 
 // ═══ WEIGHT ═══
+function getTargetWeight(){
+  const v=parseFloat(localStorage.getItem('cc_target_weight'));
+  if(v)return v;
+  // افتراضي حسب الهدف
+  const g=getGoal();
+  const w=getWeights();const cur=w.length?w[w.length-1].kg:90;
+  if(g==='bulk')return Math.round(cur+8);
+  if(g==='maintain')return cur;
+  return 75; // تنشيف
+}
+function setTargetWeight(v){localStorage.setItem('cc_target_weight',v);}
+function saveTargetWeight(){
+  const v=parseFloat(document.getElementById('target-weight-input').value);
+  if(!v||v<40||v>200){alert('اكتب وزن مستهدف صحيح');return;}
+  setTargetWeight(v);
+  renderWeight();
+  if(typeof renderGoalETA==='function')renderGoalETA();
+}
 function renderWeight(){
   const w=getWeights();
+  const goalType=getGoal();
+  const goalInfo={cut:{t:'🎯 هدف التنشيف',dir:'نزول'},maintain:{t:'⚖️ هدف المحافظة',dir:'ثبات'},bulk:{t:'💪 هدف التضخيم',dir:'زيادة'}}[goalType]||{t:'🎯 هدفك',dir:''};
+  const gt=document.getElementById('goal-title');if(gt)gt.textContent=goalInfo.t;
+  const twi=document.getElementById('target-weight-input');if(twi&&!twi.value)twi.value=getTargetWeight();
   if(w.length){
     const last=w[w.length-1];
     document.getElementById('weight-display').innerHTML=last.kg+'<span class="weight-unit"> كجم</span>';
-    const start=w[0].kg, current=last.kg, goal=75;
-    const totalToLose=start-goal;
-    const lost=start-current;
-    const pct=totalToLose>0?Math.max(0,Math.min(100,(lost/totalToLose)*100)):0;
-    document.getElementById('goal-fill').style.width=pct+'%';
+    const start=w[0].kg, current=last.kg, goal=getTargetWeight();
+    const tl=document.getElementById('goal-target-label');if(tl)tl.textContent='الهدف '+goal+' كجم';
     document.getElementById('goal-current').textContent=current+' كجم';
-    document.getElementById('goal-remaining').textContent=(current-goal>0?(current-goal).toFixed(1)+' كجم باقي':'وصلت! 🎉');
+    const rem=document.getElementById('goal-remaining');
+    const fill=document.getElementById('goal-fill');
+    if(goalType==='maintain'){
+      // المحافظة: قربك من وزن الثبات
+      const diff=Math.abs(current-goal);
+      rem.textContent=diff<=1?'ثابت ✅':diff.toFixed(1)+' كجم عن هدفك';
+      fill.style.width=(diff<=1?100:Math.max(0,100-diff*10))+'%';
+    } else if(goalType==='bulk'){
+      // التضخيم: كم باقي للزيادة
+      const totalToGain=goal-start;
+      const gained=current-start;
+      const pct=totalToGain>0?Math.max(0,Math.min(100,(gained/totalToGain)*100)):0;
+      fill.style.width=pct+'%';
+      rem.textContent=(goal-current>0?(goal-current).toFixed(1)+' كجم زيادة':'وصلت! 🎉');
+    } else {
+      // التنشيف: كم باقي للنزول
+      const totalToLose=start-goal;
+      const lost=start-current;
+      const pct=totalToLose>0?Math.max(0,Math.min(100,(lost/totalToLose)*100)):0;
+      fill.style.width=pct+'%';
+      rem.textContent=(current-goal>0?(current-goal).toFixed(1)+' كجم باقي':'وصلت! 🎉');
+    }
     const bmiEl=document.getElementById('bmi-box');
     if(bmiEl){
       const bmi=(current/(1.75*1.75)).toFixed(1);
@@ -2018,7 +2322,7 @@ function setInbody(a){localStorage.setItem('cc_inbody',JSON.stringify(a));}
 function openInbodyModal(){document.getElementById('inbody-modal').classList.add('show');}
 function closeInbodyModal(){
   document.getElementById('inbody-modal').classList.remove('show');
-  ['ib-weight','ib-fat','ib-muscle','ib-waist','ib-chest','ib-arm'].forEach(id=>document.getElementById(id).value='');
+  ['ib-weight','ib-fat','ib-muscle','ib-waist','ib-lowwaist','ib-chest','ib-hip','ib-armR','ib-armL','ib-thighR','ib-thighL','ib-calfR','ib-calfL'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
 }
 function commitInbody(rec){
   const a=getInbody();
@@ -2028,9 +2332,9 @@ function commitInbody(rec){
   if(rec.weight){const w=getWeights();w.push({kg:rec.weight,date:tKey(),ts:Date.now()});setWeights(w);renderWeight();}
 }
 function saveInbody(){
-  const g=id=>parseFloat(document.getElementById(id).value)||0;
-  const rec={weight:g('ib-weight'),fat:g('ib-fat'),muscle:g('ib-muscle'),waist:g('ib-waist'),chest:g('ib-chest'),arm:g('ib-arm')};
-  if(!rec.weight&&!rec.fat&&!rec.muscle){alert('أدخل قياس واحد على الأقل');return;}
+  const g=id=>{const e=document.getElementById(id);return e?parseFloat(e.value)||0:0;};
+  const rec={weight:g('ib-weight'),fat:g('ib-fat'),muscle:g('ib-muscle'),waist:g('ib-waist'),lowwaist:g('ib-lowwaist'),chest:g('ib-chest'),hip:g('ib-hip'),armR:g('ib-armR'),armL:g('ib-armL'),thighR:g('ib-thighR'),thighL:g('ib-thighL'),calfR:g('ib-calfR'),calfL:g('ib-calfL')};
+  if(!rec.weight){alert('الوزن إجباري — أدخله أولاً');return;}
   commitInbody(rec);closeInbodyModal();
 }
 function renderInbody(){
@@ -2042,16 +2346,20 @@ function renderInbody(){
   const cards=[];
   if(last.fat)cards.push(['نسبة الدهون',last.fat+'%','var(--orange)']);
   if(last.muscle)cards.push(['كتلة العضل',last.muscle+' كجم','var(--accent)']);
-  if(last.waist)cards.push(['الخصر',last.waist+' سم','var(--green)']);
   if(last.chest)cards.push(['الصدر',last.chest+' سم','var(--purple)']);
-  if(last.arm)cards.push(['الذراع',last.arm+' سم','var(--pink)']);
-  latest.innerHTML='<div class="stats-grid" style="margin-bottom:0">'+cards.map(c=>'<div class="stat-card"><div class="stat-val" style="color:'+c[2]+';font-size:20px">'+c[1]+'</div><div class="stat-lbl">'+c[0]+'</div></div>').join('')+'</div>';
+  if(last.waist)cards.push(['الخصر',last.waist+' سم','var(--green)']);
+  if(last.hip)cards.push(['الورك',last.hip+' سم','var(--pink)']);
+  const arm=last.armR||last.armL;if(arm)cards.push(['الباي',(last.armR||'?')+'/'+(last.armL||'?')+' سم','var(--accent)']);
+  const thigh=last.thighR||last.thighL;if(thigh)cards.push(['الفخذ',(last.thighR||'?')+'/'+(last.thighL||'?')+' سم','var(--orange)']);
+  const calf=last.calfR||last.calfL;if(calf)cards.push(['البطة',(last.calfR||'?')+'/'+(last.calfL||'?')+' سم','var(--purple)']);
+  latest.innerHTML='<div class="stats-grid" style="margin-bottom:0">'+cards.map(c=>'<div class="stat-card"><div class="stat-val" style="color:'+c[2]+';font-size:18px">'+c[1]+'</div><div class="stat-lbl">'+c[0]+'</div></div>').join('')+'</div>';
   if(a.length>1){
     const first=a[0];
     let deltas=[];
     if(last.fat&&first.fat)deltas.push('دهون '+(last.fat-first.fat>0?'+':'')+(last.fat-first.fat).toFixed(1)+'%');
     if(last.muscle&&first.muscle)deltas.push('عضل '+(last.muscle-first.muscle>0?'+':'')+(last.muscle-first.muscle).toFixed(1)+'كجم');
     if(last.waist&&first.waist)deltas.push('خصر '+(last.waist-first.waist>0?'+':'')+(last.waist-first.waist).toFixed(0)+'سم');
+    if(last.chest&&first.chest)deltas.push('صدر '+(last.chest-first.chest>0?'+':'')+(last.chest-first.chest).toFixed(0)+'سم');
     hist.innerHTML='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:13px"><b>التغيّر منذ أول قياس ('+a.length+' قياسات):</b><br><span style="color:var(--text2)">'+(deltas.join(' · ')||'سجّل قياسات أكثر للمقارنة')+'</span></div>';
   } else {
     hist.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px">سجّل قياس ثانٍ لاحقاً عشان تشوف التطور</div>';
@@ -2080,6 +2388,7 @@ async function analyzeInbody(e){
 
 // ═══ WORKOUT ═══
 function renderWorkout(){
+  renderSplitPicker();
   renderMuscleGrid();
   renderMuscleContent();
   renderPower();
@@ -2267,7 +2576,7 @@ function renderTodayRemaining(){
   if(!el)return;
   if(!day){card.style.display='none';return;}
   card.style.display='block';
-  const t=TARGETS[day];
+  const t=getTargets(day);
   const eaten=Math.round(meals.reduce((s,m)=>s+m.cal,0));
   const protein=meals.reduce((s,m)=>s+(m.protein||0),0);
   const carb=meals.reduce((s,m)=>s+(m.carb||0),0);
@@ -2540,7 +2849,110 @@ function saveAppNames(){
   if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},2000);}
 }
 
-// ═══ API KEY (stored in browser only) ═══
+// ═══ واجهة حاسبة الماكروز ═══
+const DAY_LABELS={gym:'🏋️ حديد',football:'⚽ كورة',both:'🔥 مزدوج',rest:'😴 راحة'};
+function renderMacroUI(){
+  const ui=document.getElementById('macro-factors-ui');
+  if(!ui)return;
+  const f=getMacroFactors()||DEFAULT_MACRO_FACTORS;
+  const w=getWeights();const kg=w.length?w[w.length-1].kg:0;
+  ui.innerHTML=Object.keys(DAY_LABELS).map(dt=>{
+    const ff=f[dt];
+    const preview=kg?'<span style="font-size:10px;color:var(--text3)"> = '+Math.round(kg*ff.p)+'ب · '+Math.round(kg*ff.c)+'ك · '+Math.round(kg*ff.f)+'د</span>':'';
+    return '<div style="margin-bottom:12px"><div style="font-size:12px;font-weight:600;margin-bottom:6px">'+DAY_LABELS[dt]+preview+'</div>'
+      +'<div style="display:flex;gap:6px">'
+      +'<div style="flex:1"><input class="modal-input" id="mf-'+dt+'-p" type="number" inputmode="decimal" step="0.1" value="'+ff.p+'" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px">بروتين/كجم</div></div>'
+      +'<div style="flex:1"><input class="modal-input" id="mf-'+dt+'-c" type="number" inputmode="decimal" step="0.1" value="'+ff.c+'" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px">كارب/كجم</div></div>'
+      +'<div style="flex:1"><input class="modal-input" id="mf-'+dt+'-f" type="number" inputmode="decimal" step="0.1" value="'+ff.f+'" style="text-align:center;padding:8px"><div style="font-size:9px;color:var(--text3);text-align:center;margin-top:2px">دهون/كجم</div></div>'
+      +'</div></div>';
+  }).join('');
+  if(!kg)ui.innerHTML='<div style="font-size:12px;color:var(--orange);text-align:center;margin-bottom:12px">⚠️ سجّل وزنك في البروقرس أولاً عشان تشوف الأرقام المحسوبة</div>'+ui.innerHTML;
+}
+function toggleMacros(){
+  localStorage.setItem('cc_macro_enabled',macrosEnabled()?'0':'1');
+  renderMacroUI();
+  if(typeof updateHero==='function')updateHero();
+}
+function saveMacroUI(){
+  const f={};
+  Object.keys(DAY_LABELS).forEach(dt=>{
+    f[dt]={
+      p:parseFloat(document.getElementById('mf-'+dt+'-p').value)||DEFAULT_MACRO_FACTORS[dt].p,
+      c:parseFloat(document.getElementById('mf-'+dt+'-c').value)||DEFAULT_MACRO_FACTORS[dt].c,
+      f:parseFloat(document.getElementById('mf-'+dt+'-f').value)||DEFAULT_MACRO_FACTORS[dt].f
+    };
+  });
+  setMacroFactors(f);
+  renderMacroUI();
+  if(typeof updateHero==='function')updateHero();
+  const msg=document.getElementById('macro-saved');
+  if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},2000);}
+}
+
+// ═══ هدف الشهر ═══
+const MONTH_FOCUS=[
+  {id:'strength',n:'💪 قوة',sub:'أوزان عالية · تكرار قليل',reps:'3-5 عدّات',sets:'5 مجموعات',rest:'راحة 3 دقائق',load:'85-95% من أقصى وزن'},
+  {id:'hypertrophy',n:'📈 ضخامة',sub:'حجم عضلي · تكرار متوسط',reps:'8-12 عدّة',sets:'4 مجموعات',rest:'راحة 60-90 ثانية',load:'70-80% من أقصى وزن'},
+  {id:'endurance',n:'🔋 تحمّل',sub:'تكرار عالي · راحة قصيرة',reps:'15-20 عدّة',sets:'3 مجموعات',rest:'راحة 30-45 ثانية',load:'50-65% من أقصى وزن'},
+  {id:'power',n:'⚡ شدّة',sub:'انفجارية · سرعة',reps:'3-6 عدّات سريعة',sets:'4 مجموعات',rest:'راحة 2-3 دقائق',load:'انفجاري · 60-75% بسرعة'}
+];
+const FOCUS_PERIOD=[{id:'week',n:'هذا الأسبوع'},{id:'month',n:'هذا الشهر'}];
+function getMonthGoal(){
+  try{
+    const g=JSON.parse(localStorage.getItem('cc_month_goal'))||{};
+    // ترقية: muscle (واحد قديم) → muscles (مصفوفة)
+    if(g.muscle&&!g.muscles){g.muscles=[g.muscle];delete g.muscle;}
+    if(!g.muscles)g.muscles=[];
+    if(!g.period)g.period='month';
+    if(g.focus===undefined)g.focus=null;
+    return g;
+  }catch{return{muscles:[],focus:null,period:'month'};}
+}
+function setMonthGoal(g){localStorage.setItem('cc_month_goal',JSON.stringify(g));}
+function renderMonthGoal(){
+  const g=getMonthGoal();
+  // المدة
+  const pp=document.getElementById('focus-period-picker');
+  if(pp){
+    pp.innerHTML=FOCUS_PERIOD.map(p=>'<button class="chip" onclick="pickFocusPeriod(\''+p.id+'\')" style="flex:1;'+((g.period||'month')===p.id?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'">'+p.n+'</button>').join('');
+  }
+  const mp=document.getElementById('month-muscle-picker');
+  if(mp){
+    const sel=g.muscles||[];
+    mp.innerHTML='<button class="chip" onclick="clearMonthMuscles()" style="'+(!sel.length?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'">بدون</button>'
+      +MUSCLES.filter(m=>['chest','back','shoulder','legs','biceps','triceps'].includes(m.id)).map(m=>{const on=sel.includes(m.id);return '<button class="chip" onclick="toggleMonthMuscle(\''+m.id+'\')" style="'+(on?'border-color:'+m.c+';color:'+m.c+';background:'+m.c+'1a':'')+'">'+(on?'✓ ':'')+m.n+'</button>';}).join('');
+  }
+  const fp=document.getElementById('month-focus-picker');
+  if(fp){
+    fp.innerHTML='<button class="chip" onclick="pickMonthFocus(null)" style="'+(!g.focus?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'">بدون</button>'
+      +MONTH_FOCUS.map(f=>'<button class="chip" onclick="pickMonthFocus(\''+f.id+'\')" style="flex-direction:column;align-items:center;gap:1px;'+(g.focus===f.id?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'"><span style="font-weight:700;font-size:12px">'+f.n+'</span><span style="font-size:9px;color:var(--text3)">'+f.sub+'</span></button>').join('');
+  }
+  // عرض نظام التدريب للاختيار الحالي
+  const sc=document.getElementById('focus-scheme');
+  if(sc){
+    const f=g.focus?MONTH_FOCUS.find(x=>x.id===g.focus):null;
+    if(f){
+      sc.innerHTML='<div style="background:var(--surface2);border:1px solid var(--accent);border-radius:12px;padding:12px 14px"><div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:8px">'+f.n+' — نظامك</div>'
+        +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">'
+        +'<div style="color:var(--text2)">🔁 '+f.reps+'</div>'
+        +'<div style="color:var(--text2)">📊 '+f.sets+'</div>'
+        +'<div style="color:var(--text2)">⏱️ '+f.rest+'</div>'
+        +'<div style="color:var(--text2)">🏋️ '+f.load+'</div>'
+        +'</div></div>';
+    } else sc.innerHTML='';
+  }
+}
+function pickFocusPeriod(id){const g=getMonthGoal();g.period=id;setMonthGoal(g);renderMonthGoal();flashMonthSaved();}
+function toggleMonthMuscle(id){
+  const g=getMonthGoal();
+  if(!g.muscles)g.muscles=[];
+  const i=g.muscles.indexOf(id);
+  if(i>=0)g.muscles.splice(i,1);else g.muscles.push(id);
+  setMonthGoal(g);renderMonthGoal();flashMonthSaved();
+}
+function clearMonthMuscles(){const g=getMonthGoal();g.muscles=[];setMonthGoal(g);renderMonthGoal();flashMonthSaved();}
+function pickMonthFocus(id){const g=getMonthGoal();g.focus=id;setMonthGoal(g);renderMonthGoal();flashMonthSaved();}
+function flashMonthSaved(){const msg=document.getElementById('month-saved');if(msg){msg.style.display='block';setTimeout(()=>{msg.style.display='none';},1500);}}
 function getApiKey(){return localStorage.getItem('cc_apikey')||'';}
 function saveApiKey(){
   const k=document.getElementById('apikey-input').value.trim();
@@ -2578,8 +2990,82 @@ async function callClaude(body){
   return res.json();
 }
 
-// ═══ AI ═══
-function qAI(q){document.getElementById('ai-input').value=q;askAI();}
+// ═══ بناء خطة الأسبوع ═══
+function buildWeekPlan(){
+  const el=document.getElementById('week-plan-result');
+  const w=getWeights();
+  if(!w.length){el.innerHTML='<div style="color:var(--orange);font-size:13px;text-align:center;padding:12px">⚠️ سجّل وزنك أولاً عشان أبني خطة دقيقة</div>';return;}
+  const kg=w[w.length-1].kg;
+  const goal=GOALS[getGoal()]||GOALS.cut;
+  const goalName=goal.n;
+  const act=ACTIVITY[getActivity()]||ACTIVITY.high;
+  const mg=getMonthGoal();
+  const inb=getInbody();
+  const last=inb.length?inb[inb.length-1]:null;
+  // توزيع أيام الأسبوع حسب النشاط
+  const actKey=getActivity();
+  let weekDays;
+  if(actKey==='low')weekDays=['gym','rest','rest','football','rest','rest','rest'];
+  else if(actKey==='mid')weekDays=['gym','rest','football','rest','gym','rest','rest'];
+  else if(actKey==='high')weekDays=['gym','football','gym','rest','gym','football','rest'];
+  else weekDays=['gym','football','both','gym','football','gym','rest'];
+  const dayNames=['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'];
+  const dayLabel={gym:'🏋️ حديد',football:'⚽ كورة',both:'🔥 مزدوج',rest:'😴 راحة'};
+  // عضلة التركيز هذا الشهر
+  const focusMuscles=(mg.muscles||[]).map(id=>MUSCLES.find(m=>m.id===id)).filter(Boolean);
+  // ابنِ الجدول
+  let rows=weekDays.map((dt,i)=>{
+    const t=getTargets(dt);
+    return '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(30,48,80,.4)">'
+      +'<div><div style="font-size:13px;font-weight:600">'+dayNames[i]+'</div><div style="font-size:11px;color:var(--text3)">'+dayLabel[dt]+'</div></div>'
+      +'<div style="text-align:left"><div style="font-size:14px;font-weight:700;color:var(--accent);font-family:var(--num)">'+t.cal+'</div><div style="font-size:10px;color:var(--text3)">'+t.protein+'ب · '+t.carb+'ك · '+t.fat+'د</div></div>'
+      +'</div>';
+  }).join('');
+  const gymDays=weekDays.filter(d=>d==='gym').length;
+  const ballDays=weekDays.filter(d=>d==='football').length;
+  const restDays=weekDays.filter(d=>d==='rest').length;
+  let summary='<div style="background:var(--surface2);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.8">'
+    +'<b style="color:var(--accent)">'+goalName+'</b> · نشاط '+act.n+' · وزنك '+kg+' كجم<br>'
+    +'<span style="color:var(--text2)">'+gymDays+' حديد · '+ballDays+' كورة · '+restDays+' راحة بالأسبوع</span>';
+  if(focusMuscles.length)summary+='<br><span style="color:var(--orange)">⭐ ركّز على '+focusMuscles.map(m=>m.n).join(' · ')+' '+(mg.period==='week'?'هذا الأسبوع':'هذا الشهر')+'</span>';
+  summary+='</div>';
+  // نظام التدريب المختار (من اختيارك أنت، مو نصائح)
+  let schemeHtml='';
+  const focusObj=mg.focus?MONTH_FOCUS.find(f=>f.id===mg.focus):null;
+  if(focusObj){
+    schemeHtml='<div style="background:rgba(0,212,255,.06);border:1px solid var(--accent);border-radius:12px;padding:14px;margin-top:12px">'
+      +'<div style="font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px">'+focusObj.n+' — نظام تدريبك '+(mg.period==='week'?'هذا الأسبوع':'هذا الشهر')+'</div>'
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:12px">'
+      +'<div style="background:var(--surface2);border-radius:8px;padding:8px 10px"><div style="color:var(--text3);font-size:10px">العدّات</div><div style="color:var(--text);font-weight:600">'+focusObj.reps+'</div></div>'
+      +'<div style="background:var(--surface2);border-radius:8px;padding:8px 10px"><div style="color:var(--text3);font-size:10px">المجموعات</div><div style="color:var(--text);font-weight:600">'+focusObj.sets+'</div></div>'
+      +'<div style="background:var(--surface2);border-radius:8px;padding:8px 10px"><div style="color:var(--text3);font-size:10px">الراحة</div><div style="color:var(--text);font-weight:600">'+focusObj.rest+'</div></div>'
+      +'<div style="background:var(--surface2);border-radius:8px;padding:8px 10px"><div style="color:var(--text3);font-size:10px">الوزن</div><div style="color:var(--text);font-weight:600">'+focusObj.load+'</div></div>'
+      +'</div></div>';
+  } else {
+    schemeHtml='<div style="background:var(--surface2);border-radius:12px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--text3);text-align:center">💡 اختر نوع تدريبك (قوة/ضخامة/تحمّل/شدّة) من تبويب المدرب ← تركيز التدريب، عشان يظهر نظام العدّات والراحة هنا</div>';
+  }
+  el.innerHTML=summary+'<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px 14px;margin-bottom:4px">'+rows+'</div>'+schemeHtml
+    +(getApiKey()?'<button class="add-meal-btn" style="margin-top:12px;border-color:rgba(167,139,250,.5);color:var(--purple)" onclick="enhanceWeekPlanAI()">🤖 خطة مفصّلة أكثر من المدرب الذكي</button><div id="week-plan-ai" style="margin-top:10px"></div>':'');
+}
+async function enhanceWeekPlanAI(){
+  const el=document.getElementById('week-plan-ai');
+  if(!getApiKey()){el.innerHTML='<p style="color:var(--orange);font-size:12px">فعّل المفتاح أولاً</p>';return;}
+  el.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  const w=getWeights();const kg=w.length?w[w.length-1].kg:0;
+  const goal=GOALS[getGoal()]||GOALS.cut;
+  const act=ACTIVITY[getActivity()]||ACTIVITY.high;
+  const mg=getMonthGoal();const inb=getInbody();const last=inb.length?inb[inb.length-1]:null;
+  let ctx='وزن:'+kg+'كجم، هدف:'+goal.n+'، نشاط:'+act.n;
+  if(last){ctx+='، دهون:'+(last.fat||'?')+'%، عضل:'+(last.muscle||'?')+'كجم';
+    if(last.chest)ctx+='، صدر:'+last.chest+'، خصر:'+last.waist+'، باي:'+last.armR+'/'+last.armL+'، فخذ:'+last.thighR+'/'+last.thighL;}
+  if((mg.muscles||[]).length){const names=mg.muscles.map(id=>{const fm=MUSCLES.find(m=>m.id===id);return fm?fm.n:'';}).filter(Boolean);if(names.length)ctx+='، تركيز العضلات:'+names.join(' و ');}
+  const sys='أنت مدرب لياقة سعودي خبير. اكتب خطة أسبوع مختصرة وعملية باللهجة السعودية البيضاء. ركّز على: توزيع التمارين، نقاط الضعف من القياسات، ونصائح تغذية للهدف. لا تكرر الأرقام، أعطِ قيمة مضافة. أقصى ٢٠٠ كلمة. لا تستخدم رموز ماركداون.';
+  try{
+    const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:'ابنِ لي خطة الأسبوع الجاي. بياناتي: '+ctx}]});
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+    el.innerHTML='<div style="background:rgba(167,139,250,.08);border:1px solid rgba(167,139,250,.25);border-radius:12px;padding:14px;font-size:13px;line-height:1.9;color:var(--text)">'+txt.replace(/\n/g,'<br>')+'</div>';
+  }catch(e){el.innerHTML='<p style="color:var(--red);font-size:12px">'+e.message+'</p>';}
+}
 async function askAI(){
   const inp=document.getElementById('ai-input'),resp=document.getElementById('ai-resp');
   const q=inp.value.trim();if(!q)return;
@@ -2589,7 +3075,7 @@ async function askAI(){
   const w=getWeights();
   const curW=w.length?w[w.length-1].kg:'غير مسجل';
   const eaten=meals.reduce((s,m)=>s+m.cal,0);
-  const dayCtx=day?'اليوم: '+TARGETS[day].label+'، هدف السعرات '+TARGETS[day].cal+'، أكل '+eaten+' حتى الآن':'لم يحدد نوع اليوم';
+  const dayCtx=day?'اليوم: '+getTargets(day).label+'، هدف السعرات '+getTargets(day).cal+'، أكل '+eaten+' حتى الآن':'لم يحدد نوع اليوم';
   const sys='أنت مدرب لياقة وتغذية لأحمد الحداد. جاوب بالعربي بإيجاز (أقل من 90 كلمة)، عملي ومباشر.\n\nبياناته: طول 175سم، وزن حالي '+curW+' كجم، هدف 75 كجم ناشف بنهاية 2026. عمره مقتبل الـ30.\nنشاطه: نادي 3-4 أيام، كورة يومين، شغل مكتبي (نشاط ضعيف). يركز على القوة الانفجارية والتنشيف للكورة.\nسعراته المستهدفة: حديد 1900 | كورة 2050 | مزدوج 2250 | راحة 1650.\nبروتين مستهدف ~150-170غ يومياً للحفاظ على العضل أثناء التنشيف.\n'+dayCtx+'.';
   try{
     const data=await callClaude({model:'claude-sonnet-4-6',max_tokens:1000,system:sys,messages:[{role:'user',content:q}]});
