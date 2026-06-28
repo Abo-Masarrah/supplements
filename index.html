@@ -727,31 +727,43 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       </div>
     </div>
     <div class="modal-field">
-      <label>وزن الوجبة (جرام/مل) — عدّله وكل القيم تتحسب تلقائياً</label>
+      <label>وزن الوجبة (جرام/مل)</label>
       <div style="display:flex;align-items:center;gap:8px">
-        <div style="flex:1">
-          <input class="modal-input" id="em-base-ml" type="number" inputmode="decimal" placeholder="مثال 300" style="text-align:center;font-size:16px" oninput="applyMlScale()">
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">الوزن الحالي</div>
-        </div>
-        <span style="color:var(--accent);font-size:18px">←</span>
-        <div style="flex:1">
-          <input class="modal-input" id="em-new-ml" type="number" inputmode="decimal" placeholder="الوزن الجديد" style="text-align:center;font-size:16px" oninput="applyMlScale()">
-          <div style="font-size:10px;color:var(--text3);text-align:center;margin-top:3px">غيّره لكم تبي</div>
+        <button class="chip" onclick="stepWeight(-25)" style="font-size:16px;padding:8px 16px">−</button>
+        <input class="modal-input" id="em-new-ml" type="number" inputmode="decimal" placeholder="مثال 250" style="flex:1;text-align:center;font-size:18px;font-weight:700" oninput="applyMlScale()">
+        <button class="chip" onclick="stepWeight(25)" style="font-size:16px;padding:8px 16px">+</button>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center">عدّل الوزن وكل القيم تحت تتحسب تلقائياً · أزرار −/+ تغيّر ٢٥غ</div>
+      <input type="hidden" id="em-base-ml" value="">
+      <input type="hidden" id="em-mult" value="1">
+      <span id="em-mult-label" style="display:none"></span>
+    </div>
+    <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric" oninput="markEditManual()" style="text-align:center;font-size:16px"></div>
+    <div style="display:flex;gap:8px">
+      <div class="modal-field" style="flex:1">
+        <label>بروتين (غ)</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="chip" onclick="stepMacro('em-protein',-5)" style="padding:6px 9px">−</button>
+          <input class="modal-input" id="em-protein" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
+          <button class="chip" onclick="stepMacro('em-protein',5)" style="padding:6px 9px">+</button>
         </div>
       </div>
-      <div style="font-size:11px;color:var(--text3);margin-top:8px">اكتب وزن الوجبة الحالي يسار، وكم تبي يمين — مثال: ٣٠٠غ صارت ٢٠٠غ. أو استخدم +/− للمضاعفة السريعة</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-        <button class="chip" onclick="adjustEditServings(-0.25)">− ربع</button>
-        <span id="em-mult-label" style="flex:1;text-align:center;font-size:13px;color:var(--accent);font-weight:700">×1</span>
-        <button class="chip" onclick="adjustEditServings(0.25)">+ ربع</button>
-        <input type="hidden" id="em-mult" value="1">
+      <div class="modal-field" style="flex:1">
+        <label>كارب (غ)</label>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="chip" onclick="stepMacro('em-carb',-5)" style="padding:6px 9px">−</button>
+          <input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
+          <button class="chip" onclick="stepMacro('em-carb',5)" style="padding:6px 9px">+</button>
+        </div>
       </div>
     </div>
-    <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric" oninput="markEditManual()"></div>
-    <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1"><label>بروتين (غ)</label><input class="modal-input" id="em-protein" type="number" inputmode="numeric" oninput="markEditManual()"></div>
-      <div class="modal-field" style="flex:1"><label>كارب (غ)</label><input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()"></div>
-      <div class="modal-field" style="flex:1"><label>دهون (غ)</label><input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()"></div>
+    <div class="modal-field" style="margin-top:8px">
+      <label>دهون (غ)</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="chip" onclick="stepMacro('em-fat',-2)" style="padding:6px 9px">−</button>
+        <input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
+        <button class="chip" onclick="stepMacro('em-fat',2)" style="padding:6px 9px">+</button>
+      </div>
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
       <button class="add-meal-btn" style="margin-top:0;flex:2;border-color:rgba(34,197,94,.5);color:var(--green);background:rgba(34,197,94,.06)" onclick="openFoodDBForEdit()">➕ أضف/استبدل صنف من القاعدة</button>
@@ -1736,7 +1748,7 @@ function renderMeals(){
   el.innerHTML=html;
 }
 function removeMeal(i){meals.splice(i,1);renderMeals();updateHero();autoSaveToday();}
-function addMeal(name,cal,p,c,f){meals.push({name,cal:Math.round(cal)||0,protein:Math.round(p)||0,carb:Math.round(c)||0,fat:Math.round(f)||0,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
+function addMeal(name,cal,p,c,f,grams){meals.push({name,cal:Math.round(cal)||0,protein:Math.round(p)||0,carb:Math.round(c)||0,fat:Math.round(f)||0,slot:activeSlot,grams:grams||0});renderMeals();updateHero();autoSaveToday();}
 function repeatMeal(i){const m=meals[i];meals.push({...m,slot:activeSlot});renderMeals();updateHero();autoSaveToday();}
 // تعديل وجبة مضافة
 let editMealIdx=-1;
@@ -1752,20 +1764,17 @@ function openEditMeal(i){
   document.getElementById('em-carb').value=m.carb||0;
   document.getElementById('em-fat').value=m.fat||0;
   document.getElementById('em-mult').value=1;
-  const ml=document.getElementById('em-mult-label');if(ml)ml.textContent='×1';
-  // حاول استخراج رقم مل/جرام من اسم الوجبة كقيمة أصلية
-  const mlMatch=(m.name||'').match(/(\d+)\s*(مل|ml|جرام|غ|g)/i);
-  const baseMl=mlMatch?parseFloat(mlMatch[1]):'';
-  const bm=document.getElementById('em-base-ml');if(bm)bm.value=baseMl;
-  const nm=document.getElementById('em-new-ml');if(nm)nm.value=baseMl;
+  // وزن الوجبة: من grams المحفوظ، أو من اسمها، أو افتراضي 100
+  let grams=m.grams||0;
+  if(!grams){const mlMatch=(m.name||'').match(/(\d+)\s*(مل|ml|جرام|غ|g)/i);grams=mlMatch?parseFloat(mlMatch[1]):100;}
+  const bm=document.getElementById('em-base-ml');if(bm)bm.value=grams;
+  const nm=document.getElementById('em-new-ml');if(nm)nm.value=grams;
   editBase={cal:m.cal||0,p:m.protein||0,c:m.carb||0,f:m.fat||0};
-  // slot picker
   document.querySelectorAll('#em-slots .chip').forEach(c=>{c.style.cssText=c.dataset.slot===(m.slot||'غداء')?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.08)':'';});
   editMealSlot=m.slot||'غداء';
   renderEditIngredients();
   document.getElementById('edit-meal-modal').classList.add('show');
 }
-// يضرب القيم الأصلية بالمضاعف ويعرضها
 function applyEditMult(){
   let mult=parseFloat(document.getElementById('em-mult').value);
   if(isNaN(mult)||mult<=0)return;
@@ -1773,9 +1782,8 @@ function applyEditMult(){
   document.getElementById('em-protein').value=Math.round(editBase.p*mult);
   document.getElementById('em-carb').value=Math.round(editBase.c*mult);
   document.getElementById('em-fat').value=Math.round(editBase.f*mult);
-  const lbl=document.getElementById('em-mult-label');if(lbl)lbl.textContent='×'+(Math.round(mult*100)/100);
 }
-// حساب من المل: الأصلي → الجديد
+// حساب من الوزن: الوزن الجديد ÷ الأساسي = نسبة
 function applyMlScale(){
   const base=parseFloat(document.getElementById('em-base-ml').value);
   const nw=parseFloat(document.getElementById('em-new-ml').value);
@@ -1784,16 +1792,31 @@ function applyMlScale(){
   document.getElementById('em-mult').value=mult;
   applyEditMult();
 }
+// زر +/− للوزن (يغيّر الوزن ويعيد الحساب)
+function stepWeight(d){
+  const nm=document.getElementById('em-new-ml');
+  let v=parseFloat(nm.value)||parseFloat(document.getElementById('em-base-ml').value)||100;
+  v=Math.max(5,v+d);
+  nm.value=v;
+  applyMlScale();
+}
+// زر +/− للماكرو (يغيّر القيمة مباشرة ويثبّتها كأساس جديد)
+function stepMacro(id,d){
+  const el=document.getElementById(id);
+  let v=(parseInt(el.value)||0)+d;
+  if(v<0)v=0;
+  el.value=v;
+  markEditManual();
+}
 function adjustEditServings(d){
   let mult=parseFloat(document.getElementById('em-mult').value)||1;
   mult=Math.max(0.25,Math.round((mult+d)*100)/100);
   document.getElementById('em-mult').value=mult;
-  // لو فيه كمية أصلية، حدّث الجديدة لتطابق المضاعف
   const base=parseFloat(document.getElementById('em-base-ml').value);
   if(base>0){const nm=document.getElementById('em-new-ml');if(nm)nm.value=Math.round(base*mult);}
   applyEditMult();
 }
-// لو عدّل القيم يدوياً: تصير هي الأساس الجديد والمضاعف يرجع 1
+// لو عدّل القيم يدوياً: تصير هي الأساس الجديد عند الوزن الحالي
 function markEditManual(){
   editBase={
     cal:parseInt(document.getElementById('em-cal').value)||0,
@@ -1802,7 +1825,9 @@ function markEditManual(){
     f:parseInt(document.getElementById('em-fat').value)||0
   };
   document.getElementById('em-mult').value=1;
-  const lbl=document.getElementById('em-mult-label');if(lbl)lbl.textContent='×1';
+  // الوزن الحالي يصير هو الأساس للقيم المعدّلة
+  const nm=document.getElementById('em-new-ml'),bm=document.getElementById('em-base-ml');
+  if(nm&&bm&&parseFloat(nm.value)>0)bm.value=nm.value;
 }
 let editMealSlot='غداء';
 function setEditSlot(s){
@@ -1817,7 +1842,8 @@ function saveEditMeal(){
   const c=parseInt(document.getElementById('em-carb').value)||0;
   const f=parseInt(document.getElementById('em-fat').value)||0;
   if(!cal&&(p||c||f))cal=Math.round(p*4+c*4+f*9);
-  meals[editMealIdx]={name,cal,protein:p,carb:c,fat:f,slot:editMealSlot};
+  const grams=parseFloat(document.getElementById('em-new-ml').value)||0;
+  meals[editMealIdx]={name,cal,protein:p,carb:c,fat:f,slot:editMealSlot,grams};
   closeEditMeal();renderMeals();updateHero();autoSaveToday();
 }
 function closeEditMeal(){editMealIdx=-1;document.getElementById('edit-meal-modal').classList.remove('show');}
