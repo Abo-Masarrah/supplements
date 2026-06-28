@@ -739,31 +739,33 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
       <span id="em-mult-label" style="display:none"></span>
     </div>
     <div class="modal-field"><label>السعرات</label><input class="modal-input" id="em-cal" type="number" inputmode="numeric" oninput="markEditManual()" style="text-align:center;font-size:16px"></div>
-    <div style="display:flex;gap:8px">
-      <div class="modal-field" style="flex:1">
-        <label>بروتين (غ)</label>
-        <div style="display:flex;align-items:center;gap:4px">
-          <button class="chip" onclick="stepMacro('em-protein',-5)" style="padding:6px 9px">−</button>
-          <input class="modal-input" id="em-protein" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
-          <button class="chip" onclick="stepMacro('em-protein',5)" style="padding:6px 9px">+</button>
-        </div>
-      </div>
-      <div class="modal-field" style="flex:1">
-        <label>كارب (غ)</label>
-        <div style="display:flex;align-items:center;gap:4px">
-          <button class="chip" onclick="stepMacro('em-carb',-5)" style="padding:6px 9px">−</button>
-          <input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
-          <button class="chip" onclick="stepMacro('em-carb',5)" style="padding:6px 9px">+</button>
-        </div>
+    <div class="modal-field">
+      <label>🍗 بروتين (غ)</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="chip" onclick="stepMacro('em-protein',-5)" style="padding:8px 11px">−</button>
+        <input class="modal-input" id="em-protein" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center">
+        <button class="chip" onclick="stepMacro('em-protein',5)" style="padding:8px 11px">+</button>
+        <button class="chip" onclick="changeMacroSource('protein')" style="padding:8px 10px;border-color:var(--accent);color:var(--accent)">🔄 مصدر</button>
       </div>
     </div>
-    <div class="modal-field" style="margin-top:8px">
-      <label>دهون (غ)</label>
+    <div class="modal-field">
+      <label>🌾 كارب (غ)</label>
       <div style="display:flex;align-items:center;gap:4px">
-        <button class="chip" onclick="stepMacro('em-fat',-2)" style="padding:6px 9px">−</button>
-        <input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center;padding:8px 2px">
-        <button class="chip" onclick="stepMacro('em-fat',2)" style="padding:6px 9px">+</button>
+        <button class="chip" onclick="stepMacro('em-carb',-5)" style="padding:8px 11px">−</button>
+        <input class="modal-input" id="em-carb" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center">
+        <button class="chip" onclick="stepMacro('em-carb',5)" style="padding:8px 11px">+</button>
+        <button class="chip" onclick="changeMacroSource('carb')" style="padding:8px 10px;border-color:var(--orange);color:var(--orange)">🔄 مصدر</button>
       </div>
+    </div>
+    <div class="modal-field">
+      <label>🥑 دهون (غ)</label>
+      <div style="display:flex;align-items:center;gap:4px">
+        <button class="chip" onclick="stepMacro('em-fat',-2)" style="padding:8px 11px">−</button>
+        <input class="modal-input" id="em-fat" type="number" inputmode="numeric" oninput="markEditManual()" style="flex:1;text-align:center">
+        <button class="chip" onclick="stepMacro('em-fat',2)" style="padding:8px 11px">+</button>
+        <button class="chip" onclick="fatFromCalories()" style="padding:8px 10px;border-color:var(--purple);color:var(--purple);white-space:nowrap">من السعرات</button>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:4px;text-align:center">ما تعرف الدهون؟ اضغط "من السعرات" — يحسبها من الباقي</div>
     </div>
     <div style="display:flex;gap:8px;margin-top:6px">
       <button class="add-meal-btn" style="margin-top:0;flex:2;border-color:rgba(34,197,94,.5);color:var(--green);background:rgba(34,197,94,.06)" onclick="openFoodDBForEdit()">➕ أضف/استبدل صنف من القاعدة</button>
@@ -1757,6 +1759,7 @@ function openEditMeal(i){
   editMealIdx=i;
   editIngredients=[];
   fdbEditMode=false;
+  macroSourceMode=null;
   const m=meals[i];
   document.getElementById('em-name').value=m.name;
   document.getElementById('em-cal').value=m.cal;
@@ -1807,6 +1810,24 @@ function stepMacro(id,d){
   if(v<0)v=0;
   el.value=v;
   markEditManual();
+}
+// حساب الدهون من السعرات الباقية: (سعرات − بروتين×4 − كارب×4) ÷ 9
+function fatFromCalories(){
+  const cal=parseInt(document.getElementById('em-cal').value)||0;
+  const p=parseInt(document.getElementById('em-protein').value)||0;
+  const c=parseInt(document.getElementById('em-carb').value)||0;
+  if(!cal){alert('اكتب السعرات أولاً عشان نحسب الدهون');return;}
+  let fat=Math.round((cal-(p*4+c*4))/9);
+  if(fat<0)fat=0;
+  document.getElementById('em-fat').value=fat;
+  markEditManual();
+}
+// تغيير مصدر ماكرو معيّن (بروتين/كارب) من القاعدة
+let macroSourceMode=null; // 'protein' | 'carb' | null
+function changeMacroSource(which){
+  macroSourceMode=which;
+  fdbEditMode=false;
+  openFoodDB();
 }
 function adjustEditServings(d){
   let mult=parseFloat(document.getElementById('em-mult').value)||1;
@@ -2034,8 +2055,22 @@ function addFromDB(){
   const f=fdbSelected;const mult=f.u==='pc'?amt:amt/100;
   const cal=Math.round(f.cal*mult),p=Math.round(f.p*mult),c=Math.round(f.c*mult),ff=Math.round(f.f*mult);
   const label=f.u==='pc'?f.n+' ×'+amt:f.n+' ('+amt+'غ)';
+  // وضع تغيير مصدر ماكرو معيّن
+  if(macroSourceMode){
+    const which=macroSourceMode;
+    macroSourceMode=null;
+    // استبدل قيمة الماكرو بالقيمة من المصدر الجديد، وحدّث السعرات بالفرق
+    const targetId=which==='protein'?'em-protein':'em-carb';
+    const oldVal=parseInt(document.getElementById(targetId).value)||0;
+    const newVal=which==='protein'?p:c;
+    document.getElementById(targetId).value=newVal;
+    // أعد حساب السعرات من الماكروز الحالية
+    recalcCaloriesFromMacros();
+    document.getElementById('portion-modal').classList.remove('show');
+    closeFoodDB();
+    return;
+  }
   if(fdbEditMode){
-    // أضف الصنف للوجبة المفتوحة في نافذة التعديل (يجمع الماكروز)
     addIngredientToEdit(label,cal,p,c,ff);
     document.getElementById('portion-modal').classList.remove('show');
     closeFoodDB();
@@ -2045,6 +2080,14 @@ function addFromDB(){
   addMeal(label,cal,p,c,ff);
   document.getElementById('portion-modal').classList.remove('show');
   closeFoodDB();
+}
+// يحسب السعرات من الماكروز الحالية (بروتين×4 + كارب×4 + دهون×9)
+function recalcCaloriesFromMacros(){
+  const p=parseInt(document.getElementById('em-protein').value)||0;
+  const c=parseInt(document.getElementById('em-carb').value)||0;
+  const ff=parseInt(document.getElementById('em-fat').value)||0;
+  document.getElementById('em-cal').value=Math.round(p*4+c*4+ff*9);
+  markEditManual();
 }
 // وضع إضافة صنف لنافذة التعديل
 let fdbEditMode=false;
