@@ -524,6 +524,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="card">
     <div class="sec-label">📈 تطوّر الوزن</div>
     <div id="weight-chart"></div>
+    <div id="weight-log" style="margin-top:14px"></div>
   </div>
   <div class="card">
     <div class="sec-label">📊 السعرات آخر 14 يوم</div>
@@ -2796,6 +2797,46 @@ function renderWeightChart(){
   const w=getWeights();
   const points=w.map(x=>({v:x.kg}));
   el.innerHTML=lineChart(points,'#a78bfa','كجم',75);
+  renderWeightLog();
+}
+function renderWeightLog(){
+  const el=document.getElementById('weight-log');if(!el)return;
+  const w=getWeights();
+  if(!w.length){el.innerHTML='<div class="empty-mini">ما سجّلت وزن بعد — سجّل وزنك عشان يبدأ التتبّع</div>';return;}
+  const goal=(typeof getTargetWeight==='function')?getTargetWeight():75;
+  const first=w[0].kg, last=w[w.length-1].kg;
+  const totalChange=last-first;
+  // ملخّص علوي
+  let head='<div style="display:flex;gap:8px;margin-bottom:12px">'
+    +'<div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;font-family:var(--num);color:var(--text)">'+first+'</div><div style="font-size:10px;color:var(--text3)">أول وزن</div></div>'
+    +'<div style="flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;font-family:var(--num);color:var(--accent)">'+last+'</div><div style="font-size:10px;color:var(--text3)">آخر وزن</div></div>'
+    +'<div style="flex:1;background:'+(totalChange<0?'rgba(34,197,94,.1)':totalChange>0?'rgba(245,158,11,.1)':'var(--surface2)')+';border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:700;font-family:var(--num);color:'+(totalChange<0?'var(--green)':totalChange>0?'var(--orange)':'var(--text)')+'">'+(totalChange>0?'+':'')+totalChange.toFixed(1)+'</div><div style="font-size:10px;color:var(--text3)">الفرق كجم</div></div>'
+    +'</div>';
+  // قائمة القياسات (الأحدث فوق)
+  let rows='<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px">📋 سجل القياسات ('+w.length+')</div>';
+  for(let i=w.length-1;i>=0;i--){
+    const cur=w[i];
+    const prev=i>0?w[i-1]:null;
+    const diff=prev?(cur.kg-prev.kg):0;
+    const diffTxt=prev?((diff>0?'▲ +':diff<0?'▼ ':'– ')+Math.abs(diff).toFixed(1)):'أول قياس';
+    const diffCol=diff<0?'var(--green)':diff>0?'var(--orange)':'var(--text3)';
+    const dateStr=cur.date||new Date(cur.ts).toLocaleDateString('ar-SA');
+    rows+='<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 4px;border-bottom:1px solid rgba(30,48,80,.4)">'
+      +'<div style="display:flex;align-items:center;gap:10px"><span style="font-size:16px;font-weight:700;font-family:var(--num);color:var(--text)">'+cur.kg+' <span style="font-size:11px;color:var(--text3);font-weight:400">كجم</span></span>'
+      +'<span style="font-size:12px;color:'+diffCol+';font-weight:600">'+diffTxt+'</span></div>'
+      +'<div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--text3)">'+dateStr+'</span>'
+      +'<span onclick="deleteWeight('+i+')" style="color:var(--red);cursor:pointer;font-size:13px;padding:0 4px">✕</span></div>'
+      +'</div>';
+  }
+  el.innerHTML=head+rows;
+}
+function deleteWeight(i){
+  const w=getWeights();
+  if(i<0||i>=w.length)return;
+  w.splice(i,1);
+  setWeights(w);
+  renderWeight();
+  renderWeightChart();
 }
 function renderCalChart(){
   const el=document.getElementById('cal-chart');if(!el)return;
