@@ -499,6 +499,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div class="weight-big" id="weight-display">—<span class="weight-unit"> كجم</span></div>
     <input class="weight-input" id="weight-input" type="number" inputmode="decimal" placeholder="مثال 90" style="margin-bottom:10px">
     <button class="btn-primary" onclick="logWeight()">سجّل الوزن</button>
+    <div id="weight-cal-impact" style="display:none"></div>
     <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px">
       <span style="font-size:12px;color:var(--text3)">وزنك المستهدف:</span>
       <input class="modal-input" id="target-weight-input" type="number" inputmode="decimal" placeholder="75" style="width:80px;text-align:center;padding:8px">
@@ -1597,6 +1598,32 @@ document.addEventListener('DOMContentLoaded',()=>{
   renderWeekStrip();
   renderStreak();
   renderSmartReminders();
+  // استقبال بيانات من اختصار آيفون (Shortcuts) عبر الرابط: ?steps=8000 أو ?weight=95
+  try{
+    const params=new URLSearchParams(location.search);
+    const stepsParam=params.get('steps');
+    if(stepsParam!==null){
+      const s=parseInt(stepsParam)||0;
+      if(s>0){
+        steps=s;
+        const si=document.getElementById('steps-input');if(si)si.value=s;
+        if(typeof setSteps==='function'){setSteps();}
+        setTimeout(()=>{alert('✅ تم تحديث خطواتك: '+s+' خطوة');},300);
+      }
+    }
+    const weightParam=params.get('weight');
+    if(weightParam!==null){
+      const wv=parseFloat(weightParam);
+      if(wv>=40&&wv<=200){
+        const wi=document.getElementById('weight-input');if(wi)wi.value=wv;
+        if(typeof logWeight==='function')logWeight();
+      }
+    }
+    // نظّف الرابط بعد القراءة عشان ما يتكرر
+    if(stepsParam!==null||weightParam!==null){
+      history.replaceState(null,'',location.pathname);
+    }
+  }catch(e){}
   document.getElementById('ai-input').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
   const wi=document.getElementById('water-input');
   if(wi)wi.addEventListener('keydown',e=>{if(e.key==='Enter')addWaterCustom();});
@@ -2488,10 +2515,34 @@ function logWeight(){
   const v=parseFloat(document.getElementById('weight-input').value);
   if(!v||v<40||v>200){alert('اكتب وزن صحيح');return;}
   const w=getWeights();
+  // احسب السعرات قبل التسجيل (بالوزن القديم)
+  const oldCal=w.length?getTargets(day||'rest').cal:null;
+  const oldKg=w.length?w[w.length-1].kg:null;
   w.push({kg:v,date:tKey(),ts:Date.now()});
   setWeights(w);
   document.getElementById('weight-input').value='';
   renderWeight();
+  renderWeightChart();
+  if(day&&typeof updateHero==='function')updateHero();
+  if(typeof renderSmartReminders==='function')renderSmartReminders();
+  if(typeof renderMacroUI==='function')renderMacroUI();
+  // اعرض أثر تغيّر الوزن على السعرات
+  const newCal=getTargets(day||'rest').cal;
+  const box=document.getElementById('weight-cal-impact');
+  if(box&&oldCal!==null&&oldKg!==null){
+    const kgDiff=v-oldKg;
+    const calDiff=newCal-oldCal;
+    if(kgDiff!==0){
+      const kgTxt=(kgDiff<0?'نزل':'زاد')+' '+Math.abs(kgDiff).toFixed(1)+' كجم';
+      const calTxt=calDiff<0?(calDiff+' سعرة'):('+'+calDiff+' سعرة');
+      const col=kgDiff<0?'var(--green)':'var(--orange)';
+      box.innerHTML='<div style="background:'+(kgDiff<0?'rgba(34,197,94,.1)':'rgba(245,158,11,.1)')+';border:1px solid '+col+'44;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.7">'
+        +'<b style="color:'+col+'">وزنك '+kgTxt+'</b> ('+oldKg+' ← '+v+')<br>'
+        +'<span style="color:var(--text2)">سعرات هدفك تغيّرت من '+oldCal+' إلى <b style="color:'+col+'">'+newCal+'</b> ('+calTxt+')</span></div>';
+      box.style.display='block';
+      setTimeout(()=>{if(box)box.style.display='none';},8000);
+    }
+  }
 }
 
 // ═══ INBODY / MEASUREMENTS ═══
@@ -2507,7 +2558,13 @@ function commitInbody(rec){
   a.push({...rec,date:tKey(),ts:Date.now()});
   setInbody(a);
   renderInbody();
-  if(rec.weight){const w=getWeights();w.push({kg:rec.weight,date:tKey(),ts:Date.now()});setWeights(w);renderWeight();}
+  if(rec.weight){
+    const w=getWeights();w.push({kg:rec.weight,date:tKey(),ts:Date.now()});setWeights(w);
+    renderWeight();
+    if(typeof renderWeightChart==='function')renderWeightChart();
+    if(day&&typeof updateHero==='function')updateHero();
+    if(typeof renderSmartReminders==='function')renderSmartReminders();
+  }
 }
 function saveInbody(){
   const g=id=>{const e=document.getElementById(id);return e?parseFloat(e.value)||0:0;};
