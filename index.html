@@ -784,6 +784,18 @@ body.light .weight-big{text-shadow:0 0 24px rgba(140,110,240,0.16);}
   </div>
 </div>
 
+<!-- EXERCISE PICKER MODAL -->
+<div class="modal-bg" id="ex-picker-modal" style="z-index:218">
+  <div class="modal" style="max-height:85vh;display:flex;flex-direction:column">
+    <div class="modal-title" id="ex-picker-title">➕ أضف تمرين</div>
+    <div id="ex-picker-body" style="overflow-y:auto;flex:1;min-height:200px;-webkit-overflow-scrolling:touch"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-shrink:0">
+      <button class="modal-btn mb-cancel" style="flex:1" onclick="document.getElementById('ex-picker-modal').classList.remove('show')">إغلاق</button>
+      <button class="modal-btn mb-save" style="flex:1" onclick="addManualExFromPicker()">✏️ اكتب يدوياً</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT MEAL MODAL -->
 <div class="modal-bg" id="edit-meal-modal" style="z-index:215">
   <div class="modal" style="max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch">
@@ -1191,6 +1203,18 @@ const MUSCLES=[
       {e:'Towel Pull-Up',n:'عقلة بمنشفة',d:'3 × للفشل',q:'towel pull up grip'}]}
 ];
 let selectedMuscles={}; // {chest:true,...}
+// ═══ مكتبة تمارين بديلة لكل عضلة (هوية ثابتة للتتبع) ═══
+const EX_LIBRARY={
+  chest:[{n:'تفتيح فلاي بالدمبل',q:'dumbbell fly'},{n:'كيبل كروس اوفر',q:'cable crossover'},{n:'بنش مائل بالدمبل',q:'incline dumbbell press'},{n:'بنش منخفض',q:'decline bench press'},{n:'بوش اب',q:'push up'},{n:'ديبس صدر',q:'chest dips'},{n:'بيك دك',q:'pec deck machine'}],
+  back:[{n:'تي بار رو',q:'t-bar row'},{n:'سحب ارضي كيبل',q:'seated cable row'},{n:'دمبل رو ذراع واحدة',q:'one arm dumbbell row'},{n:'بول اوفر',q:'dumbbell pullover'},{n:'فيس بول',q:'face pull'},{n:'سحب واسع',q:'wide grip lat pulldown'},{n:'شراقز',q:'shrugs'},{n:'قود مورنينق',q:'good morning exercise'}],
+  shoulder:[{n:'رفرفة جانبية كيبل',q:'cable lateral raise'},{n:'ارنولد برس',q:'arnold press'},{n:'رفرفة امامية',q:'front raise'},{n:'رفرفة خلفية بالجهاز',q:'reverse pec deck'},{n:'ابرايت رو',q:'upright row'},{n:'كتف بالجهاز',q:'shoulder press machine'}],
+  legs:[{n:'ليق رايس',q:'leg raise machine'},{n:'ليق اكستنشن',q:'leg extension'},{n:'ليق كيرل',q:'leg curl'},{n:'هاك سكوات',q:'hack squat'},{n:'سومو ديدلفت',q:'sumo deadlift'},{n:'بلغاري سبليت سكوات',q:'bulgarian split squat'},{n:'هيب ثرست',q:'hip thrust'},{n:'كالف رايز واقف',q:'standing calf raise'},{n:'قود مورنينق',q:'good morning'},{n:'ووكينق لانجز',q:'walking lunges'}],
+  biceps:[{n:'بايسبس كيبل',q:'cable bicep curl'},{n:'هامر كيرل',q:'hammer curl'},{n:'بريتشر كيرل',q:'preacher curl'},{n:'كونسنتريشن كيرل',q:'concentration curl'},{n:'سبايدر كيرل',q:'spider curl'},{n:'بار زقزاق',q:'ez bar curl'}],
+  triceps:[{n:'سحب كيبل للترايسبس',q:'tricep pushdown'},{n:'اوفرهيد اكستنشن',q:'overhead tricep extension'},{n:'سكل كراشر',q:'skull crusher'},{n:'كيك باك',q:'tricep kickback'},{n:'ديبس ترايسبس',q:'bench dips'},{n:'كلوز قريب بنش',q:'close grip bench press'}],
+  abs:[{n:'كرنش كيبل',q:'cable crunch'},{n:'رفع رجل معلق',q:'hanging leg raise'},{n:'راشن تويست',q:'russian twist'},{n:'اب ويل',q:'ab wheel rollout'},{n:'ماونتن كلايمبر',q:'mountain climbers'},{n:'في اب',q:'v-ups'}],
+  core:[{n:'بلانك جانبي',q:'side plank'},{n:'ديد بق',q:'dead bug exercise'},{n:'بيرد دوق',q:'bird dog'},{n:'باللوف برس',q:'pallof press'},{n:'فارمر كاري',q:'farmer carry'}],
+  grip:[{n:'ريست كيرل',q:'wrist curl'},{n:'ريفيرس ريست كيرل',q:'reverse wrist curl'},{n:'بليت بينش',q:'plate pinch'},{n:'ديد هانق',q:'dead hang'}]
+};
 // ═══ تقسيمات التمارين الجاهزة ═══
 const SPLITS=[
   {id:'push',n:'Push دفع',sub:'صدر · كتف · ترايسبس',m:['chest','shoulder','triceps']},
@@ -1287,7 +1311,7 @@ function renderMuscleContent(){
     });
     // custom exercises added for this muscle
     (customEx[m.id]||[]).forEach((ce,ci)=>{
-      const id='cus_'+m.id+'_'+ci;
+      const id=ce.libId||('cus_'+m.id+'_'+ci);
       html+=exRowHTML(id,ce.name,ce.sub||'تمرينك',ce.q||(ce.name),m.c,'deleteCustomEx(\''+m.id+'\','+ci+')');
     });
     html+='<div style="display:flex;gap:8px;margin-top:8px">'
@@ -1343,6 +1367,7 @@ function openSets(id,title,color){
   let o=getSetsObj(id);
   if(!o){o={side:false,sets:[{w:'',r:''}]};exSets[id]=o;}
   if(!o.sets.length)o.sets.push({w:'',r:''});
+  o.title=title; // احفظ الاسم مع الجلسات — للتتبع الدائم حتى لو حُذف التمرين
   document.getElementById('sets-title').textContent=title;
   document.getElementById('sets-title').style.color=color;
   setSideMode(o.side,true);
@@ -1528,11 +1553,103 @@ function closeSets(){
 }
 // custom exercises per muscle: customEx[muscleId]=[{name,q}]
 let customEx={};
+let exPickerMuscle=null;
 function addMuscleEx(mid,mname){
+  exPickerMuscle={id:mid,name:mname};
+  const m=MUSCLES.find(x=>x.id===mid);
+  document.getElementById('ex-picker-title').textContent='➕ أضف تمرين — '+mname;
+  const body=document.getElementById('ex-picker-body');
+  // الأسماء الموجودة أصلاً (جاهزة + مخصصة) عشان ما نكرر
+  const existing=new Set();
+  (m?m.ex:[]).forEach(e=>existing.add(e.e));
+  (customEx[mid]||[]).forEach(c=>existing.add(c.name));
+  let html='';
+  // ١) تمارين الأسبوع الماضي لهذي العضلة (من السجل)
+  const lastWeek=getLastWeekExercises(mid);
+  if(lastWeek.length){
+    html+='<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px">🕐 من تدريبك السابق</div>';
+    lastWeek.forEach(x=>{
+      if(existing.has(x.title))return;
+      html+='<div onclick="pickLibraryEx(\''+esc(x.title)+'\',\''+esc(x.title)+' exercise\')" style="display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid rgba(30,48,80,.35);cursor:pointer">'
+        +'<span style="flex:1;font-size:13px;font-weight:600">'+x.title+'</span>'
+        +'<span style="font-size:10px;color:var(--text3)">آخر مرة: '+(x.maxW?round1(x.maxW)+'كجم':'')+'</span>'
+        +'<span style="color:var(--green);font-size:16px">+</span></div>';
+    });
+  }
+  // ٢) المكتبة المقترحة
+  const lib=(EX_LIBRARY[mid]||[]).filter(x=>!existing.has(x.n));
+  if(lib.length){
+    html+='<div style="font-size:12px;font-weight:700;color:var(--accent);margin:12px 0 8px">💡 تمارين مقترحة</div>';
+    lib.forEach(x=>{
+      html+='<div onclick="pickLibraryEx(\''+esc(x.n)+'\',\''+esc(x.q)+'\')" style="display:flex;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid rgba(30,48,80,.35);cursor:pointer">'
+        +'<span style="flex:1;font-size:13px;font-weight:600">'+x.n+'</span>'
+        +'<span style="color:var(--accent);font-size:16px">+</span></div>';
+    });
+  }
+  if(!html)html='<div class="empty-mini">كل التمارين المقترحة مضافة — اكتب يدوياً</div>';
+  body.innerHTML=html;
+  document.getElementById('ex-picker-modal').classList.add('show');
+}
+// تمارين الأسبوع الماضي لعضلة معيّنة (تُقرأ من سجل الأيام)
+function getLastWeekExercises(mid){
+  const db=getDB();
+  const out={};
+  const weekAgo=Date.now()-8*24*60*60*1000;
+  Object.keys(db).forEach(k=>{
+    const d=db[k];
+    if(!d.ts||d.ts<weekAgo)return;
+    const ex=d.exSets||{};
+    Object.keys(ex).forEach(id=>{
+      // بس تمارين هذي العضلة (جاهزة أو مخصصة أو مكتبة)
+      if(!id.includes('_'+mid+'_')&&!id.startsWith('lib_'+mid+'_'))return;
+      let v=ex[id];if(Array.isArray(v))v={side:false,sets:v};
+      const arr=(v.sets||[]).filter(s=>s.w||s.r);
+      if(!arr.length)return;
+      const title=v.title||exTitleFromId(id,mid);
+      if(!title)return;
+      const maxW=Math.max(...arr.map(s=>(parseFloat(s.w)||0)*(v.side?2:1)));
+      if(!out[title]||out[title].ts<d.ts)out[title]={title,maxW,ts:d.ts};
+    });
+  });
+  return Object.values(out).sort((a,b)=>b.ts-a.ts);
+}
+// يجيب اسم التمرين من معرّفه
+function exTitleFromId(id,mid){
+  const m=MUSCLES.find(x=>x.id===mid);
+  if(id.startsWith('mus_'+mid+'_')){const i=parseInt(id.split('_')[2]);return m&&m.ex[i]?m.ex[i].e:null;}
+  if(id.startsWith('cus_'+mid+'_')){const i=parseInt(id.split('_')[2]);return (customEx[mid]||[])[i]?customEx[mid][i].name:null;}
+  if(id.startsWith('lib_'+mid+'_')){
+    // معرّف مكتبة: lib_mid_hash — الاسم محفوظ في customEx
+    const found=(customEx[mid]||[]).find(c=>c.libId===id);
+    return found?found.name:null;
+  }
+  return null;
+}
+function pickLibraryEx(name,q){
+  const mid=exPickerMuscle.id;
+  if(!customEx[mid])customEx[mid]=[];
+  // معرّف ثابت من الاسم نفسه — عشان التتبع يستمر حتى لو حذفته ورجّعته
+  const libId='lib_'+mid+'_'+stableHash(name);
+  if(!customEx[mid].some(c=>c.libId===libId)){
+    customEx[mid].push({name:name,q:q,libId:libId});
+  }
+  document.getElementById('ex-picker-modal').classList.remove('show');
+  renderMuscleContent();autoSaveToday();
+}
+// hash ثابت من النص (للمعرّفات)
+function stableHash(str){
+  let h=0;for(let i=0;i<str.length;i++){h=((h<<5)-h+str.charCodeAt(i))|0;}
+  return Math.abs(h).toString(36);
+}
+function addManualExFromPicker(){
+  document.getElementById('ex-picker-modal').classList.remove('show');
+  const mid=exPickerMuscle.id,mname=exPickerMuscle.name;
   const name=prompt('اسم التمرين الجديد لـ'+mname+':');
   if(!name||!name.trim())return;
   if(!customEx[mid])customEx[mid]=[];
-  customEx[mid].push({name:name.trim(),q:name.trim()+' exercise form'});
+  const nm=name.trim();
+  const libId='lib_'+mid+'_'+stableHash(nm);
+  customEx[mid].push({name:nm,q:nm+' exercise form',libId:libId});
   renderMuscleContent();autoSaveToday();
 }
 function deleteCustomEx(mid,ci){
