@@ -1250,11 +1250,25 @@ function toggleMuscle(id){
   if(!selectedMuscles[id])delete selectedMuscles[id];
   renderMuscleGrid();renderMuscleContent();autoSaveToday();
 }
+// ═══ إخفاء تمارين جاهزة (محفوظ دائماً) ═══
+function getHiddenEx(){try{return JSON.parse(localStorage.getItem('cc_hidden_ex')||'[]');}catch{return[];}}
+function setHiddenEx(a){localStorage.setItem('cc_hidden_ex',JSON.stringify(a));}
+function hideBuiltinEx(id){
+  const h=getHiddenEx();
+  if(!h.includes(id)){h.push(id);setHiddenEx(h);}
+  renderMuscleContent();
+}
+function restoreHiddenEx(muscleId){
+  const h=getHiddenEx().filter(id=>!id.startsWith('mus_'+muscleId+'_'));
+  setHiddenEx(h);
+  renderMuscleContent();
+}
 function renderMuscleContent(){
   const el=document.getElementById('muscle-content');
   if(!el)return;
   const chosen=MUSCLES.filter(m=>selectedMuscles[m.id]);
   if(!chosen.length){el.innerHTML='<div class="empty-mini">اختر عضلة فوق عشان تطلع تمارينها 👆</div>';return;}
+  const hidden=getHiddenEx();
   let html='';
   chosen.forEach(m=>{
     const mg=getMonthGoal();
@@ -1265,9 +1279,11 @@ function renderMuscleContent(){
       +(isTarget?' <span style="font-size:11px;color:var(--orange)">⭐ هدف الشهر</span>':'')
       +(isTarget&&focusObj?' <span style="font-size:10px;color:var(--text3);font-weight:400">· '+focusObj.n+'</span>':'')
       +'</div>';
+    let hiddenCount=0;
     m.ex.forEach((it,i)=>{
       const id='mus_'+m.id+'_'+i;
-      html+=exRowHTML(id,it.e,it.n+' · '+it.d,it.q,m.c);
+      if(hidden.includes(id)){hiddenCount++;return;}
+      html+=exRowHTML(id,it.e,it.n+' · '+it.d,it.q,m.c,'hideBuiltinEx(\''+id+'\')');
     });
     // custom exercises added for this muscle
     (customEx[m.id]||[]).forEach((ce,ci)=>{
@@ -1278,6 +1294,7 @@ function renderMuscleContent(){
       +'<button class="add-meal-btn" style="margin-top:0;flex:1;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="addMuscleEx(\''+m.id+'\',\''+m.n+'\')">+ أضف تمرين</button>'
       +'<button class="add-meal-btn" style="margin-top:0;flex:1;border-color:'+m.c+'55;color:'+m.c+';background:'+m.c+'0f" onclick="musclePhoto(\''+m.id+'\',\''+m.n+'\')">📸 صوّر تمرين</button>'
       +'</div>';
+    if(hiddenCount>0)html+='<div onclick="restoreHiddenEx(\''+m.id+'\')" style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px;cursor:pointer;text-decoration:underline">↩️ استرجع '+hiddenCount+' تمرين محذوف</div>';
     html+='<div class="ai-resp" id="mphoto-'+m.id+'" style="margin-top:10px"></div>';
     html+='</div>';
   });
@@ -1349,7 +1366,7 @@ function renderSetsModal(){
   const wLabel=o.side?'وزن الجهة':'وزن كجم';
   let html='';
   arr.forEach((s,i)=>{
-    const sideTot=(o.side&&s.w)?' <span style="font-size:9px;color:var(--text3)">(='+round1(s.w*2)+')</span>':'';
+    const sideTot=o.side?' <span id="side-tot-'+i+'" style="font-size:9px;color:var(--text3)">'+(s.w?'(='+round1(s.w*2)+')':'')+'</span>':'';
     html+='<div style="display:flex;gap:6px;align-items:center;margin-bottom:8px">'
       +'<span style="width:48px;font-size:12px;color:'+col+';font-weight:700">جلسة '+(i+1)+'</span>'
       +'<div style="flex:1;position:relative"><input class="modal-input" type="number" inputmode="decimal" placeholder="'+wLabel+'" value="'+(s.w||'')+'" oninput="updateSet('+i+',\'w\',this.value)" style="text-align:center">'+sideTot+'</div>'
@@ -1370,8 +1387,12 @@ function updateSetsSummary(){
 function updateSet(i,field,val){
   const o=getSetsObj(activeSetEx.id);if(!o)return;
   o.sets[i][field]=val===''?'':parseFloat(val)||0;
-  if(field==='w'&&o.side){renderSetsModal();} // عشان يحدّث الـ(=×2)
-  else updateSetsSummary();
+  // حدّث نص (=×2) مباشرة بدون إعادة بناء — عشان ما يفقد المؤشر التركيز
+  if(field==='w'&&o.side){
+    const tot=document.getElementById('side-tot-'+i);
+    if(tot)tot.textContent=o.sets[i].w?('(='+round1(o.sets[i].w*2)+')'):'';
+  }
+  updateSetsSummary();
 }
 function addSet(){
   const o=getSetsObj(activeSetEx.id);if(!o)return;
