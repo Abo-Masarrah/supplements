@@ -56,7 +56,10 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;background:
 .botnav-tab.active::before{content:'';position:absolute;top:-9px;left:50%;transform:translateX(-50%);width:34px;height:3px;border-radius:0 0 4px 4px;background:currentColor;box-shadow:0 2px 12px currentColor;opacity:.85;}
 .botnav-tab:active{transform:scale(.88);}
 .botnav-icon{font-size:20px;transition:transform .3s var(--ease-spring);}
-.botnav-tab.active .botnav-icon{transform:translateY(-2px) scale(1.14);}
+.botnav-tab.active .botnav-icon{transform:translateY(-2px) scale(1.14);animation:iconBounce .45s var(--ease-spring);}
+@keyframes iconBounce{0%{transform:translateY(0) scale(1);}50%{transform:translateY(-4px) scale(1.22);}100%{transform:translateY(-2px) scale(1.14);}}
+.botnav-tab .botnav-icon svg{stroke-width:1.8;transition:stroke-width .2s;}
+.botnav-tab.active .botnav-icon svg{stroke-width:2.3;}
 .botnav-tab.active .botnav-icon svg{filter:drop-shadow(0 2px 6px rgba(0,212,255,.5));}
 .botnav-tab:nth-child(1).active{color:var(--accent);}
 .botnav-tab:nth-child(2).active{color:var(--green);}
@@ -225,6 +228,46 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
 .section-title{font-size:18px;font-weight:700;margin-bottom:4px;}
 .section-desc{font-size:13px;color:var(--text3);margin-bottom:16px;}
 .empty-mini{text-align:center;padding:30px 16px;color:var(--text3);font-size:13px;}
+/* بطاقات التقسيمات الفخمة */
+.split-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:13px 6px 11px;background:linear-gradient(180deg,rgba(28,39,57,0.85),rgba(21,29,46,0.8));border:1.5px solid rgba(42,63,99,0.5);border-radius:16px;cursor:pointer;font-family:inherit;color:var(--text2);transition:all .25s var(--ease-spring);box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);overflow:hidden;}
+.split-card:active{transform:scale(.93);}
+.split-card.on{border-color:var(--accent);color:var(--accent);background:linear-gradient(180deg,rgba(0,212,255,0.14),rgba(0,212,255,0.05));box-shadow:0 0 22px rgba(0,212,255,0.22),inset 0 1px 0 rgba(255,255,255,0.08);transform:translateY(-2px);}
+.split-ic{width:26px;height:26px;display:flex;align-items:center;justify-content:center;opacity:.85;}
+.split-ic svg{width:22px;height:22px;}
+.split-card.on .split-ic{animation:popIn .35s var(--ease-spring);}
+@keyframes popIn{0%{transform:scale(.6);}60%{transform:scale(1.18);}100%{transform:scale(1);}}
+.split-name{font-weight:700;font-size:11.5px;white-space:nowrap;}
+.split-sub{font-size:8.5px;color:var(--text3);line-height:1.3;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.split-check{position:absolute;top:6px;left:7px;width:16px;height:16px;border-radius:50%;background:var(--accent);color:#06121e;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;animation:popIn .3s var(--ease-spring);}
+
+/* ═══ الوضع الفاتح ═══ */
+body.light{
+  --bg:#eef2f8;--surface:#ffffff;--surface2:#f0f4fa;--surface3:#e4eaf4;
+  --border:#d4deee;--border2:#bcc9df;
+  --text:#0f1a2a;--text2:#46566e;--text3:#7b8aa0;
+  --glass:rgba(0,0,0,0.02);
+  --shadow:0 4px 20px rgba(15,26,42,0.08);--shadow-glow:0 0 0 1px rgba(0,153,204,0.06),0 8px 28px rgba(15,26,42,0.1);
+}
+body.light::before{background:
+  radial-gradient(52% 38% at 82% -6%,rgba(0,180,255,0.1) 0%,transparent 60%),
+  radial-gradient(45% 32% at 8% 12%,rgba(167,139,250,0.08) 0%,transparent 55%),
+  radial-gradient(120% 80% at 50% 0%,#ffffff 0%,var(--bg) 58%);}
+body.light .card{background:linear-gradient(180deg,rgba(255,255,255,0.92),rgba(246,249,253,0.95));border-color:var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 8px 26px rgba(15,26,42,0.09);}
+body.light .hero{background:radial-gradient(130% 110% at 50% -10%,rgba(0,180,255,0.1),rgba(255,255,255,0.95) 50%,rgba(246,249,253,0.98));border-color:rgba(0,170,230,0.25);box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 10px 32px rgba(15,26,42,0.1),0 0 50px rgba(0,180,255,0.06);}
+body.light .topbar{background:linear-gradient(135deg,rgba(255,255,255,0.9),rgba(240,246,253,0.85));border-bottom-color:var(--border);box-shadow:0 4px 20px rgba(15,26,42,0.06);}
+body.light .botnav{background:linear-gradient(180deg,rgba(255,255,255,0.85),rgba(246,249,253,0.96));border-top-color:var(--border);box-shadow:0 -8px 26px rgba(15,26,42,0.08);}
+body.light .modal{background:linear-gradient(180deg,#ffffff,#f6f9fd);border-top-color:rgba(0,170,230,0.3);box-shadow:0 -12px 44px rgba(15,26,42,0.16),inset 0 1px 0 rgba(255,255,255,0.9);}
+body.light .modal-input{background:#f0f4fa;border-color:var(--border);box-shadow:inset 0 1px 3px rgba(15,26,42,0.06);}
+body.light .chip{background:linear-gradient(180deg,#ffffff,#f2f6fb);border-color:var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 1px 3px rgba(15,26,42,0.05);}
+body.light .split-card{background:linear-gradient(180deg,#ffffff,#f2f6fb);border-color:var(--border);box-shadow:inset 0 1px 0 rgba(255,255,255,0.8),0 2px 6px rgba(15,26,42,0.05);}
+body.light .split-card.on{background:linear-gradient(180deg,rgba(0,180,255,0.12),rgba(0,180,255,0.04));box-shadow:0 0 18px rgba(0,170,230,0.18);}
+body.light .goal-track{background:#e4eaf4;box-shadow:inset 0 1px 3px rgba(15,26,42,0.08);}
+body.light .weight-input,body.light .ai-input{background:#f0f4fa;border-color:var(--border);color:var(--text);}
+body.light .ring-big{text-shadow:0 0 20px rgba(0,170,230,0.18);}
+body.light .weight-big{text-shadow:0 0 24px rgba(140,110,240,0.16);}
+/* زر التبديل */
+.theme-toggle{width:40px;height:40px;border-radius:13px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;transition:all .3s var(--ease-spring);margin-right:8px;}
+.theme-toggle:active{transform:scale(.88) rotate(-18deg);}
 </style>
 </head>
 <body>
@@ -234,7 +277,10 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
     <div class="tb-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4.5 13.5H11l-1 8.5L19.5 10H13z"/></svg></div>
     <div><div class="tb-title" id="tb-title">Command Center</div><div class="tb-sub" id="tb-sub">Ahmed Al-Haddad</div></div>
   </div>
-  <div class="tb-date" id="tb-date"></div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="الوضع الفاتح/الداكن">🌙</button>
+    <div class="tb-date" id="tb-date"></div>
+  </div>
 </div>
 
 <!-- ══ TODAY ══ -->
@@ -362,7 +408,7 @@ select.modal-input option{background:var(--surface2);color:var(--text);}
   <div class="card">
     <div class="sec-label">العضلات — اختر اللي لعبتها 💪</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:12px">اختر تقسيمة جاهزة أو اختر عضلاتك يدوياً · تقدر تعدّل بعدها</div>
-    <div id="split-picker" style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px"></div>
+    <div id="split-picker" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
     <div id="muscle-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px"></div>
     <div id="muscle-content" style="margin-top:14px"></div>
     <input type="file" id="muscle-photo-input" accept="image/*" capture="environment" style="display:none" onchange="analyzeMusclePhoto(event)">
@@ -1158,9 +1204,22 @@ let activeSplit=null;
 function renderSplitPicker(){
   const el=document.getElementById('split-picker');
   if(!el)return;
+  const icons={
+    push:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+    pull:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>',
+    legs:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 3v7l-2 11M16 3v7l2 11M8 6h8"/></svg>',
+    upper:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="6" r="3"/><path d="M5 21v-4a7 7 0 0 1 14 0v4"/></svg>',
+    lower:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 3v8l-3 10M15 3v8l3 10M6 21h4M14 21h4"/></svg>',
+    full:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="2.5"/><path d="M12 8v6M12 14l-4 7M12 14l4 7M7 10h10"/></svg>'
+  };
   el.innerHTML=SPLITS.map(s=>{
     const on=activeSplit===s.id;
-    return '<button class="chip" onclick="applySplit(\''+s.id+'\')" style="flex-direction:column;align-items:center;gap:2px;padding:8px 12px;'+(on?'border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.1)':'')+'"><span style="font-weight:700;font-size:12px">'+s.n+'</span><span style="font-size:9px;color:var(--text3)">'+s.sub+'</span></button>';
+    return '<button class="split-card'+(on?' on':'')+'" onclick="applySplit(\''+s.id+'\')">'
+      +'<span class="split-ic">'+(icons[s.id]||'')+'</span>'
+      +'<span class="split-name">'+s.n+'</span>'
+      +'<span class="split-sub">'+s.sub+'</span>'
+      +(on?'<span class="split-check">✓</span>':'')
+      +'</button>';
   }).join('');
 }
 function applySplit(id){
@@ -1181,9 +1240,9 @@ function renderMuscleGrid(){
   if(!el)return;
   el.innerHTML=MUSCLES.map(m=>{
     const on=selectedMuscles[m.id];
-    return '<button onclick="toggleMuscle(\''+m.id+'\')" style="background:'+(on?m.c+'1f':'var(--surface2)')+';border:2px solid '+(on?m.c:'var(--border)')+';border-radius:14px;padding:10px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s;font-family:inherit">'
-      +'<span style="width:24px;height:24px;color:'+(on?m.c:'var(--text3)')+';display:flex;align-items:center;justify-content:center">'+m.ic+'</span>'
-      +'<span style="font-size:11px;font-weight:600;color:'+(on?m.c:'var(--text2)')+'">'+m.n+'</span></button>';
+    return '<button onclick="toggleMuscle(\''+m.id+'\')" style="background:'+(on?'linear-gradient(180deg,'+m.c+'2b,'+m.c+'0d)':'linear-gradient(180deg,rgba(28,39,57,0.8),rgba(21,29,46,0.75))')+';border:1.5px solid '+(on?m.c:'rgba(42,63,99,0.5)')+';border-radius:15px;padding:11px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .25s cubic-bezier(.34,1.56,.64,1);font-family:inherit;'+(on?'box-shadow:0 0 18px '+m.c+'44,inset 0 1px 0 rgba(255,255,255,0.08);transform:translateY(-2px)':'box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)')+'">'
+      +'<span style="width:24px;height:24px;color:'+(on?m.c:'var(--text3)')+';display:flex;align-items:center;justify-content:center;'+(on?'filter:drop-shadow(0 0 6px '+m.c+'99)':'')+'">'+m.ic+'</span>'
+      +'<span style="font-size:11px;font-weight:'+(on?'700':'600')+';color:'+(on?m.c:'var(--text2)')+'">'+m.n+'</span></button>';
   }).join('');
 }
 function toggleMuscle(id){
@@ -1614,6 +1673,7 @@ function isToday(){const t=new Date();return currentDate.getFullYear()===t.getFu
 // ═══ INIT ═══
 document.addEventListener('DOMContentLoaded',()=>{
   applyAppNames();
+  applyTheme();
   renderGoalPicker();
   renderActivityPicker();
   loadDay();
@@ -3168,6 +3228,18 @@ function downloadCard(){
 }
 
 // ═══ تخصيص اسم التطبيق (محفوظ بالجهاز) ═══
+// ═══ الوضع الفاتح/الداكن ═══
+function applyTheme(){
+  const light=localStorage.getItem('cc_theme')==='light';
+  document.body.classList.toggle('light',light);
+  const btn=document.getElementById('theme-toggle');
+  if(btn)btn.textContent=light?'☀️':'🌙';
+}
+function toggleTheme(){
+  const light=localStorage.getItem('cc_theme')==='light';
+  localStorage.setItem('cc_theme',light?'dark':'light');
+  applyTheme();
+}
 function applyAppNames(){
   const name=localStorage.getItem('cc_appname')||'Command Center';
   const user=localStorage.getItem('cc_username')||'Ahmed Al-Haddad';
