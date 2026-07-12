@@ -459,6 +459,15 @@ body.light .weight-big{text-shadow:0 0 24px rgba(140,110,240,0.16);}
     </div>
     <div style="font-size:11px;color:var(--text3);text-align:center" id="burn-mode-hint">المحروق يزيد سعراتك المتاحة لليوم</div>
     <div id="burn-log" style="margin-top:10px"></div>
+    <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">⌚ إجمالي حرق اليوم من ساعتك</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">نهاية اليوم، اكتب الرقم الكلي من الساعة (شامل النوم والنشاط والرياضة) — يعتمد بدل التقدير</div>
+      <div style="display:flex;gap:8px">
+        <input class="modal-input" id="watch-burn-input" type="number" inputmode="numeric" placeholder="مثال 3475" style="flex:1">
+        <button class="btn-primary" style="padding:11px 18px" onclick="setWatchBurn()">✓ اعتمد</button>
+      </div>
+      <div id="watch-burn-status" style="font-size:11px;text-align:center;margin-top:8px"></div>
+    </div>
   </div>
 </div>
 
@@ -1792,7 +1801,7 @@ const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو',
 const AR_DAYS=['ح','ن','ث','ر','خ','ج','س'];
 
 // ═══ STATE ═══
-let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, suppChecks={}, flexChecks={}, exSets={}, viewMonth=new Date(), currentDate=new Date();
+let day=null, meals=[], exLog=[], burned=0, burnLog=[], burnMode='add', water=0, steps=0, watchBurn=0, suppChecks={}, flexChecks={}, exSets={}, viewMonth=new Date(), currentDate=new Date();
 viewMonth.setDate(1);
 
 // ═══ STORAGE ═══
@@ -1855,7 +1864,7 @@ function loadDay(){
   const dn=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const months=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
   // reset state
-  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;suppChecks={};flexChecks={};selectedMuscles={};exSets={};customEx={};customFlex=[];activeSplit=null;
+  day=null;meals=[];exLog=[];burned=0;burnLog=[];burnMode='add';water=0;steps=0;watchBurn=0;suppChecks={};flexChecks={};selectedMuscles={};exSets={};customEx={};customFlex=[];activeSplit=null;
   const db=getDB(),k=tKey();
   if(db[k]){
     meals=db[k].meals||[];
@@ -1864,7 +1873,7 @@ function loadDay(){
     burnMode=db[k].burnMode||'add';
     burned=db[k].burned||0;
     water=db[k].water||0;
-    steps=db[k].steps||0;
+    steps=db[k].steps||0;watchBurn=db[k].watchBurn||0;
     suppChecks=db[k].suppChecks||{};
     flexChecks=db[k].flexChecks||{};
     selectedMuscles=db[k].selectedMuscles||{};activeSplit=db[k].activeSplit||null;
@@ -2710,7 +2719,7 @@ function buildDayRecord(){
   // exercise sets stats: count done exercises, total sets, total volume
   let exDone=0,totalSets=0,totalVol=0;
   Object.keys(exSets).forEach(k=>{let v=exSets[k];if(Array.isArray(v))v={side:false,sets:v};const real=(v.sets||[]).filter(s=>s.w||s.r);if(real.length){exDone++;totalSets+=real.length;const mult=v.side?2:1;real.forEach(s=>totalVol+=(s.w||0)*mult*(s.r||0));}});
-  return {day,meals,exLog,burnLog,burnMode,burned,water,steps,suppChecks,flexChecks,selectedMuscles,activeSplit,exSets,customEx,customFlex,exDone,totalSets,totalVol,suppTotal,suppDone,eaten,target:day?getTargets(day).cal:0,ts:Date.now()};
+  return {day,meals,exLog,burnLog,burnMode,burned,watchBurn,water,steps,suppChecks,flexChecks,selectedMuscles,activeSplit,exSets,customEx,customFlex,exDone,totalSets,totalVol,suppTotal,suppDone,eaten,target:day?getTargets(day).cal:0,ts:Date.now()};
 }
 function autoSaveToday(){
   if(!day)return;
@@ -2984,19 +2993,40 @@ function addBurn(){
 function removeBurn(i){burnLog.splice(i,1);burned=burnLog.reduce((s,b)=>s+b.cal,0);renderBurn();updateHero();autoSaveToday();}
 function renderBurn(){
   document.getElementById('burned-display').textContent=burned;
-  // إجمالي حرق اليوم = طبيعي (BMR×نشاط) + الرياضة — زي Google Health
+  // إجمالي حرق اليوم: من الساعة لو مدخّل، وإلا تقدير (BMR×نشاط + رياضة)
   const tot=document.getElementById('total-burn-display');
   if(tot){
-    if(day&&getWeights().length){
-      const totalBurn=estimateDayBurn(day,burned);
-      const natural=totalBurn-burned;
-      tot.innerHTML='🔥 <b style="color:var(--orange);font-family:var(--num);font-size:16px">'+totalBurn.toLocaleString('en-US')+'</b> إجمالي حرقك اليوم <span style="color:var(--text3);font-size:10px">(طبيعي '+natural.toLocaleString('en-US')+' + رياضة '+burned+')</span>';
+    if(day&&(getWeights().length||watchBurn)){
+      const totalBurn=estimateDayBurn(day,burned,watchBurn);
+      let detail;
+      if(watchBurn>0){detail='⌚ من ساعتك — الرقم الفعلي';}
+      else{const natural=totalBurn-burned;detail='تقدير: طبيعي '+natural.toLocaleString('en-US')+' + رياضة '+burned;}
+      tot.innerHTML='🔥 <b style="color:var(--orange);font-family:var(--num);font-size:16px">'+totalBurn.toLocaleString('en-US')+'</b> إجمالي حرقك اليوم <span style="color:var(--text3);font-size:10px">('+detail+')</span>';
       tot.style.display='block';
     } else tot.style.display='none';
   }
+  // حالة خانة الساعة
+  const ws=document.getElementById('watch-burn-status');
+  if(ws)ws.innerHTML=watchBurn>0?'<span style="color:var(--green)">✅ معتمد: '+watchBurn.toLocaleString('en-US')+' سعرة من ساعتك</span> <span onclick="clearWatchBurn()" style="color:var(--red);cursor:pointer;text-decoration:underline">إلغاء</span>':'';
   const el=document.getElementById('burn-log');
   if(!burnLog.length){el.innerHTML='';return;}
   el.innerHTML=burnLog.map((b,i)=>'<div class="meal-row" style="padding:8px 0"><div class="meal-check done" onclick="removeBurn('+i+')">✕</div><div class="meal-info"><div class="meal-cal">'+b.cal+' سعرة محروقة · '+b.time+'</div></div></div>').join('');
+}
+// اعتماد إجمالي حرق اليوم من الساعة
+function setWatchBurn(){
+  const v=parseInt(document.getElementById('watch-burn-input').value)||0;
+  if(!v||v<500||v>10000){alert('اكتب رقم منطقي (مثال 3475)');return;}
+  watchBurn=v;
+  document.getElementById('watch-burn-input').value='';
+  renderBurn();
+  updateHero();
+  autoSaveToday();
+}
+function clearWatchBurn(){
+  watchBurn=0;
+  renderBurn();
+  updateHero();
+  autoSaveToday();
 }
 // ═══ WATER & STEPS ═══
 function addWater(ml){
@@ -3270,7 +3300,9 @@ function deleteWeight(i){
 }
 // ═══ رصيد السعرات الأسبوعي: دخل × حرق كلي × عجز ═══
 // إجمالي حرق اليوم = BMR×نشاط×معامل اليوم (طبيعي) + حرق الرياضة المسجّل
-function estimateDayBurn(dayType,exBurn){
+function estimateDayBurn(dayType,exBurn,watchTotal){
+  // لو أدخل المستخدم رقم ساعته الفعلي، هو المعتمد (أدق من أي تقدير)
+  if(watchTotal&&watchTotal>0)return Math.round(watchTotal);
   const w=getWeights();
   if(!w.length)return exBurn||0;
   const kg=w[w.length-1].kg;
@@ -3290,7 +3322,7 @@ function renderCalBalance(){
   days.forEach(k=>{
     const d=db[k];
     const eaten=d.eaten||0;
-    const burn=estimateDayBurn(d.day,d.burned||0);
+    const burn=estimateDayBurn(d.day,d.burned||0,d.watchBurn||0);
     totIn+=eaten;totBurn+=burn;
     const net=eaten-burn;
     const dt=new Date(k);
