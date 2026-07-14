@@ -1060,6 +1060,10 @@ function setActivity(a){localStorage.setItem('cc_activity',a);}
 // تعديل بسيط لمعامل النشاط حسب نوع اليوم (يوم الراحة أقل، المزدوج أعلى)
 const DAY_ACTIVITY_ADJ={gym:1.0,football:1.05,both:1.12,rest:0.88};
 // يرجّع أهداف اليوم حسب: الوزن + النشاط + الهدف
+function getAdaptiveCut(){
+  const v=parseFloat(localStorage.getItem('cc_adaptive_cut'))||0;
+  return Math.min(Math.max(v,0),0.15);
+}
 function getTargets(dayType){
   const base=TARGETS[dayType];
   const goal=GOALS[getGoal()]||GOALS.cut;
@@ -1071,8 +1075,10 @@ function getTargets(dayType){
     const bmr=10*kg+6.25*175-5*30+5;
     // TDEE = BMR × نشاط × تعديل نوع اليوم
     const actF=(ACTIVITY[getActivity()]||ACTIVITY.high).f*(DAY_ACTIVITY_ADJ[dayType]||1);
-    // السعرات النهائية × معامل الهدف
-    const cal=Math.round(bmr*actF*goal.calMult);
+    // التعديل التكيّفي: لو الوزن زاد وأنت تنشّف، يشدّ العجز تلقائياً
+    const adaptive=(getGoal()==='cut')?(1-getAdaptiveCut()):1;
+    // السعرات النهائية × معامل الهدف × التكيّف
+    const cal=Math.round(bmr*actF*goal.calMult*adaptive);
     // البروتين من الوزن (الأصح للعضل) معدّل بالهدف
     const protein=Math.round(kg*f.p*goal.pBoost);
     // الدهون من الوزن
@@ -2811,9 +2817,25 @@ function logWeight(){
   const v=parseFloat(document.getElementById('weight-input').value);
   if(!v||v<40||v>200){alert('اكتب وزن صحيح');return;}
   const w=getWeights();
-  // احسب السعرات قبل التسجيل (بالوزن القديم)
+  // احسب السعرات قبل التسجيل (بالوزن القديم والتعديل القديم)
   const oldCal=w.length?getTargets(day||'rest').cal:null;
   const oldKg=w.length?w[w.length-1].kg:null;
+  // ═ التعديل التكيّفي: على التنشيف، زيادة الوزن = شدّ العجز، ونزوله = رجوع طبيعي ═
+  let adaptiveMsg='';
+  if(oldKg!==null&&getGoal()==='cut'){
+    const kgDiff=v-oldKg;
+    if(kgDiff>=0){
+      const cur=getAdaptiveCut();
+      const next=Math.min(cur+0.05,0.15);
+      localStorage.setItem('cc_adaptive_cut',next);
+      adaptiveMsg='<br><span style="color:var(--red);font-size:12px">⚠️ وزنك ما نزل — شدّينا العجز: خصم إضافي '+Math.round(next*100)+'% من سعراتك</span>';
+    }else{
+      if(getAdaptiveCut()>0){
+        localStorage.setItem('cc_adaptive_cut','0');
+        adaptiveMsg='<br><span style="color:var(--green);font-size:12px">👏 نزلت — رجّعنا سعراتك للحساب الطبيعي (شلنا الخصم الإضافي)</span>';
+      }
+    }
+  }
   w.push({kg:v,date:tKey(),ts:Date.now()});
   setWeights(w);
   document.getElementById('weight-input').value='';
@@ -2822,21 +2844,22 @@ function logWeight(){
   if(day&&typeof updateHero==='function')updateHero();
   if(typeof renderSmartReminders==='function')renderSmartReminders();
   if(typeof renderMacroUI==='function')renderMacroUI();
-  // اعرض أثر تغيّر الوزن على السعرات
+  // اعرض أثر تغيّر الوزن على السعرات (بالوزن والتعديل الجديدين)
   const newCal=getTargets(day||'rest').cal;
   const box=document.getElementById('weight-cal-impact');
   if(box&&oldCal!==null&&oldKg!==null){
     const kgDiff=v-oldKg;
     const calDiff=newCal-oldCal;
-    if(kgDiff!==0){
-      const kgTxt=(kgDiff<0?'نزل':'زاد')+' '+Math.abs(kgDiff).toFixed(1)+' كجم';
+    if(kgDiff!==0||adaptiveMsg){
+      const kgTxt=(kgDiff<0?'نزل':kgDiff>0?'زاد':'ثابت')+(kgDiff!==0?' '+Math.abs(kgDiff).toFixed(1)+' كجم':'');
       const calTxt=calDiff<0?(calDiff+' سعرة'):('+'+calDiff+' سعرة');
       const col=kgDiff<0?'var(--green)':'var(--orange)';
       box.innerHTML='<div style="background:'+(kgDiff<0?'rgba(34,197,94,.1)':'rgba(245,158,11,.1)')+';border:1px solid '+col+'44;border-radius:12px;padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.7">'
         +'<b style="color:'+col+'">وزنك '+kgTxt+'</b> ('+oldKg+' ← '+v+')<br>'
-        +'<span style="color:var(--text2)">سعرات هدفك تغيّرت من '+oldCal+' إلى <b style="color:'+col+'">'+newCal+'</b> ('+calTxt+')</span></div>';
+        +'<span style="color:var(--text2)">سعرات هدفك تغيّرت من '+oldCal+' إلى <b style="color:'+col+'">'+newCal+'</b> ('+calTxt+')</span>'
+        +adaptiveMsg+'</div>';
       box.style.display='block';
-      setTimeout(()=>{if(box)box.style.display='none';},8000);
+      setTimeout(()=>{if(box)box.style.display='none';},12000);
     }
   }
 }
